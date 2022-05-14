@@ -18,12 +18,20 @@ def init(yaml_config_path:str):
         info = {}
     return True
 def apply_settings(attr_value=None):
+    import sys
+
     from web import settings
+    sys.path.append(settings.BASE_DIR.absolute())
+    # sys.path.append(settings.BASE_DIR.absolute().joinpath("apps").joinpath("file_explorer"))
+    sys.path.append(settings.BASE_DIR.absolute().joinpath("ReEngine"))
     global info
     for k,v in info.items():
         if k=="DATABASE":
             settings.DATABASES["default"]= v
             # pass
+
+
+
         elif hasattr(settings,k):
             try:
                 setattr(settings,k,v)

@@ -21,3 +21,7 @@ DATABASE:
       djongo:
         level: DEBUG
         propagate: False
+
+APPS:
+  app_file_explorer: 'files/'
+  api_files: 'api/files/'
