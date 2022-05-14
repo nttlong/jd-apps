@@ -17,4 +17,16 @@ def init(yaml_config_path:str):
     if not info:
         info = {}
     return True
+def apply_settings(attr_value=None):
+    from web import settings
+    global info
+    for k,v in info.items():
+        if k=="DATABASE":
+            settings.DATABASES["default"]= v
+            # pass
+        elif hasattr(settings,k):
+            try:
+                setattr(settings,k,v)
+            except Exception as e:
+                raise Exception("Fail to load '{} in settings".format(k))
 

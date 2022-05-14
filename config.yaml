@@ -1,5 +1,23 @@
-host:
-  port: 7001
-  binding: [
-             "0.0.0.0"
-  ]
+PORT: 7001
+ALLOWED_HOSTS: [
+                 "192.168.1.2"
+]
+DATABASE:
+  ENGINE: 'djongo'
+  NAME: 'test'
+  ENFORCE_SCHEMA: False
+  CLIENT:
+    host: localhost
+    port: 27017
+    username: test
+    password: test
+    authSource: test
+#    replicaSet: None
+    authMechanism: SCRAM-SHA-1
+
+  LOGGING:
+    version: 1
+    loggers:
+      djongo:
+        level: DEBUG
+        propagate: False
