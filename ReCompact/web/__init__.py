@@ -6,12 +6,14 @@ __info__ = {}
 __lock__ = threading.Lock()
 __template__cache__ ={}
 __observer__ = Observer()
-
+__app_url_path__ ={}
 
 class __cach_handler__(FileSystemEventHandler):
 
     @staticmethod
     def on_any_event(event):
+        global __template__cache__
+        global __info__
         __template__cache__={}
         __info__ ={}
 def set_working_dir(working_dir):
@@ -97,12 +99,14 @@ def template(path_to_template,*args,**kwargs):
         app_name = fn.__module__.split('.')[0]
         def handler(request):
             global __working_dir__
+            global __app_url_path__
             import os
             setattr(request,"app_name",app_name)
             setattr(request, "view_template", path_to_template)
             setattr(request, "app_dir",os.path.join(__working_dir__,app_name))
             setattr(request, "full_template_path", os.path.join(__working_dir__, app_name,"html",path_to_template))
             setattr(request,"template",__request__render__(request,fn.__name__))
+            setattr(request,"app_url",__app_url_path__[app_name])
             return fn(request)
         # return fn
 

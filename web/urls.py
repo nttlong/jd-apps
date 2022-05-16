@@ -27,6 +27,7 @@ urlpatterns = [
 ]
 from django.conf.urls.static import static
 import web.settings
+import ReCompact.web
 #
 for app_name in ReEngine.info["APPS"].keys():
     try:
@@ -36,6 +37,7 @@ for app_name in ReEngine.info["APPS"].keys():
         staic_path_of_app = os.path.join(web.settings.BASE_DIR,app_name,"static")
         value = ReEngine.info["APPS"].get(app_name)
         urlpatterns += static(value+"static/", document_root=staic_path_of_app)
+        ReCompact.web.__app_url_path__[app_name]=value
     except Exception as e:
         print(f"load url of {app_name} is fail {e}")
 # handler404 = 'icase.views.icase_404_handler'

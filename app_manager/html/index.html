@@ -1,10 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="app">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <base href="http://172.16.9.78:8000/apps/">
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Files explorer</title>
+    <link rel="stylesheet" href="static/js/vendors/bootstrap.min.css" />
+    <script src="static/js/vendors/jquery.min.js"></script>
+    <script src="static/js/vendors/bootstrap.min.js"></script>
+
+    <script src="static/js/angular.min.js"></script>
+
+
 </head>
-<body>
-{{ request }}
+<body id="root" ng-controller="app">
+<div id="view">
+
+</div>
+<script type="module" defer>
+
+    import appModule from "./static/js/app.js"
+    import homeView from "./static/views/home.js"
+    var hs = homeView();
+    debugger;
+    await hs.render(document.getElementById("view"));
+
+
+
+</script>
+
 </body>
 </html>
