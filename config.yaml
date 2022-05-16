@@ -25,3 +25,4 @@ DATABASE:
 APPS:
   app_file_explorer: 'files/'
   api_files: 'api/files/'
+  app_manager: 'apps/'
