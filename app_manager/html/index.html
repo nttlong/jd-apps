@@ -20,12 +20,16 @@
 <div id="view">
 
 </div>
+<script>
+    window.abs_url = "{{request.host_url}}";
+    window.full_app_url = "{{request.full_app_url}}";
+</script>
 <script type="module" defer>
 
     import appModule from "./static/js/app.js"
     import homeView from "./static/views/home.js"
     var hs = homeView();
-    debugger;
+    await hs.getListOfApps();
     await hs.render(document.getElementById("view"));
 
 

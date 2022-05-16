@@ -100,13 +100,17 @@ def template(path_to_template,*args,**kwargs):
         def handler(request):
             global __working_dir__
             global __app_url_path__
+            import web.settings
             import os
+            setattr(request, "host_url", web.settings.ROOT_URL)
+            setattr(request, "full_url", web.settings.ROOT_URL+"/"+request.path)
             setattr(request,"app_name",app_name)
             setattr(request, "view_template", path_to_template)
             setattr(request, "app_dir",os.path.join(__working_dir__,app_name))
             setattr(request, "full_template_path", os.path.join(__working_dir__, app_name,"html",path_to_template))
             setattr(request,"template",__request__render__(request,fn.__name__))
             setattr(request,"app_url",__app_url_path__[app_name])
+            setattr(request, "full_app_url", web.settings.ROOT_URL+"/"+__app_url_path__[app_name])
             return fn(request)
         # return fn
 
