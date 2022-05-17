@@ -14,15 +14,15 @@ var homeView = await View(import.meta, class homeview extends BaseScope {
         
     }
     async start() {
-        urlWatching($("head base").attr("href"), (path) => {
+       await urlWatching($("head base").attr("href"),(path) => {
             
-            if (path.indexOf("/edit/") > -1) {
+            if (path[1]=="edit") {
                 $('main[role="main"]').hide();
                 import("./app_edit/index.js").then(r => {
-                    var appEditView = r.default;
-                    var hs = appEditView();
-                    hs.render(document.getElementById("home_view"));
-                })
+                    var view = r.default();
+                    view.doEditApp(path[2]).then();
+                    view.render(document.getElementById("home_view"));
+                });
                 
             }
             if (window.location.href == $("head base").attr("href")) {

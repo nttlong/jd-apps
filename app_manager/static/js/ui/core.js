@@ -29,14 +29,17 @@ function redirect(sub) {
         id: sub
     }, sub, sub)
 }
+function getPaths() {
+    return window.location.pathname.split('/');
+}
 var old_time_out = -1
-function urlWatching(base, onchange) {
+async function urlWatching(base, onchange) {
     if (old_time_out != -1)
         clearTimeout(old_time_out)
     var old_base = base;
     function start() {
         if (window.location.href != old_base) {
-            onchange(window.location.pathname)
+            onchange(window.location.pathname.split('/'))
             old_base = window.location.href;
         }
         old_time_out = setTimeout(start,100)
@@ -44,10 +47,14 @@ function urlWatching(base, onchange) {
     start();
 }
 function getModule(path) {
-    debugger;
-    $(`<script type="module" defer src="${path}">
-            debugger;
-            </script>`).appendTo("body");
+    return new Promise((r, e) => {
+        import(path).then(fx => {
+            r(fx)
+        }).catch(ex => {
+            e(ex)
+        })    
+    })
+    
 }
 function combine(A, BClass) {
     
@@ -179,4 +186,4 @@ function postId(view, id, callback) {
         callback();
     });
 }
-export { newScope, postId, BaseView, View, redirect, urlWatching, getModule }
+export { newScope, postId, BaseView, View, redirect, urlWatching, getModule, getPaths }
