@@ -29,6 +29,26 @@ function redirect(sub) {
         id: sub
     }, sub, sub)
 }
+var old_time_out = -1
+function urlWatching(base, onchange) {
+    if (old_time_out != -1)
+        clearTimeout(old_time_out)
+    var old_base = base;
+    function start() {
+        if (window.location.href != old_base) {
+            onchange(window.location.pathname)
+            old_base = window.location.href;
+        }
+        old_time_out = setTimeout(start,100)
+    }
+    start();
+}
+function getModule(path) {
+    debugger;
+    $(`<script type="module" defer src="${path}">
+            debugger;
+            </script>`).appendTo("body");
+}
 function combine(A, BClass) {
     
     var keys = getAllKeyOfProtoType(A.__proto__).concat(Object.keys(A));
@@ -159,4 +179,4 @@ function postId(view, id, callback) {
         callback();
     });
 }
-export { newScope, postId, BaseView, View, redirect }
+export { newScope, postId, BaseView, View, redirect, urlWatching, getModule }

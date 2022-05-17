@@ -129,8 +129,15 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
-
+import ReEngine
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+
+            ]
+for k,v in ReEngine.info["APPS"].items():
+    if v=="":
+        staic_path_of_app = os.path.join(BASE_DIR, k, "static")
+        STATICFILES_DIRS.append(staic_path_of_app)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
