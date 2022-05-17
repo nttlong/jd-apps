@@ -1,0 +1,14 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\html",
+    "\\static",
+    "\\static\\js",
+    "\\static\\js\\ui",
+    "\\static\\js\\vendors",
+    "\\static\\views",
+    "\\static\\views\\app_edit"
+  ],
+  "SelectedNode": "\\static\\views\\home.js",
+  "PreviewInSolutionExplorer": false
+}
