@@ -24,7 +24,11 @@ function getAllKeyOfProtoType(__proto__) {
     }
     return ret;
 }
-
+function redirect(sub) {
+    window.history.pushState({
+        id: sub
+    }, sub, sub)
+}
 function combine(A, BClass) {
     
     var keys = getAllKeyOfProtoType(A.__proto__).concat(Object.keys(A));
@@ -155,4 +159,4 @@ function postId(view, id, callback) {
         callback();
     });
 }
-export { newScope, postId, BaseView, View }
+export { newScope, postId, BaseView, View, redirect }

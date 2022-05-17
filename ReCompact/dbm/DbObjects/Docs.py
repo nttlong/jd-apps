@@ -162,7 +162,6 @@ class Fields(BaseFields):
     Mongodb parable document field example:
     Fields().Amount*Fields().Price will be compile to {'$multiply': ['$Amount', '$Price']}
     """
-
     def __getattr__(self, item):
         ret_field = None
         if self.__name__ != None:

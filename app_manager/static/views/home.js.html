@@ -15,7 +15,16 @@
 </header>
 <div class="container">
     <main role="main" class="pb-3" ng-cloak>
-        {{list}}
-        <button class="btn btn-danger" ng-click="doLogin().then()">Test</button>
+        <div ng-repeat="app in list">
+            <a href="javascript:void(0)" ng-click="doEdit(app.Name).then()">
+                <h4>
+                    {{app.Name}}
+                </h4>
+            </a>
+            
+            
+        </div>
+        
+        
     </main>
 </div>

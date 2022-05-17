@@ -138,3 +138,4 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SITE_ID=1
 ROOT_URL = "http://0.0.0.0:8000"
+LOGIN_URL = "auth/login"

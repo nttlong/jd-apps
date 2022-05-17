@@ -78,8 +78,8 @@ def aggregrate(db,object_type):
     return  Aggregrate(db,object_type)
 
 from . import Docs
-Filter = Docs.Fields()
-
+FILTER = Docs.Fields()
+FIELDS = Docs.Fields()
 class Aggregrate:
     def __init__(self,db,object_type):
         self.db = db
@@ -89,4 +89,15 @@ class Aggregrate:
     def __iter__(self):
         ret =self.mongo_collection.aggregate(self.pipeline)
         return ret
+    def sort(self,*args,**kwargs):
+        _sort ={}
+        if isinstance(args,tuple):
+            for x in args:
+                assert isinstance(x,dict)
+                for k,v in x.items():
+                    _sort[k]=v
+        self.pipeline.append({
+            "$sort":_sort
+        })
+        return self
 

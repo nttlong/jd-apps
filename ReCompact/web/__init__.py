@@ -97,7 +97,8 @@ def template(path_to_template,*args,**kwargs):
         fn = _args[0]
         module_name = fn.__module__
         app_name = fn.__module__.split('.')[0]
-        def handler(request):
+        def handler(*_args,**_kwargs):
+            request=_args[0]
             global __working_dir__
             global __app_url_path__
             import web.settings
