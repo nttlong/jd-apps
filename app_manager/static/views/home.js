@@ -26,7 +26,18 @@ var homeView = await View(import.meta, class homeview extends BaseScope {
                     $("#home_view").show();
                 });
                 
-           }
+            }
+            if (path[1] == "files") {
+                $('main[role="main"]').hide();
+                import("./files/index.js").then(r => {
+                    var view = r.default();
+                    view.doStartView(path[2]).then();
+                    debugger;
+                    view.render($("#home_view")[0]);
+                    $("#home_view").show();
+                });
+
+            }
            if (path[1] == "register") {
                $('main[role="main"]').hide();
                import("./app_edit/index.js").then(r => {
@@ -48,6 +59,9 @@ var homeView = await View(import.meta, class homeview extends BaseScope {
     }
     async doNew() {
         redirect("register")
+    }
+    async browserAllFiles() {
+        redirect("files")
     }
     async getListOfApps() {
         this.list = await api.post("apps/admin/list", {

@@ -8,6 +8,3 @@ def source(request,app_name,upload_id):
         upload_id,
         app_name
     ))
-@require_http_methods(["GET"])
-def directory(request,app_name,full_path):
-    return  HttpResponse("Xem hoac tai noi dung {} cau app {}".format(full_path,app_name))
