@@ -66,6 +66,14 @@ def __ob_set_attr__(*args,**kwargs):
 def __ob_get_attr__(*args,**kwargs):
     instance = args[0]
     attr_name = args[1]
+    if attr_name=="JSON_DATA":
+        from django.http import JsonResponse
+        return JsonResponse(dict(
+            data=instance.__fields__
+        ), safe=False)
+
+    if attr_name=="DICT":
+        return instance.__fields__
     assert isinstance(attr_name,str)
     obj_type= type(instance)
     if attr_name.__len__()>4 and attr_name[0:2]=="__" and attr_name[-2:]=="__":

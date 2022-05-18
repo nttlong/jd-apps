@@ -22,6 +22,33 @@ def create_app(request, data: api_apps.app_params.AppParam, error: ReCompact.api
     :return:
     """
     if error: return error.to_json()
+    error = ReCompact.api_input.Error()
+    import re
+    pat = re.compile(r"[A-Za-z][A-Za-z0-9\-_]+")
+    if not re.fullmatch(pat, data.Name):
+        error.raise_invalid_field("Name")
+        return error.to_json()
+    if data.Domain.lower() != "localhost":
+        regex_domain = "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)[A-Za-z]{2,6}"
+        pat = re.compile(regex_domain)
+        if not re.search(pat, data.Domain):
+            error.raise_invalid_field("Domain")
+            return error.to_json()
+    # khai báo regex kiểm tra url có hợp lệ hay không?
+    regex = re.compile(
+        r'^(?:http|ftp)s?://'  # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
+        r'localhost|'  # localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+        r'(?::\d+)?'  # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+
+    if not re.match(regex, data.LoginUrl) is not None:
+        error.raise_invalid_field("LoginUrl")
+        return error.to_json()
+    if not re.match(regex, data.ReturnUrlAfterSignIn) is not None:
+        error.raise_invalid_field("ReturnUrlAfterSignIn")
+        return error.to_json()
     db = ReCompact.db_context.get_db()
     app = ReCompact.dbm.DbObjects.find_to_object(
         db,  # Căn cứ vào database
@@ -29,29 +56,33 @@ def create_app(request, data: api_apps.app_params.AppParam, error: ReCompact.api
         ReCompact.dbm.FILTER.Name == data.Name  # Tìm app thep tên
     )
     if app is None:
-        error = ReCompact.api_input.Error()
-        import re
-        pat = re.compile(r"[A-Za-z][A-Za-z0-9\-]+")
-        if not re.fullmatch(pat, data.Name):
-            error.raise_invalid_field("Name")
-            return error.to_json()
-        if data.Domain.lower()!="localhost":
-            pat = re.compile(r"/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/")
-            if not re.fullmatch(pat, data.Domain):
-                error.raise_invalid_field("Domain")
-                return error.to_json()
+        import uuid
+        data_item = api_models.ModelApps.sys_applications(
+            _id=str(uuid.uuid4()),
+            Name=data.Name,
+            Domain=data.Domain,
+            LoginUrl=data.LoginUrl,
+            ReturnUrlAfterSignIn=data.ReturnUrlAfterSignIn,
+            SecretKey = str(uuid.uuid4())
 
-    ReCompact.dbm.DbObjects.update(
-        db,
-        api_models.ModelApps.sys_applications,
-        ReCompact.dbm.FILTER.Name == data.Name,
-        ReCompact.dbm.SET(
-            ReCompact.dbm.FIELDS.LoginUrl == data.LoginUrl,
-            ReCompact.dbm.FIELDS.ReturnUrlAfterSignIn == data.ReturnUrlAfterSignIn
         )
-    )
+        ReCompact.dbm.DbObjects.insert(
+            db,
+            data_item
 
-    pass
+        )
+        return data_item.JSON_DATA
+    else:
+        ReCompact.dbm.DbObjects.update(
+            db,
+            api_models.ModelApps.sys_applications,
+            ReCompact.dbm.FILTER.Name == data.Name,
+            ReCompact.dbm.SET(
+                ReCompact.dbm.FIELDS.LoginUrl == data.LoginUrl,
+                ReCompact.dbm.FIELDS.ReturnUrlAfterSignIn == data.ReturnUrlAfterSignIn
+            )
+        )
+        return data.JSON_DATA
 
 
 my_post = "POST"
