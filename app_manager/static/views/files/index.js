@@ -34,5 +34,14 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
         });
         this.$applyAsync();
     }
+    async doOpenInWindows(item) {
+        var r = await import("../player/index.js");
+        var player = r.default();
+        player.playByItem(item);
+        player.asWindow();
+       
+        
+        
+    }
 });
 export default filesView;

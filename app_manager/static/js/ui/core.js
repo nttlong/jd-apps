@@ -1,5 +1,5 @@
 ﻿
-
+import { ui_window } from "./ui_window.js";
 var callbackList = [];
 function fecthHtml(url) {
     return new Promise(function (resole, reject) {
@@ -119,6 +119,13 @@ class BaseView {
         this.$elements.appendTo(ele);
         this.$applyAsync();
     }
+    async asWindow() {
+        var win = new ui_window();
+        var tmpDir = $("<div></div>");
+        await this.render(tmpDir[0]);
+        win.setBody(tmpDir[0]);
+        win.show();
+    }
     onInit() {
         console.log(this.__proto__.constructor.name + " has init");
     }
@@ -187,6 +194,29 @@ function postId(view, id, callback) {
     });
 }
 function msgError(msg) {
-    alert(msg)
+    $.toast({
+        text: msg,
+        showHideTransition: 'slide',  // It can be plain, fade or slide
+        bgColor: 'red',              // Background color for toast
+        textColor: '#fff',            // text color
+        allowToastClose: false,       // Show the close button or not
+        hideAfter: 5000,              // `false` to make it sticky or time in miliseconds to hide after
+        stack: 5,                     // `fakse` to show one stack at a time count showing the number of toasts that can be shown at once
+        textAlign: 'left',            // Alignment of text i.e. left, right, center
+        position: 'top-center'       // bottom-left or bottom-right or bottom-center or top-left or top-right or top-center or mid-center or an object representing the left, right, top, bottom values to position the toast on page
+    })
 }
-export { msgError, newScope, postId, BaseView, View, redirect, urlWatching, getModule, getPaths }
+function msgOK(msg) {
+    $.toast({
+        text: msg,
+        showHideTransition: 'slide',  // It can be plain, fade or slide
+        bgColor: 'blue',              // Background color for toast
+        textColor: '#fff',            // text color
+        allowToastClose: false,       // Show the close button or not
+        hideAfter: 5000,              // `false` to make it sticky or time in miliseconds to hide after
+        stack: 5,                     // `fakse` to show one stack at a time count showing the number of toasts that can be shown at once
+        textAlign: 'left',            // Alignment of text i.e. left, right, center
+        position: 'top-center'       // bottom-left or bottom-right or bottom-center or top-left or top-right or top-center or mid-center or an object representing the left, right, top, bottom values to position the toast on page
+    })
+}
+export { msgOK,msgError, newScope, postId, BaseView, View, redirect, urlWatching, getModule, getPaths }

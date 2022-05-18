@@ -3,6 +3,7 @@ import { ui_html } from "./ui_html.js";
 import { ui_resource } from "./ui_resource.js";
 import { ui_events } from "./ui_events.js";
 import { ui_linear } from "./ui_linear.js";
+import { ui_layouts } from "./ui_layouts.js";
 var defaultConfig = {
     toolbar: {
         item: {
@@ -445,7 +446,7 @@ class ui_window extends ui_container {
             zIndex: "1"
         });
         this._bodyWind.layoutColumns();
-        q.layouts.dockFull(this._winBodyEle);
+        ui_layouts.dockFull(this._winBodyEle);
     }
     onShow(cb) {
         console.log(this._onShow);

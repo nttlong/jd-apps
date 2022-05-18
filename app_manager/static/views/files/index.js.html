@@ -5,12 +5,14 @@
             left:0;
             top:0;
             right:0;
+            padding:10px;
             
         }
         .title {
             white-space:nowrap;
             overflow:hidden;
-            text-overflow:ellipsis
+            text-overflow:ellipsis;
+            width:100%;
 
         }
         .grid-container {
@@ -37,17 +39,31 @@
     </div>
     <div>
         <div class="row">
-            <div class="col-6" ng-repeat="p in listOfFiles">
-                <div class="grid-container">
-                    <!--<div style="min-width:120px;min-height:220px">
-                        <img style="min-width:120px"/>
-                    </div>-->
-                    <div style="width:auto">
-                        <div class="row">
-                            <div class="col-12 title">
-                                <a ng-href="{{p.UrlOfServerPath}}"  target="_blank">{{p.FileName}}</a>
+            <div class="col-6 " ng-repeat="p in listOfFiles" style="overflow:hidden">
+                <div class="layout-rows">
+                    <div style="min-width:120px" class="">
+                        <div style="min-width:120px;min-height:120px">
+                            <img style="min-width:120px" />
+                        </div>
+                    </div>
+                    <div class="dock full ">
+                        <div class="row ">
+                            <div class="title">
+                                <a ng-if="p.MimeType.indexOf('video/')==0" href="javascript:void(0);" ng-click="doOpenInWindows(p).then()">
+                                    {{p.FileName}}
+                                </a>
+
+                                <a ng-if="p.MimeType.indexOf('video/')!=0" ng-href="{{p.UrlOfServerPath}}" target="_blank">{{p.FileName}}</a>
                             </div>
-                            
+
+                        </div>
+                        <div class="row">
+                            <div class="col-6 title">
+                                <a>File Size</a>
+                            </div>
+                            <div class="col-6">
+                                {{p.SizeInHumanReadable}}
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-6 title">
@@ -58,7 +74,9 @@
                             </div>
                         </div>
                     </div>
+                    </div>
                 </div>
+                
                 
                 
             </div>

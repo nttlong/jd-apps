@@ -23,7 +23,7 @@ def get_list(request,app_name):
             dict(
                 FileName=x["FileName"],
                 FileExt =x ["FileExt"],
-                MimeType =x ["MimeType"],
+                MimeType =x.get("MimeType",None),
                 RegisterOn =x ["RegisterOn"],
                 SizeInHumanReadable =x["SizeInHumanReadable"],
                 UrlOfServerPath =f"{request._current_scheme_host}/api/files/{app_name}/directory/{x['FullFileName']}"

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="app">
+<html lang="en" ng-app="app" style="overflow:hidden">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -9,15 +9,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Files explorer</title>
     <link rel="stylesheet" href="static/js/vendors/bootstrap.min.css" />
+    <link rel="stylesheet" href="static/js/vendors/jquery.toast.css" />
+    <link rel="stylesheet" href="static/css/site.css" />
     <script src="static/js/vendors/jquery.min.js"></script>
-    
+    <script src="static/js/vendors/jquery.toast.js"></script>
     <script src="static/js/vendors/bootstrap.min.js"></script>
 
     <script src="static/js/angular.min.js"></script>
 
 
 </head>
-<body id="root" ng-controller="app">
+<body id="root" ng-controller="app" style="position:fixed;left:0;right:0;top:0;bottom:0;overflow-y:auto">
 <div id="view">
 
 </div>
@@ -38,6 +40,13 @@
 
 
 </script>
-
+    <script>
+        $(window).resize(function () {
+            $("body").height($(window).height())
+        });
+        $(document).ready(function () {
+            $("body").height($(window).height())
+        })
+    </script>
 </body>
 </html>
