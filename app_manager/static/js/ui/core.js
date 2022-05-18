@@ -186,4 +186,7 @@ function postId(view, id, callback) {
         callback();
     });
 }
-export { newScope, postId, BaseView, View, redirect, urlWatching, getModule, getPaths }
+function msgError(msg) {
+    alert(msg)
+}
+export { msgError, newScope, postId, BaseView, View, redirect, urlWatching, getModule, getPaths }

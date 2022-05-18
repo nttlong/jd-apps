@@ -83,7 +83,7 @@ class __request__render__:
         t = Template(html_template)
         c = Context(self.__model__)
         html = t.render(c)
-        return HttpResponse(html)
+        return HttpResponse(html,content_type='text/html')
 
 
 

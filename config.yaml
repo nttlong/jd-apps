@@ -23,10 +23,13 @@ DATABASE:
         propagate: False
 
 APPS:
-  app_file_explorer: 'files/'
   api_files: 'api/files/'
   api_apps: 'api/apps/'
   app_manager: ''
   app_auth: 'auth/'
+  app_file_explorer: 'files/'
+
+
+
 ROOT_URL: "http://172.16.9.78:8000"
 LOGIN_URL: "auth/login"

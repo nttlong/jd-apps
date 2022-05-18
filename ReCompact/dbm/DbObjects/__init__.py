@@ -1,5 +1,13 @@
 import asyncio
+
+
 def __get_col__(db, data_item_type):
+    """
+    Get Mongodb Collection base on mongodb model
+    :param db:
+    :param data_item_type:
+    :return:
+    """
     import pymongo
     coll_name = data_item_type.__meta__.table_name
     coll = db.get_collection(coll_name)
@@ -29,21 +37,29 @@ def __get_col__(db, data_item_type):
                 indexs
             )
     return coll
+
+
+def update(db,data_item_type, filter, updator):
+    import pymongo
+    import ReCompact.dbm
+    assert isinstance(db, pymongo.mongo_client.database.Database), 'db must be pymongo.mongo_client.database'
+    assert isinstance(filter, Docs.Fields), 'filter must be ReCompact.dbm.DbObject.Filter'
+    assert isinstance(updator,ReCompact.dbm.SET) , 'filter must be ReCompact.dbm.SET'
+    coll = __get_col__(db, data_item_type)
+    ret = coll.update_many(filter.to_mongodb(),updator.to_mongodb())
+    return ret
+
+
 def insert(db, data_item):
     import pymongo
-    assert isinstance(db, pymongo.mongo_client.database.Database),'db must be pymongo.mongo_client.database'
+    assert isinstance(db, pymongo.mongo_client.database.Database), 'db must be pymongo.mongo_client.database'
     data_item_type = type(data_item)
-    coll = __get_col__(db,data_item_type)
-    coll.insert(data_item.__dict__["__fields__"])
-def find_to_objects(db,data_item_type,filter):
-    import pymongo
-    assert isinstance(db,pymongo.mongo_client.database.Database),f'db must be pymongo.mongo_client.database.Database'
-    assert isinstance(filter,Docs.Fields), 'filter must be ReCompact.dbm.DbObject.Filter'
-    coll= __get_col__(db,data_item_type)
-    ret = coll.find(filter.to_mongodb())
-    for x in list(ret):
-        yield data_item_type(x)
-async def find_to_objects_async(db,data_item_type,filter):
+    coll = __get_col__(db, data_item_type)
+    ret = coll.insert(data_item.__dict__["__fields__"])
+    return ret
+
+
+def find_to_objects(db, data_item_type, filter):
     import pymongo
     assert isinstance(db, pymongo.mongo_client.database.Database), f'db must be pymongo.mongo_client.database.Database'
     assert isinstance(filter, Docs.Fields), 'filter must be ReCompact.dbm.DbObject.Filter'
@@ -52,52 +68,73 @@ async def find_to_objects_async(db,data_item_type,filter):
     for x in list(ret):
         yield data_item_type(x)
 
-def find_to_object(db,data_item_type,filter):
+
+async def find_to_objects_async(db, data_item_type, filter):
     import pymongo
-    assert isinstance(db,pymongo.mongo_client.database.Database),f'db must be pymongo.mongo_client.database.Database'
-    assert isinstance(filter,Docs.Fields), 'filter must be ReCompact.dbm.DbObject.Filter'
-    coll= __get_col__(db,data_item_type)
+    assert isinstance(db, pymongo.mongo_client.database.Database), f'db must be pymongo.mongo_client.database.Database'
+    assert isinstance(filter, Docs.Fields), 'filter must be ReCompact.dbm.DbObject.Filter'
+    coll = __get_col__(db, data_item_type)
+    ret = coll.find(filter.to_mongodb())
+    for x in list(ret):
+        yield data_item_type(x)
+
+
+def find_to_object(db, data_item_type, filter):
+    import pymongo
+    assert isinstance(db, pymongo.mongo_client.database.Database), f'db must be pymongo.mongo_client.database.Database'
+    assert isinstance(filter, Docs.Fields), 'filter must be ReCompact.dbm.DbObject.Filter'
+    coll = __get_col__(db, data_item_type)
     ret = coll.find_one(filter.to_mongodb())
+    if ret is None:
+        return None
     return data_item_type(ret)
-def find_to_dict(db,data_item_type,filter):
+
+
+def find_to_dict(db, data_item_type, filter):
     import pymongo
-    assert isinstance(db,pymongo.mongo_client.database.Database),f'db must be pymongo.mongo_client.database.Database'
-    assert isinstance(filter,Docs.Fields), 'filter must be ReCompact.dbm.DbObject.Filter'
-    coll= __get_col__(db,data_item_type)
+    assert isinstance(db, pymongo.mongo_client.database.Database), f'db must be pymongo.mongo_client.database.Database'
+    assert isinstance(filter, Docs.Fields), 'filter must be ReCompact.dbm.DbObject.Filter'
+    coll = __get_col__(db, data_item_type)
     return coll.find(filter.to_mongodb())
 
 
-def find_one_to_dict(db,data_item_type,filter):
+def find_one_to_dict(db, data_item_type, filter):
     import pymongo
-    assert isinstance(db,pymongo.mongo_client.database.Database),f'db must be pymongo.mongo_client.database.Database'
-    assert isinstance(filter,Docs.Fields), 'filter must be ReCompact.dbm.DbObject.Filter'
-    coll= __get_col__(db,data_item_type)
+    assert isinstance(db, pymongo.mongo_client.database.Database), f'db must be pymongo.mongo_client.database.Database'
+    assert isinstance(filter, Docs.Fields), 'filter must be ReCompact.dbm.DbObject.Filter'
+    coll = __get_col__(db, data_item_type)
     return coll.find_one(filter.to_mongodb())
 
-def aggregrate(db,object_type):
-    return  Aggregrate(db,object_type)
+
+def aggregrate(db, object_type):
+    return Aggregrate(db, object_type)
+
 
 from . import Docs
+
 FILTER = Docs.Fields()
 FIELDS = Docs.Fields()
+
+
 class Aggregrate:
-    def __init__(self,db,object_type):
+    def __init__(self, db, object_type):
         self.db = db
-        self.object_type= object_type
-        self.mongo_collection= __get_col__(db,object_type)
-        self.pipeline=[]
+        self.object_type = object_type
+        self.mongo_collection = __get_col__(db, object_type)
+        self.pipeline = []
+
     def __iter__(self):
-        ret =self.mongo_collection.aggregate(self.pipeline)
+        ret = self.mongo_collection.aggregate(self.pipeline)
         return ret
-    def sort(self,*args,**kwargs):
-        _sort ={}
-        if isinstance(args,tuple):
+
+    def sort(self, *args, **kwargs):
+        _sort = {}
+        if isinstance(args, tuple):
             for x in args:
-                assert isinstance(x,dict)
-                for k,v in x.items():
-                    _sort[k]=v
+                assert isinstance(x, dict)
+                for k, v in x.items():
+                    _sort[k] = v
         self.pipeline.append({
-            "$sort":_sort
+            "$sort": _sort
         })
         return self
-

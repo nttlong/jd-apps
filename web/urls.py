@@ -33,27 +33,23 @@ for app_name in ReEngine.info["APPS"].keys():
     value = ReEngine.info["APPS"].get(app_name)
     staic_path_of_app = os.path.join(web.settings.BASE_DIR, app_name, "static")
     try:
-        if value!= "":
-
-
-            urlpatterns += static(value+"static/", document_root=staic_path_of_app)
-        else:
-            import web.settings
-            web.settings.STATICFILES_DIRS=[staic_path_of_app]
+        if isinstance(value,str) and not value.startswith("api/"):
+            if value!= "":
+                urlpatterns += static(value+"static/", document_root=staic_path_of_app)
+            else:
+                import web.settings
+                web.settings.STATICFILES_DIRS=[staic_path_of_app]
 
             # urlpatterns += static("/static/", document_root=staic_path_of_app)
 
     except Exception as e:
         print(f"load url of {app_name} is fail {e}")
 for app_name in ReEngine.info["APPS"].keys():
-    try:
-        urlpatterns.append(
-           path(ReEngine.info["APPS"][app_name],include("{}.urls".format(app_name)))
-        )
-        staic_path_of_app = os.path.join(web.settings.BASE_DIR,app_name,"static")
-        value = ReEngine.info["APPS"].get(app_name)
-        # urlpatterns += static(value+"static/", document_root=staic_path_of_app)
-        ReCompact.web.__app_url_path__[app_name]=value
-    except Exception as e:
-        print(f"load url of {app_name} is fail {e}")
+    urlpatterns.append(
+        path(ReEngine.info["APPS"][app_name], include("{}.urls".format(app_name)))
+    )
+    # staic_path_of_app = os.path.join(web.settings.BASE_DIR,app_name,"static")
+    value = ReEngine.info["APPS"].get(app_name)
+    # urlpatterns += static(value+"static/", document_root=staic_path_of_app)
+    ReCompact.web.__app_url_path__[app_name] = value
 # handler404 = 'icase.views.icase_404_handler'

@@ -18,16 +18,24 @@
 
     </div>
     <main role="main" class="pb-3" ng-cloak>
-        <div ng-repeat="app in list">
-            <a href="javascript:void(0)" ng-click="doEdit(app.Name).then()">
-                <h4>
+        <div class="row">
+            <div ng-repeat="app in list" class="col-4">
+                <a href="javascript:void(0)" ng-click="doEdit(app.Name).then()">
                     {{app.Name}}
-                </h4>
-            </a>
-            
-            
+                </a>
+
+
+            </div>
         </div>
         
+        <div class="row">
+            <div class="col-12">
+                <div class="pull-right">
+                    <input type="button" value="Register new app" class="btn btn-primary"  ng-click="doNew(app.Name).then()" />
+                </div>
+               
+            </div>
+        </div>
         
     </main>
 </div>

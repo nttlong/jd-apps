@@ -10,24 +10,7 @@
     <title>Files explorer</title>
     <link rel="stylesheet" href="static/js/vendors/bootstrap.min.css" />
     <script src="static/js/vendors/jquery.min.js"></script>
-    <!--<script src="static/js/vendors/require.js"></script>
-    <script>
-        require.config({
-            baseUrl: "{{request.full_app_url}}",
-            paths: {
-                "some": "some/v1.0"
-            },
-            waitSeconds: 15
-        });
-        //require(["some/module", "my/module", "a.js", "b.js"],
-        //    function (someModule, myModule) {
-        //        //This function will be called when all the dependencies
-        //        //listed above are loaded. Note that this function could
-        //        //be called before the page is loaded.
-        //        //This callback is optional.
-        //    }
-        //);
-    </script>-->
+    
     <script src="static/js/vendors/bootstrap.min.js"></script>
 
     <script src="static/js/angular.min.js"></script>
@@ -39,6 +22,7 @@
 
 </div>
 <script>
+    window.token = "Token";
     window.abs_url = "{{request.host_url}}";
     window.full_app_url = "{{request.full_app_url}}";
 </script>

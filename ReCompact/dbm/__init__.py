@@ -100,4 +100,19 @@ def __on__init__(*args,**kwargs):
             instance.__dict__["__fields__"]=dict()
         instance.__dict__["__fields__"][k]=v
 
+from  .DbObjects import Docs
+FILTER = Docs.Fields()
+FIELDS = Docs.Fields()
+class SET:
+    def __init__(self,*args,**kwargs):
+        self.mongo_set ={}
+        if isinstance(args,tuple):
+            for x in args:
+                for k,v in x.to_mongodb().items():
+                    self.mongo_set[k]= v
+    def to_mongodb(self):
+        return {
+            "$set":self.mongo_set
+        }
+
 

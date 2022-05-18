@@ -14,17 +14,29 @@ var homeView = await View(import.meta, class homeview extends BaseScope {
         
     }
     async start() {
-       await urlWatching($("head base").attr("href"),(path) => {
-            
+        await urlWatching($("head base").attr("href"), (path) => {
+            $("#home_view").empty();
             if (path[1]=="edit") {
                 $('main[role="main"]').hide();
                 import("./app_edit/index.js").then(r => {
                     var view = r.default();
                     view.doEditApp(path[2]).then();
-                    view.render(document.getElementById("home_view"));
+                    debugger;
+                    view.render($("#home_view")[0]);
+                    $("#home_view").show();
                 });
                 
-            }
+           }
+           if (path[1] == "register") {
+               $('main[role="main"]').hide();
+               import("./app_edit/index.js").then(r => {
+                   var view = r.default();
+                   view.doNewApp(path[2]).then();
+                   view.render($("#home_view")[0]);
+                   $("#home_view").show();
+               });
+
+           }
             if (window.location.href == $("head base").attr("href")) {
                 $("#home_view").hide();
                 $('main[role="main"]').show();
@@ -34,9 +46,12 @@ var homeView = await View(import.meta, class homeview extends BaseScope {
     async doEdit(appName) {
         redirect("edit/" + appName)
     }
+    async doNew() {
+        redirect("register")
+    }
     async getListOfApps() {
         this.list = await api.post("apps/admin/list", {
-            token:"ABC"
+            Token: window.token
         });
         this.$applyAsync();
         

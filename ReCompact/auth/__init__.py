@@ -30,10 +30,13 @@ def validator(is_public=False, *args,**kwargs):
                     break
             if not is_public:
                 import jwt
+                data_body ={}
+                if not hasattr(request,"data_body"):
+                    data_body = json.loads(request.body.decode("utf-8"))
+                else:
+                    data_body = getattr(request,"data_body")
 
-
-                data_body = json.loads(request.body.decode("utf-8"))
-                if not data_body.get("token",None):
+                if not data_body.get("Token",None):
                     return HttpResponse('401 Unauthorized', status=401)
                 else:
                     setattr(request,"data_body",data_body)
@@ -47,3 +50,4 @@ def validator(is_public=False, *args,**kwargs):
 
     current_handler =ret
     return ret
+
