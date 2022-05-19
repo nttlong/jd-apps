@@ -52,6 +52,7 @@ def get_list(request,app_name,data:Filter,error:ReCompact.api_input.Error):
             )
         ret+=[
             dict(
+                Status =x["Status"],
                 FileName=x["FileName"],
                 FileExt =x ["FileExt"],
                 MimeType =x.get("MimeType",mimetypes.guess_type(x["FileName"])[0]),

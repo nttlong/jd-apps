@@ -55,10 +55,11 @@ class api {
             }
             formData.append('data', JSON.stringify(checkData.data))
 
-            fetch(url, {
+            var fetcher = await fetch(url, {
                 method: 'POST',
                 body: formData
-            })
+            });
+            return await fetcher.json();
         }
 
     }

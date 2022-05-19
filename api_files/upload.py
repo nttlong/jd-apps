@@ -13,7 +13,7 @@ import pathlib
 import humanize
 import openxmllib
 import mimetypes
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.uploadedfile import UploadedFile
 
 
 class UploadInfo:
@@ -26,7 +26,7 @@ class UploadInfo:
     IsPublic = (bool, True) # Công khai hay phải login
     ThumbWidth = int # Độ rộng ảnh Thumb, có cũng được không có cũng chả sao, vì một số tệp làm gì có ảnh Thumb
     ThumbHeight = int # Độ cao ảnh Thumb, có cũng được không có cũng chả sao
-    ThumbFile = InMemoryUploadedFile # Nếu thích thì đính kèm ảnh thumb lúc upload
+    ThumbFile = UploadedFile # Nếu thích thì đính kèm ảnh thumb lúc upload
 
 
 class UploadChunk:
@@ -35,7 +35,7 @@ class UploadChunk:
     """
     UploadId = (str, True)
     Index = (int, True)
-    FilePart = (InMemoryUploadedFile, True)
+    FilePart = (UploadedFile, True)
 
 
 @require_http_methods(["POST"])
@@ -96,7 +96,7 @@ def register(request, app_name, upload_info: UploadInfo, error: ReCompact.api_in
 def chunk(request, app_name, chunk_info: UploadChunk, error: ReCompact.api_input.Error):
     if error:
         return error.to_error_500()
-
+    Status = 0
     db =ReCompact.db_context.get_db(app_name)
     upload_item = ReCompact.dbm.DbObjects.find_to_object(
         db,
@@ -110,6 +110,7 @@ def chunk(request, app_name, chunk_info: UploadChunk, error: ReCompact.api_input
         return error.to_error_500()
     SizeUploaded = upload_item.SizeUploaded
     NumOfChunksCompleted = upload_item.NumOfChunksCompleted
+    fs_id= None
     if chunk_info.Index == 0:
         fs = ReCompact.db_context.mongodb_file_create(
             db,
@@ -117,14 +118,25 @@ def chunk(request, app_name, chunk_info: UploadChunk, error: ReCompact.api_input
             chunk_size=upload_item.ChunkSizeInBytes,
             file_size=upload_item.SizeInBytes
         )
-    assert isinstance(chunk_info.FilePart,InMemoryUploadedFile)
+        ReCompact.dbm.DbObjects.update(
+            db,
+            api_models.Model_Files.DocUploadRegister,
+            ReCompact.dbm.FILTER._id == upload_item._id,
+            ReCompact.dbm.SET(
+                ReCompact.dbm.FIELDS.MainFileId == fs._id
+            )
+        )
+        fs_id=fs._id
+    else:
+        fs_id = upload_item.MainFileId
+    assert isinstance(chunk_info.FilePart,UploadedFile)
     with chunk_info.FilePart.open("rb") as f:
         data =f.read()
         assert isinstance(data,bytes)
         SizeUploaded+=data.__len__()
         ReCompact.db_context.mongodb_file_add_chunks(
             db,
-            fs,
+            fs_id,
             chunk_info.Index,
             data
         )
@@ -147,10 +159,13 @@ def chunk(request, app_name, chunk_info: UploadChunk, error: ReCompact.api_input
     upload_item.PercentageOfUploaded = PercentageOfUploaded
     upload_item.NumOfChunksCompleted = NumOfChunksCompleted
 
-    return JsonResponse(dict(
+    ret_dict =dict(
         Percent=PercentageOfUploaded,
-        PercentText = humanize.filesize.naturalsize(PercentageOfUploaded),
+        SizeUploadedInHumanReadable = humanize.filesize.naturalsize(SizeUploaded),
         Status=Status
-    ))
+    )
+
+    ret_h =JsonResponse(ret_dict,safe=True)
+    return ret_h
 
 

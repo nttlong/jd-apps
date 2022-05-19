@@ -6,7 +6,8 @@ import api from "../../js/ClientApi/api.js"
 import { redirect, urlWatching, getPaths, msgError } from "../../js/ui/core.js"
 
 var uploadFileView = await View(import.meta, class UploadFileView extends BaseScope {
-    appName=""
+    appName = ""
+    info = {}
     setApp(appName) {
         this.appName = appName;
     }
@@ -23,14 +24,23 @@ var uploadFileView = await View(import.meta, class UploadFileView extends BaseSc
             var reg = await api.post(`files/${this.appName}/upload/register`, {
                 FileName: fileUpload.name,
                 FileSize: fileUpload.size,
-                ChunkSizeInKB: 1024 * 2,
+                ChunkSizeInKB: 1024 * 4,
                 IsPublic: false
             });
-            var chunk = await api.post(`files/${this.appName}/upload/chunk`, {
-                UploadId: reg._id,
-                Index: 0,
-                FilePart: fileUpload
-            });
+            
+            for (var i = 0; i < reg.NumOfChunks; i ++) {
+                var start = i * reg.ChunkSizeInBytes;
+                var end = Math.min((i + 1) * reg.ChunkSizeInBytes, fileUpload.size);
+                var filePartBlog = fileUpload.slice(start, end)
+                var filePart = new File([filePartBlog], fileUpload.name);
+                var chunk = await api.post(`files/${this.appName}/upload/chunk`, {
+                    UploadId: reg._id,
+                    Index: i,
+                    FilePart: filePart
+                });
+                this.info = chunk;
+                this.$applyAsync();
+            }
         }
         catch (ex) {
             alert(ex);

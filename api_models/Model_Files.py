@@ -34,3 +34,4 @@ class DocUploadRegister:
     MimeType = ReCompact.dbm.field(data_type=str, is_require=False)
     SizeUploaded =ReCompact.dbm.field(data_type=int,is_require=True)
     NumOfChunksCompleted = ReCompact.dbm.field(data_type=int, is_require=True)
+    MainFileId = ReCompact.dbm.field(data_type=bson.ObjectId)

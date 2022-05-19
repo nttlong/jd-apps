@@ -83,14 +83,15 @@ def mongodb_file_create(
 
 def mongodb_file_add_chunks(
         db: pymongo.database.Database,
-        fs,
+        fs_id:bson.ObjectId,
         chunk_index:int,
         data:bytes
         ):
+    assert isinstance(fs_id,bson.ObjectId)
     fs_chunks = db.get_collection("fs.chunks")
     fs_chunks.insert_one({
         "_id": bson.objectid.ObjectId(),
-        "files_id": fs._id,
+        "files_id": fs_id,
         "n": chunk_index,
         "data": data
     })

@@ -90,7 +90,7 @@ def map_param(cls_params):
 
         def re_handler(*x, **y):
             from django.utils.datastructures import MultiValueDict
-            from django.core.files.uploadedfile import InMemoryUploadedFile
+            from django.core.files.uploadedfile import InMemoryUploadedFile,TemporaryUploadedFile,UploadedFile
             import json
             request = x[0]
             post_data = {}
@@ -99,8 +99,10 @@ def map_param(cls_params):
                 post_data_txt = request.POST["data"]
                 post_data = json.loads(post_data_txt)
                 for k, v in request.FILES.items():
-                    assert isinstance(v, InMemoryUploadedFile)
-                    post_data[k] = v
+                    if type(v) in [InMemoryUploadedFile,TemporaryUploadedFile,UploadedFile]:
+                        post_data[k] = v
+                    else:
+                        fx = v
 
             else:
                 post_data_txt = request.body.decode("utf-8")
