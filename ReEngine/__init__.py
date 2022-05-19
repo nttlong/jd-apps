@@ -1,3 +1,5 @@
+import os.path
+
 import yaml
 info = None
 def init(yaml_config_path:str):
@@ -37,4 +39,10 @@ def apply_settings(attr_value=None):
                 setattr(settings,k,v)
             except Exception as e:
                 raise Exception("Fail to load '{} in settings".format(k))
+    settings.TEMP_UPLOAD_DIR=settings.TEMP_UPLOAD_DIR.replace('/',os.sep)
+    if not os.path.isdir(settings.TEMP_UPLOAD_DIR):
+        raise Exception(f"{settings.TEMP_UPLOAD_DIR} was not found. The directory serve for file upload temporary")
+    settings.TEMP_UNZIP_DIR = settings.TEMP_UNZIP_DIR.replace('/', os.sep)
+    if not os.path.isdir(settings.TEMP_UNZIP_DIR):
+        raise Exception(f"{settings.TEMP_UNZIP_DIR} was not found. The directory serve for uncompress file")
 

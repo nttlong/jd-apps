@@ -33,3 +33,5 @@ APPS:
 
 ROOT_URL: "http://172.16.9.78:8000"
 LOGIN_URL: "auth/login"
+TEMP_UPLOAD_DIR: "//192.168.18.36/Share/DjangoWeb"
+TEMP_UNZIP_DIR: "//192.168.18.36/Share/UnzipDjangoWeb"

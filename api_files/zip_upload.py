@@ -132,7 +132,7 @@ def chunk(request, app_name, chunk_info: UploadChunk, error: ReCompact.api_input
                 ReCompact.dbm.FIELDS.MainFileId == fs._id
             )
         )
-        fs_id=fs._id
+        fs_id= fs.id
     else:
         fs_id = upload_item.MainFileId
     assert isinstance(chunk_info.FilePart,UploadedFile)
@@ -151,6 +151,12 @@ def chunk(request, app_name, chunk_info: UploadChunk, error: ReCompact.api_input
     NumOfChunksCompleted+=1
     if NumOfChunksCompleted== upload_item.NumOfChunks:
         Status=1
+        import ReCompact.unzip_process
+        ReCompact.unzip_process.start(
+            app_name=app_name,
+            path_to_file = temp_upload_file,
+            upload_id= upload_item._id,
+            db=db)
     ReCompact.dbm.DbObjects.update(
         db,
         api_models.Model_Files.DocUploadRegister,

@@ -149,3 +149,5 @@ SITE_ID=1
 ROOT_URL = "http://0.0.0.0:8000"
 LOGIN_URL = "auth/login"
 CORS_ALLOW_ALL_ORIGINS = True
+TEMP_UPLOAD_DIR =r'\\192.168.18.36\Share\DjangoWeb'
+TEMP_UNZIP_DIR = r'\\192.168.18.36\Share\UnzipDjangoWeb'

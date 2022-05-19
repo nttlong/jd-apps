@@ -14,8 +14,12 @@ def source(request,app_name,full_path):
         ReCompact.dbm.FILTER.FullFileName == full_path
 
     )
+    fs= None
     server_file_name = upload_item["ServerFileName"]
-    fs = ReCompact.db_context.get_mongodb_file_by_file_name(db,server_file_name)
+    if upload_item.get("MainFileId",None):
+        fs = ReCompact.db_context.get_mongodb_file_by_file_id(db,upload_item.get("MainFileId",None))
+    else:
+        fs = ReCompact.db_context.get_mongodb_file_by_file_name(db,server_file_name)
     ReCompact.HttpStream.streaming_mongo_db_fs(request,fs)
 
     return  ReCompact.HttpStream.streaming_mongo_db_fs(request,fs)

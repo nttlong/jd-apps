@@ -1,0 +1,26 @@
+<div style="width:700px" class="layout-rows">
+    <div style="width:200px">
+
+    </div>
+    <div class="dock full debug">
+        <div class="row">
+            <div class="col-4">
+                Select file
+            </div>
+            <div class="col-8">
+                <input type="file" id="file" accept="zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed">
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                {{info}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <input type="button" class="btn btn-primary" value="Upload" ng-click="doUploadZipFile().then()" />
+            </div>
+        </div>
+    </div>
+</div>

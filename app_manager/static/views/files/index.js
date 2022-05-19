@@ -50,5 +50,10 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
         uploadForm.setApp(this.currentAppName);
         uploadForm.asWindow();
     }
+    async doOpenUploadZipWindow() {
+        var uploadZipForm = (await import("../zip_upload/index.js")).default();
+        uploadZipForm.setApp(this.currentAppName);
+        uploadZipForm.asWindow();
+    }
 });
 export default filesView;

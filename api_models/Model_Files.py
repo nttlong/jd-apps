@@ -32,6 +32,6 @@ class DocUploadRegister:
     ThumbWidth = ReCompact.dbm.field(data_type=int, is_require=False)
     ThumbHeight = ReCompact.dbm.field(data_type=int, is_require=False)
     MimeType = ReCompact.dbm.field(data_type=str, is_require=False)
-    SizeUploaded =ReCompact.dbm.field(data_type=int,is_require=True)
-    NumOfChunksCompleted = ReCompact.dbm.field(data_type=int, is_require=True)
+    SizeUploaded =ReCompact.dbm.field(data_type=int,is_require=False)
+    NumOfChunksCompleted = ReCompact.dbm.field(data_type=int, is_require=False)
     MainFileId = ReCompact.dbm.field(data_type=bson.ObjectId)
