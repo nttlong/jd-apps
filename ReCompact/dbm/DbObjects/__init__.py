@@ -11,31 +11,34 @@ def __get_col__(db, data_item_type):
     import pymongo
     coll_name = data_item_type.__meta__.table_name
     coll = db.get_collection(coll_name)
-    if isinstance(data_item_type.__meta__.keys, list):
-        for k in data_item_type.__meta__.keys:
-            key_name = k
-            items = k.split(',')
-            indexs = []
-            for item in items:
-                indexs.append(
-                    (item, pymongo.ASCENDING)
+    try:
+        if isinstance(data_item_type.__meta__.keys, list):
+            for k in data_item_type.__meta__.keys:
+                key_name = k
+                items = k.split(',')
+                indexs = []
+                for item in items:
+                    indexs.append(
+                        (item, pymongo.ASCENDING)
+                    )
+                coll.create_index(
+                    indexs,
+                    unique=True
                 )
-            coll.create_index(
-                indexs,
-                unique=True
-            )
-    if isinstance(data_item_type.__meta__.index, list):
-        for k in data_item_type.__meta__.index:
-            key_name = k
-            items = k.split(',')
-            indexs = []
-            for item in items:
-                indexs.append(
-                    (item, pymongo.ASCENDING)
+        if isinstance(data_item_type.__meta__.index, list):
+            for k in data_item_type.__meta__.index:
+                key_name = k
+                items = k.split(',')
+                indexs = []
+                for item in items:
+                    indexs.append(
+                        (item, pymongo.ASCENDING)
+                    )
+                coll.create_index(
+                    indexs
                 )
-            coll.create_index(
-                indexs
-            )
+    finally:
+        return coll
     return coll
 
 
@@ -127,6 +130,16 @@ class Aggregrate:
         ret = self.mongo_collection.aggregate(self.pipeline)
         return ret
 
+    def skip(self,number:int):
+        self.pipeline.append({
+            "$skip":number
+        })
+        return  self
+    def limit(self,number:int):
+        self.pipeline.append({
+            "$limit":number
+        })
+        return  self
     def sort(self, *args, **kwargs):
         _sort = {}
         if isinstance(args, tuple):

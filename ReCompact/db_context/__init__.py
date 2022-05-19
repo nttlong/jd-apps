@@ -56,3 +56,91 @@ def get_mongodb_file_by_file_id(db: pymongo.database.Database,
     """
     assert isinstance(file_id, bson.objectid.ObjectId), 'id must be pymongo.bson.objectid.ObjectId'
     return db_get_gridfs(db).get(file_id)
+
+def mongodb_file_create(
+        db: pymongo.database.Database,
+        file_name:str,
+        chunk_size:int,
+        file_size:int
+) -> gridfs.grid_file.GridIn:
+    g = db_get_gridfs(db)
+    fs = g.new_file()
+    fs.name = file_name
+    fs.filename = file_name
+    fs.close()
+    db.get_collection("fs.files").update_one(
+        {
+            "_id": fs._id
+        },
+        {
+            "$set": {
+                "chunkSize": chunk_size,
+                "length": file_size
+            }
+        }
+    )
+    return fs
+
+def mongodb_file_add_chunks(
+        db: pymongo.database.Database,
+        fs,
+        chunk_index:int,
+        data:bytes
+        ):
+    fs_chunks = db.get_collection("fs.chunks")
+    fs_chunks.insert_one({
+        "_id": bson.objectid.ObjectId(),
+        "files_id": fs._id,
+        "n": chunk_index,
+        "data": data
+    })
+def create_mongodb_fs_from_file(
+        db: pymongo.database.Database,
+        full_path_to_file,
+        chunk_size= 4194304
+        ) -> gridfs.grid_file.GridIn:
+    """
+    Tạo file trong mongodb theo noi dung nam trong full_path_to_file
+    """
+    try:
+        dir_path, file_name = os.path.split(full_path_to_file)
+        g = db_get_gridfs(db)
+        fs = g.new_file()
+        fs.name = file_name
+        fs.filename = file_name
+        fs.close()
+        db.get_collection("fs.files").update_one(
+            {
+                "_id":fs._id
+            },
+            {
+                "$set":{
+                    "chunkSize":chunk_size,
+                    "length":os.path.getsize(full_path_to_file)
+                }
+            }
+        )
+        fs_chunks = db.get_collection("fs.chunks")
+
+
+
+
+        n=0
+
+        with open(full_path_to_file, 'rb') as r_file:
+            read_data = r_file.read(chunk_size)
+            while read_data.__len__() > 0:
+                fs_chunks.insert_one({
+                    "_id": bson.objectid.ObjectId(),
+                    "files_id": fs._id,
+                    "n": n,
+                    "data":read_data
+                })
+                read_data = r_file.read(chunk_size)
+                n= n+1
+
+    except Exception as e:
+        raise e
+    finally:
+        fs.close()
+    return fs

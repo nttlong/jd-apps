@@ -1,41 +1,49 @@
 <div>
     <style>
         .header {
-            position:relative;
-            left:0;
-            top:0;
-            right:0;
-            padding:10px;
-            
+            position: relative;
+            left: 0;
+            top: 0;
+            right: 0;
+            padding: 10px;
         }
-        .title {
-            white-space:nowrap;
-            overflow:hidden;
-            text-overflow:ellipsis;
-            width:100%;
 
+        .title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
         }
+
         .grid-container {
             display: grid;
-            
         }
+
             .grid-container > div:first-child {
                 grid-row-start: 1;
                 grid-row-end: 1;
                 border: solid 4px red;
             }
+
             .grid-container > div:last-child {
                 grid-row-start: 2;
                 grid-row-end: 2;
             }
     </style>
-    <div class="header">
+    <div class="header layout-rows">
+        <div>
+            <select ng-model="currentAppName" ng-change="doLoadAllFiles().then()">
+                <option ng-repeat="p in listOfApp" value="{{p.Name}}">
+                    {{p.Name}}
+                </option>
+            </select>
+        </div>
+        <div class="dock full">
 
-        <select ng-model="currentAppName" ng-change="doLoadAllFiles().then()">
-            <option ng-repeat="p in listOfApp" value="{{p.Name}}">
-                {{p.Name}}
-            </option>
-        </select>
+        </div>
+        <div>
+            <input type="button" class="btn btn-primary" value="New" ng-click="doOpenUploadWindow().then()"/>
+        </div>
     </div>
     <div>
         <div class="row">
@@ -74,15 +82,11 @@
                             </div>
                         </div>
                     </div>
-                    </div>
                 </div>
-                
-                
-                
             </div>
+
+
+
         </div>
     </div>
-    <script>
-        
-    </script>
 </div>

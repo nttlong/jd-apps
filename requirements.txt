@@ -6,3 +6,5 @@ pymodm~=0.4.3
 Jinja2~=3.1.2
 watchdog~=2.1.8
 PyJWT~=2.4.0
+humanize~=4.1.0
+openxmllib-py3~=2.0.0

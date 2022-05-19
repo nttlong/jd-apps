@@ -1,7 +1,7 @@
 ERROR_TYPE_INVALID_DATA = 1
 ERROR_TYPE_MISSING_DATA = 2
 ERROR_TYPE_ITEM_WAS_NOT_FOUND = 2
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 
 
 class Error:
@@ -33,10 +33,8 @@ class Error:
             )
         ), safe=False)
 
-
-
-
-
+    def to_error_500(self):
+        return HttpResponse(status=500, content=str.encode(self.message))
 
 
 def map_param(cls_params):
@@ -60,13 +58,32 @@ def map_param(cls_params):
 
         if item.__len__() > 4 and item[0:2] == "__" and item[-2:] == "__":
             return old_get_attr(obj, item)
-        ret = obj.__dict__.get(item)
-        if ret:
-            return ret
-        else:
+        if not hasattr(type(obj), item):
             raise Exception(f"{item} not found in {param_cls.__module__}.{param_cls.__name__}")
+        field = getattr(type(obj), item)
+        ret = obj.__dict__.get(item, None)
+        if isinstance(field, type):
+            return ret
+        elif isinstance(field, tuple) and field.__len__()>1:
+            if field[1]:
+                if not ret is None:
+                    return ret
+                else:
+                    raise Exception(f"{item} not found in {param_cls.__module__}.{param_cls.__name__}")
+            else:
+                return ret
 
     setattr(param_cls, "__getattribute__", new_get_attr)
+
+    def remap_params(fn, kwargs, data, error):
+        if isinstance(kwargs, dict) and callable(fn):
+            for k, v in fn.__annotations__.items():
+                if isinstance(data, v):
+                    kwargs[k] = data
+                elif isinstance(error, v):
+                    kwargs[k] = error
+                else:
+                    kwargs[k] = None
 
     def ret(*__args, **__kwargs):
         hanlder = __args[0]
@@ -104,7 +121,8 @@ def map_param(cls_params):
                             field_name=k,
                             message=f'The value of {k} is invalid. Data type of {k} must be  {f.__name__}'
                         )
-                        return hanlder(request, None, error)
+                        remap_params(hanlder, y, None, error)
+                        return hanlder(x, y)
                     else:
                         obj_data.__dict__[k] = v
                 elif isinstance(f, tuple):
@@ -117,7 +135,8 @@ def map_param(cls_params):
                             field_name=k,
                             message=f"{k} is missing"
                         )
-                        return hanlder(request, None, error)
+                        remap_params(hanlder, y, None, error)
+                        return hanlder(*x, **y)
                     if v != None and not isinstance(v, data_type):
                         error = __make__error__(
                             error,
@@ -125,10 +144,12 @@ def map_param(cls_params):
                             field_name=k,
                             message=f'The value of {k} is invalid. Data type of {k} must be  {f.__name__}'
                         )
-                        return hanlder(request, None, error)
+                        remap_params(hanlder, y, None, error)
+                        return hanlder(*x, **y)
+
                 obj_data.__dict__[k] = v
-            c = 1
-            return hanlder(request, obj_data, None)
+            remap_params(hanlder, y, obj_data, None)
+            return hanlder(*x, **y)
 
         return re_handler
 

@@ -125,6 +125,9 @@ class BaseView {
         await this.render(tmpDir[0]);
         win.setBody(tmpDir[0]);
         win.show();
+        win.onAfterClose(function () {
+            tmpDir.remove();
+        });
     }
     onInit() {
         console.log(this.__proto__.constructor.name + " has init");

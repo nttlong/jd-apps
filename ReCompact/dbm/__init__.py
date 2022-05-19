@@ -77,6 +77,7 @@ def __ob_set_attr__(*args, **kwargs):
 def __ob_get_attr__(*args, **kwargs):
     instance = args[0]
     attr_name = args[1]
+
     if attr_name == "JSON_DATA":
         from django.http import JsonResponse
         return JsonResponse(dict(
@@ -90,7 +91,7 @@ def __ob_get_attr__(*args, **kwargs):
     if attr_name.__len__() > 4 and attr_name[0:2] == "__" and attr_name[-2:] == "__":
         return obj_type.__original_getattribute__(instance, attr_name)
     if not hasattr(obj_type, attr_name):
-        raise Exception(f'{attr_name} was not found in {obj_type.__module__}.{obj_type.__name__}')
+        raise Exception(f'{attr_name} was not found in {obj_type.__module__}.{obj_type.__name__}. Does you mean JSON_DATA or DICT for Web api?')
 
     if instance.__dict__.get("__fields__", None) == None:
         instance.__dict__["__fields__"] = {}
@@ -109,7 +110,7 @@ def __on__init__(*args, **kwargs):
         if not hasattr(cls, k):
             raise Exception(f'{k} was not found in {cls.__module__}.{cls.__name__}')
         f = getattr(cls, k)
-        assert isinstance(f, field)
+        assert isinstance(f, field),f"{k} must be {field} but got {type(f)}"
         if f.is_require and v == None:
             raise Exception(f'{k} in {cls.__module__}.{cls.__name__} is required')
         if v == None:

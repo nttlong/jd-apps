@@ -30,7 +30,9 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
     async doLoadAllFiles() {
         
         this.listOfFiles = await api.post(`files/${this.currentAppName}/list`, {
-            Token: window.token
+            Token: window.token,
+            PageIndex: 0,
+            PageSize:30
         });
         this.$applyAsync();
     }
@@ -42,6 +44,11 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
        
         
         
+    }
+    async doOpenUploadWindow() {
+        var uploadForm = (await import("../upload/index.js")).default();
+        uploadForm.setApp(this.currentAppName);
+        uploadForm.asWindow();
     }
 });
 export default filesView;
