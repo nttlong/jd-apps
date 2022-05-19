@@ -8,3 +8,4 @@ watchdog~=2.1.8
 PyJWT~=2.4.0
 humanize~=4.1.0
 openxmllib-py3~=2.0.0
+django-cors-headers~=3.12.0

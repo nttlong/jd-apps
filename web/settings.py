@@ -35,6 +35,7 @@ ALLOWED_HOSTS = []
 # Application definition
 # from apps.file_explorer.apps import FileExplorerConfig
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'ReEngine.UrlCaseInsensitive.middleware.ResolveCaseInsesitive',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -146,3 +148,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SITE_ID=1
 ROOT_URL = "http://0.0.0.0:8000"
 LOGIN_URL = "auth/login"
+CORS_ALLOW_ALL_ORIGINS = True
