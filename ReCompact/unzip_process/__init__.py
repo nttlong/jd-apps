@@ -101,7 +101,8 @@ def builk_to_data_base(
 
     )
     id= str(uuid.uuid4())
-    filename, file_extension = os.path.splitext(file_path)
+    import ntpath
+    filename, file_extension = os.path.splitext(ntpath.basename(file_path))
     upload_item= api_models.Model_Files.DocUploadRegister(
         _id= id,
         ServerFileName=f"{id}{file_extension}".lower(),
@@ -113,7 +114,7 @@ def builk_to_data_base(
         NumOfChunks=NumOfChunks,
         MainFileId = fs._id,
         FullFileName = rel_file_path.lower(),
-        FileName = filename
+        FileName = f"{filename}{file_extension}"
 
     )
     upload_info = ReCompact.dbm.DbObjects.insert(
