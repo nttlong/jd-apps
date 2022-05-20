@@ -87,6 +87,7 @@ def builk_to_data_base(
     import ReCompact.db_context
     import ReCompact.dbm.DbObjects
     import api_models.Model_Files
+    import api_models.Model_Container
     import uuid
     import datetime
     ChunkSizeInKB=1024
@@ -103,7 +104,7 @@ def builk_to_data_base(
     filename, file_extension = os.path.splitext(file_path)
     upload_item= api_models.Model_Files.DocUploadRegister(
         _id= id,
-        ServerFileName=f"{id}.{file_extension}".lower(),
+        ServerFileName=f"{id}{file_extension}".lower(),
         RegisterOn=datetime.datetime.now(),
         Status=1,
         SizeInBytes = os.path.getsize(file_path),
@@ -111,12 +112,39 @@ def builk_to_data_base(
         ChunkSizeInBytes =ChunkSizeInKB*1024,
         NumOfChunks=NumOfChunks,
         MainFileId = fs._id,
-        FullFileName = rel_file_path.lower()
+        FullFileName = rel_file_path.lower(),
+        FileName = filename
 
     )
     upload_info = ReCompact.dbm.DbObjects.insert(
         db,
         upload_item
+    )
+
+    zip_container = ReCompact.dbm.DbObjects.find_to_object(
+        db,
+        api_models.Model_Container.ZipContainer,
+        ReCompact.dbm.FILTER.UploadId== upload_id
+    )
+    if not zip_container:
+        zip_container= api_models.Model_Container.ZipContainer(
+            UploadId= upload_id,
+            OriginalFileName = filename,
+            CreatedOn = datetime.datetime.now(),
+            Files =[]
+        )
+        ReCompact.dbm.DbObjects.insert(
+            db,
+            zip_container
+        )
+    ReCompact.dbm.DbObjects.update(
+        db,
+        api_models.Model_Container.ZipContainer,
+        ReCompact.dbm.FILTER.UploadId == upload_id,
+        ReCompact.dbm.PUSH (
+            ReCompact.dbm.FIELDS.Files ==  upload_item.DICT
+        )
+
     )
 
     print(rel_file_path)

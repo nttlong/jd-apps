@@ -470,13 +470,16 @@ class ui_window extends ui_container {
     _show(x, y) {
         if ((x !== undefined && y !== undefined) ||
             this._isFisrShow) {
-            var R = new ui_linear.vector(window.innerWidth, window.innerHeight);
+            //var R = new ui_linear.vector(window.innerWidth, window.innerHeight);
             var style = window.getComputedStyle(document.body);
             var sx = document.body.scrollLeft;
             var sy = document.body.scrollTop;
+            var bodyRect = document.body.getBoundingClientRect();
+            var R = new ui_linear.vector(bodyRect.width, bodyRect.height);
 
-            x = x || ((R.x - this.width) / 2 - sx);
-            y = y || ((R.y - this.height) / 2 - sy);
+            x = x || ((window.innerWidth - this.width) / 2 + sx);
+            y = y || ((window.innerHeight - this.height) / 2 + sy);
+
             this.css({
                 left: x.toString() + "px",
                 top: y.toString() + "px",

@@ -140,3 +140,15 @@ class SET:
         return {
             "$set": self.mongo_set
         }
+class PUSH:
+    def __init__(self, *args, **kwargs):
+        self.mongo_set = {}
+        if isinstance(args, tuple):
+            for x in args:
+                for k, v in x.to_mongodb().items():
+                    self.mongo_set[k] = v
+
+    def to_mongodb(self):
+        return {
+            "$push": self.mongo_set
+        }

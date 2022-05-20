@@ -47,7 +47,7 @@ def update(db,data_item_type, filter, updator):
     import ReCompact.dbm
     assert isinstance(db, pymongo.mongo_client.database.Database), 'db must be pymongo.mongo_client.database'
     assert isinstance(filter, Docs.Fields), 'filter must be ReCompact.dbm.DbObject.Filter'
-    assert isinstance(updator,ReCompact.dbm.SET) , 'filter must be ReCompact.dbm.SET'
+    assert  type(updator) in [ReCompact.dbm.SET,ReCompact.dbm.PUSH] , 'updator must be ReCompact.dbm.SET or ReCompact.dbm.PUSH'
     coll = __get_col__(db, data_item_type)
     ret = coll.update_many(filter.to_mongodb(),updator.to_mongodb())
     return ret

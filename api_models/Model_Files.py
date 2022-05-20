@@ -35,3 +35,7 @@ class DocUploadRegister:
     SizeUploaded =ReCompact.dbm.field(data_type=int,is_require=False)
     NumOfChunksCompleted = ReCompact.dbm.field(data_type=int, is_require=False)
     MainFileId = ReCompact.dbm.field(data_type=bson.ObjectId)
+
+    @property
+    def id(self):
+        return self._id

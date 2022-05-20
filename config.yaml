@@ -23,11 +23,13 @@ DATABASE:
         propagate: False
 
 APPS:
+  app_auth: 'auth/'
   api_files: 'api/files/'
   api_apps: 'api/apps/'
-  app_manager: ''
-  app_auth: 'auth/'
   app_file_explorer: 'files/'
+  app_manager: ''
+
+
 
 
 

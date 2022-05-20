@@ -20,6 +20,15 @@ def source(request,app_name,full_path):
         fs = ReCompact.db_context.get_mongodb_file_by_file_id(db,upload_item.get("MainFileId",None))
     else:
         fs = ReCompact.db_context.get_mongodb_file_by_file_name(db,server_file_name)
+        if fs:
+            ReCompact.dbm.DbObjects.update(
+                db,
+                data_item_type= api_models.Model_Files.DocUploadRegister,
+                filter= ReCompact.dbm.FILTER._id == upload_item["_id"],
+                updator= ReCompact.dbm.SET(
+                    ReCompact.dbm.FIELDS.MainFileId==fs._id
+                )
+            )
     ReCompact.HttpStream.streaming_mongo_db_fs(request,fs)
 
     return  ReCompact.HttpStream.streaming_mongo_db_fs(request,fs)

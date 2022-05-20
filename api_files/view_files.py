@@ -52,13 +52,13 @@ def get_list(request,app_name,data:Filter,error:ReCompact.api_input.Error):
             )
         ret+=[
             dict(
-                Status =x["Status"],
-                FileName=x["FileName"],
-                FileExt =x ["FileExt"],
-                MimeType =x.get("MimeType",mimetypes.guess_type(x["FileName"])[0]),
-                RegisterOn =x ["RegisterOn"],
-                SizeInHumanReadable =x["SizeInHumanReadable"],
-                UrlOfServerPath =f"{request._current_scheme_host}/api/files/{app_name}/directory/{x['FullFileName']}"
+                Status =x.get("Status",0),
+                FileName=x.get("FileName",None),
+                FileExt =x.get("FileExt",None),
+                MimeType =x.get("MimeType",mimetypes.guess_type(x.get("FileName","a.dat"))[0]),
+                RegisterOn =x.get("RegisterOn",None),
+                SizeInHumanReadable =x.get("SizeInHumanReadable",None),
+                UrlOfServerPath =f"{request._current_scheme_host}/api/files/{app_name}/directory/{x.get('FullFileName',None)}"
             )
         ]
 
