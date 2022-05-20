@@ -2,8 +2,9 @@
     <style>
         .shadow-box {
             box-shadow: rgba(0, 0, 0, 0.07) 0px 5px 15px;
-            margin:10px;
+            margin: 10px;
         }
+
         .header {
             position: relative;
             left: 0;
@@ -36,13 +37,16 @@
     </style>
     <div class="header layout-rows">
         <div>
+            <div>
+                {{currentAppName}}
+            </div>
             <select ng-model="currentAppName" ng-change="doLoadAllFiles().then()">
                 <option ng-repeat="p in listOfApp" value="{{p.Name}}">
                     {{p.Name}}
                 </option>
             </select>
         </div>
-        
+
         <div>
             <input type="button" class="btn btn-primary" value="New Zip File" ng-click="doOpenUploadZipWindow().then()" />
         </div>
@@ -50,68 +54,66 @@
             <input type="button" class="btn btn-primary" value="New" ng-click="doOpenUploadWindow().then()" />
         </div>
     </div>
-    <div class="dock full" style="overflow-y:scroll;overflow-x:hidden;margin:15px">
-        <rcp-lazy-list></rcp-lazy-list>
-        <!--<div>
-        <div class="row">
-            <div class="col-6 " ng-repeat="p in listOfFiles" style="overflow:hidden">
-                <div class="layout-rows  shadow-box">
-                    <div style="min-width:140px;max-width:140px" class="">
-                        <div class="layout-rows">
-                            <div class="dock full"></div>
-                            <div class="layout-columns">
+    <div class="dock full" style="margin:15px">
+        <div rpct-lazy-scroll source="listOfFiles" item-var="p" class="row" on-request-data="doLoadMore" page-size="20">
+            <rpct-template>
+                <div class="col-6 col-md-6 col-sm-12 col-xs-12">
+                    <div class="layout-rows  shadow-box" style="height:200px">
+                        <div style="min-width:140px;max-width:140px" class="shadow-box">
+                            <div class="layout-rows">
                                 <div class="dock full"></div>
-                                <div>
-                                    <img style="min-width:120px;max-width:120px;margin:10px" ng-src="{{p.ThumbUrl}}" ng-if="p.HasThumb" />
+                                <div class="layout-columns">
+                                    <div class="dock full"></div>
+                                    <div>
+                                        <img style="min-width:120px;max-width:120px;margin:10px" ng-src="{{p.ThumbUrl}}" ng-if="p.HasThumb" />
+                                    </div>
+                                    <div class="dock full"></div>
                                 </div>
                                 <div class="dock full"></div>
                             </div>
-                            <div class="dock full"></div>
-                        </div>
-
-                    </div>
-                    <div class="dock full">
-                        <div class="row ">
-                            <div class="title col-12">
-                                <a ng-if="p.MimeType.indexOf('video/')==0" href="javascript:void(0);" ng-click="doOpenInWindows(p).then()">
-                                    {{p.FileName}}
-                                </a>
-
-                                <a ng-if="p.MimeType.indexOf('video/')!=0" ng-href="{{p.UrlOfServerPath}}" target="_blank">{{p.FileName}}</a>
-                            </div>
 
                         </div>
-                        <div class="row">
-                            <div class="col-6 title">
-                                <a>Status</a>
+                        <div class="dock full">
+                            <div class="row ">
+                                <div class="title col-12">
+                                    <a ng-if="p.MimeType.indexOf('video/')==0" href="javascript:void(0);" ng-click="doOpenInWindows(p).then()">
+                                        {{p.FileName}}
+                                    </a>
+
+                                    <a ng-if="p.MimeType.indexOf('video/')!=0" ng-href="{{p.UrlOfServerPath}}" target="_blank">{{p.FileName}}</a>
+                                </div>
+
                             </div>
-                            <div class="col-6" ng-if="p.Status==1">
-                                Hoàn tất
+                            <div class="row">
+                                <div class="col-6 title">
+                                    <a>Status</a>
+                                </div>
+                                <div class="col-6" ng-if="p.Status==1">
+                                    Hoàn tất
+                                </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-6 title">
-                                <a>File Size</a>
+                            <div class="row">
+                                <div class="col-6 title">
+                                    <a>File Size</a>
+                                </div>
+                                <div class="col-6">
+                                    {{p.SizeInHumanReadable}}
+                                </div>
                             </div>
-                            <div class="col-6">
-                                {{p.SizeInHumanReadable}}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-6 title">
-                                <a>Created on</a>
-                            </div>
-                            <div class="col-6">
-                                {{p.RegisterOn|date:'dd-MM-yyyy'}}
+                            <div class="row">
+                                <div class="col-6 title">
+                                    <a>Created on</a>
+                                </div>
+                                <div class="col-6">
+                                    {{p.RegisterOn|date:'dd-MM-yyyy'}}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-
-
+                
+            </rpct-template>
         </div>
-    </div>-->
+
     </div>
 </div>

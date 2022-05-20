@@ -32,7 +32,7 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
         this.listOfFiles = await api.post(`files/${this.currentAppName}/list`, {
             Token: window.token,
             PageIndex: 0,
-            PageSize:30
+            PageSize:20
         });
         this.$applyAsync();
     }
@@ -54,6 +54,17 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
         var uploadZipForm = (await import("../zip_upload/index.js")).default();
         uploadZipForm.setApp(this.currentAppName);
         uploadZipForm.asWindow();
+    }
+    async doLoadMore(sender) {
+        
+        api.post(`files/${sender.scope.currentAppName}/list`, {
+            Token: window.token,
+            PageIndex: sender.pageIndex,
+            PageSize: sender.pageSize
+        }).then(r => {
+            sender.done(r);
+        });
+        
     }
 });
 export default filesView;

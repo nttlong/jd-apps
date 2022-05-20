@@ -1,5 +1,5 @@
 ﻿import { setServerApiHostUrl } from "../views/sys/BaseScope.js"
-import rcpLazyListModule from "./directives/LazyItemsList.js";
+import rcpLazyScrollModule from "./directives/rpct/lazy_scroll.js";
 import { module, module_name } from "./loader/loaderModule.js";
 import api from "./ClientApi/api.js"
 //
@@ -8,7 +8,7 @@ import api from "./ClientApi/api.js"
 debugger;
 api.setUrl(window.abs_url + "/api")
 
-var appModule = angular.module("app", [module_name, rcpLazyListModule.name]);
+var appModule = angular.module("app", [module_name, rcpLazyScrollModule.name]);
 var appConotroller = appModule.controller("app", ["$scope", function ($scope) {
 
 

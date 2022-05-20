@@ -4,11 +4,12 @@
     "\\html",
     "\\static",
     "\\static\\js",
-    "\\static\\js\\ui",
-    "\\static\\js\\vendors",
+    "\\static\\js\\directives",
     "\\static\\views",
-    "\\static\\views\\app_edit"
+    "\\static\\views\\files",
+    "\\static\\views\\player",
+    "\\static\\views\\zip_upload"
   ],
-  "SelectedNode": "\\static\\views\\home.js",
+  "SelectedNode": "\\static\\js\\directives\\LazyItemsList.js",
   "PreviewInSolutionExplorer": false
 }

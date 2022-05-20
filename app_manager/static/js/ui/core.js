@@ -222,4 +222,32 @@ function msgOK(msg) {
         position: 'top-center'       // bottom-left or bottom-right or bottom-center or top-left or top-right or top-center or mid-center or an object representing the left, right, top, bottom values to position the toast on page
     })
 }
-export { msgOK,msgError, newScope, postId, BaseView, View, redirect, urlWatching, getModule, getPaths }
+function isReadyAsync(ele, timeOut) {
+    
+    return new Promise((resolve, reject) => {
+        timeOut = timeOut || 500
+        var count = Math.floor(timeOut / 10);
+        var iCount = 0;
+        function run() {
+            if (iCount > count) {
+                resolve(false);
+            }
+            else {
+                if ($.contains($('body')[0], e[0])) {
+                    resolve(true);
+                }
+                else {
+                    iCount++;
+                    setTimeout(run, 10);
+                }
+            }
+        }
+        run();
+    });
+}
+async function findEleAsync(ele, timeOut) {
+    if (await isReady(ele)) {
+        return $(ele)
+    }
+}
+export { isReadyAsync, findEleAsync, msgOK, msgError, newScope, postId, BaseView, View, redirect, urlWatching, getModule, getPaths }
