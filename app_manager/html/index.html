@@ -19,7 +19,7 @@
 
 
 </head>
-<body id="root" ng-controller="app" style="position:fixed;left:0;right:0;top:0;bottom:0;overflow-y:auto">
+<body id="root" ng-controller="app" style="position:fixed;left:0;right:0;top:0;bottom:0;overflow-y:hidden">
 <div id="view">
 
 </div>
@@ -42,10 +42,10 @@
 </script>
     <script>
         $(window).resize(function () {
-            $("body").height($(window).height())
+            $("body").height($(window).innerHeight())
         });
         $(document).ready(function () {
-            $("body").height($(window).height())
+            $("body").height($(window).innerHeight())
         })
     </script>
 </body>

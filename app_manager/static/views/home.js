@@ -17,7 +17,7 @@ var homeView = await View(import.meta, class homeview extends BaseScope {
         await urlWatching($("head base").attr("href"), (path) => {
             $("#home_view").empty();
             if (path[1]=="edit") {
-                $('main[role="main"]').hide();
+                $('#home-page').hide();
                 import("./app_edit/index.js").then(r => {
                     var view = r.default();
                     view.doEditApp(path[2]).then();
@@ -39,7 +39,7 @@ var homeView = await View(import.meta, class homeview extends BaseScope {
 
             }
            if (path[1] == "register") {
-               $('main[role="main"]').hide();
+               $('#home-page').hide();
                import("./app_edit/index.js").then(r => {
                    var view = r.default();
                    view.doNewApp(path[2]).then();
@@ -50,7 +50,7 @@ var homeView = await View(import.meta, class homeview extends BaseScope {
            }
             if (window.location.href == $("head base").attr("href")) {
                 $("#home_view").hide();
-                $('main[role="main"]').show();
+                $('#home-page').show();
             }
         })
     }

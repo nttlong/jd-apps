@@ -89,14 +89,21 @@ body {
 .layout-rows {
     display: flex;
     flex-direction: row;
+    width: 100%;
 }
 .layout-columns {
     display: flex;
     flex-direction: column;
+    height:100%;
 }
 .debug {
     border:solid 4px red;
+    margin:4px;
+
 }
-.dock.full {
-    flex: 1;
+.layout-columns .dock.full {
+    height:100%;
+}
+.layout-rows .dock.full {
+    width: 100%;
 }

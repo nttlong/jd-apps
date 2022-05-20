@@ -1,42 +1,59 @@
-﻿<header style="position:fixed;top:0;left:0;right:0;z-index:20000">
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-        <div class="container">
-            <a class="navbar-brand" href="./">Files explorer</a>
-            <a class="navbar-brand" href="javascript:void(0);" ng-click="browserAllFiles().then()">All files </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1">
-                </ul>
+﻿<div class="layout-columns container"  id="main-app">
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" href="./">Files explorer</a>
+                <a class="navbar-brand" href="javascript:void(0);" ng-click="browserAllFiles().then()">All files </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                    </ul>
+                </div>
             </div>
-        </div>
-    </nav>
-</header>
-<div class="container" style="position:relative;top:80px">
-    <div id="home_view">
+        </nav>
+    </header>
+    <div id="home_view" class="dock full"  style="display:none">
 
     </div>
-    <main role="main" class="pb-3" ng-cloak>
-        <div class="row">
-            <div ng-repeat="app in list" class="col-4">
-                <a href="javascript:void(0)" ng-click="doEdit(app.Name).then()">
-                    {{app.Name}}
-                </a>
+    <div  id="home-page">
+
+        <main role="main" class="pb-3" ng-cloak>
+            <div class="row">
+                <div ng-repeat="app in list" class="col-4">
+                    <a href="javascript:void(0)" ng-click="doEdit(app.Name).then()">
+                        {{app.Name}}
+                    </a>
 
 
-            </div>
-        </div>
-        
-        <div class="row">
-            <div class="col-12">
-                <div class="pull-right">
-                    <input type="button" value="Register new app" class="btn btn-primary"  ng-click="doNew(app.Name).then()" />
                 </div>
-               
             </div>
-        </div>
-        
-    </main>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="pull-right">
+                        <input type="button" value="Register new app" class="btn btn-primary" ng-click="doNew(app.Name).then()" />
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
 </div>
+<script>
+    $(document).ready(function () {
+        $("#main-app").css({
+            height: $(window).innerHeight(),
+            "max-height": $(window).innerHeight()
+        });
+    });
+    $(window).resize(function () {
+        $("#main-app").css({
+            height: $(window).innerHeight(),
+            "max-height": $(window).innerHeight()
+        });
+    })
+</script>

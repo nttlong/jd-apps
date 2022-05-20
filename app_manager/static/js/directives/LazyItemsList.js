@@ -1,9 +1,10 @@
-﻿var mdl = angular.module("ui", []);
-var xDirective=mdl.directive("x", [function () {
+﻿var rcpLazyListModule = angular.module("ui", []);
+var rcpLazyListDirective = rcpLazyListModule.directive("rcpLazyList", [function () {
     return {
         replace: true,
-        template:"<div>test</div>"
+        template: "<div><div ng-transclude></div></div>",
+        transclude:true
     }
     
 }]);
-export default xDirective;
+export default rcpLazyListModule;
