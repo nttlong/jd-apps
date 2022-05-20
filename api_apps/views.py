@@ -12,8 +12,8 @@ import ReCompact.api_input
 # Create your views here.
 @ReCompact.api_input.map_param(api_apps.app_params.AppParam)  # map request body to data view must have data
 @require_http_methods(["POST"])
-@rpt_auth.validator()
-def create_app(request, data: api_apps.app_params.AppParam, error: ReCompact.api_input.Error):
+
+def create_app(request,app_name, data: api_apps.app_params.AppParam, error: ReCompact.api_input.Error):
     """
     Thêm mới hoặc cập nhật thông tin của application
     :param request:

@@ -21,19 +21,34 @@ def get_db(db_name=None) -> pymongo.database.Database:
     if db_name == None:
         db_name = web.settings.DATABASES["default"]["NAME"]
     if __cnn__ == None:
-        __lock__.acquire()
-        import web.settings
-        db_config = web.settings.DATABASES["default"]["CLIENT"]
+        try:
+            __lock__.acquire()
+            import web.settings
+            db_config = web.settings.DATABASES["default"]["CLIENT"]
+            if db_config.get("replicaSet",None):
+                __cnn__ = pymongo.mongo_client.MongoClient(
+                    host=db_config["host"],
+                    port=db_config["port"],
+                    username=db_config["username"],
+                    password=db_config["password"],
+                    authSource=db_config["authSource"],
+                    authMechanism=db_config["authMechanism"],
+                    replicaSet=db_config["replicaSet"]
+                )
+            else:
+                __cnn__ = pymongo.mongo_client.MongoClient(
+                    host=db_config["host"],
+                    port=db_config["port"],
+                    username=db_config["username"],
+                    password=db_config["password"],
+                    authSource=db_config["authSource"],
+                    authMechanism=db_config["authMechanism"]
+                )
+        except Exception as e:
+            raise e
+        finally:
+            __lock__.release()
 
-        __cnn__ = pymongo.mongo_client.MongoClient(
-            host=db_config["host"],
-            port=db_config["port"],
-            username=db_config["username"],
-            password=db_config["password"],
-            authSource=db_config["authSource"],
-            authMechanism=db_config["authMechanism"],
-            replicaSet=db_config["replicaSet"]
-        )
     return __cnn__.get_database(db_name)
 
 
