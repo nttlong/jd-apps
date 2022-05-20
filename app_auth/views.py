@@ -1,4 +1,5 @@
 from django.http import HttpResponse
+from django.shortcuts import redirect
 import ReCompact.web
 @ReCompact.web.template("login.html")
 def do_login(request):
@@ -32,8 +33,28 @@ def do_login(request):
             request.session['current_user'] = dict(
                 username=user.username
             )
-            return redirect(request.host_url+"/apps")
 
-
+            if request.GET.get("ret") is None:
+                return redirect(
+                    to='/'
+                )
+            else:
+                return redirect(
+                    to=request.GET.get("ret")
+                )
 
     return request.template.model({"request":request}).render()
+
+from django.http import HttpResponse
+import ReCompact.web
+@ReCompact.web.template("logout.html")
+def do_logout(request):
+    request.session.clear()
+    if request.GET.get("ret") is None:
+        return  redirect(
+            to='/'
+        )
+    else:
+        return redirect(
+            to=request.GET.get("ret")
+        )

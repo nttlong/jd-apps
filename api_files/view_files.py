@@ -41,6 +41,23 @@ def get_list(request,app_name,data:Filter,error:ReCompact.api_input.Error):
     ret_list = list(agg)
     ret=[]
     for x in ret_list:
+        ThumbUrl = None
+        if x.get("HasThumb",None) is None:
+            x["HasThumb"]=False
+            if x.get("ThumbFileId",None) is not None:
+                x["HasThumb"] = True
+                ReCompact.dbm.DbObjects.update(
+                    db,
+                    data_item_type= api_models.Model_Files.DocUploadRegister,
+                    filter= ReCompact.dbm.DbObjects.FILTER._id == x["_id"],
+                    updator= ReCompact.dbm.SET(
+                        ReCompact.dbm.FIELDS.HasThumb==x["HasThumb"]
+                    )
+
+
+                )
+        if x.get("HasThumb", False):
+            ThumbUrl = f"{request._current_scheme_host}/api/files/{app_name}/thumb/{x.get('_id',None)}.png"
         if x.get("MimeType",None) is None:
             ReCompact.dbm.DbObjects.update(
                 db,
@@ -50,17 +67,47 @@ def get_list(request,app_name,data:Filter,error:ReCompact.api_input.Error):
                     ReCompact.dbm.DbObjects.FIELDS.MimeType==mimetypes.guess_type(x["FileName"])[0]
                 )
             )
-        ret+=[
-            dict(
-                Status =x.get("Status",0),
-                FileName=x.get("FileName",None),
-                FileExt =x.get("FileExt",None),
-                MimeType =x.get("MimeType",mimetypes.guess_type(x.get("FileName","a.dat"))[0]),
-                RegisterOn =x.get("RegisterOn",None),
-                SizeInHumanReadable =x.get("SizeInHumanReadable",None),
-                UrlOfServerPath =f"{request._current_scheme_host}/api/files/{app_name}/directory/{x.get('FullFileName',None)}"
+        full_name = str(x.get('FileName',""))
+        if full_name.endswith("_thumb.png"):
+            thumb_info = ReCompact.dbm.DbObjects.find_to_object(
+                db,
+                data_item_type= api_models.Model_Files.DocUploadRegister,
+                filter= ReCompact.dbm.FILTER.FileName==full_name
             )
-        ]
+            if thumb_info:
+                fs = ReCompact.db_context.get_mongodb_file_by_file_name(
+                    db,
+                    thumb_info.ServerFileName
+                )
+                if fs:
+                    ReCompact.dbm.DbObjects.update(
+                        db,
+                        data_item_type= api_models.Model_Files.DocUploadRegister,
+                        filter= ReCompact.dbm.FIELDS.ThumbId==thumb_info._id,
+                        updator= ReCompact.dbm.SET(
+                            ReCompact.dbm.FIELDS.ThumbFileId == fs._id
+                        )
+                    )
+                    ReCompact.dbm.DbObjects.delete(
+                        db,
+                        data_item_type= api_models.Model_Files.DocUploadRegister,
+                        filter= ReCompact.dbm.FIELDS._id == thumb_info._id
+                    )
+
+        else:
+            ret+=[
+                dict(
+                    Status =x.get("Status",0),
+                    FileName=x.get("FileName",None),
+                    FileExt =x.get("FileExt",None),
+                    MimeType =x.get("MimeType",mimetypes.guess_type(x.get("FileName","a.dat"))[0]),
+                    RegisterOn =x.get("RegisterOn",None),
+                    SizeInHumanReadable =x.get("SizeInHumanReadable",None),
+                    UrlOfServerPath =f"{request._current_scheme_host}/api/files/{app_name}/directory/{x.get('FullFileName',None)}",
+                    HasThumb = x.get("HasThumb",False),
+                    ThumbUrl =ThumbUrl
+                )
+            ]
 
     return JsonResponse(ret, safe=False)
 

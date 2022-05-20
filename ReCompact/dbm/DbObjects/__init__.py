@@ -42,14 +42,15 @@ def __get_col__(db, data_item_type):
     return coll
 
 
-def update(db,data_item_type, filter, updator):
+def update(db, data_item_type, filter, updator):
     import pymongo
     import ReCompact.dbm
     assert isinstance(db, pymongo.mongo_client.database.Database), 'db must be pymongo.mongo_client.database'
     assert isinstance(filter, Docs.Fields), 'filter must be ReCompact.dbm.DbObject.Filter'
-    assert  type(updator) in [ReCompact.dbm.SET,ReCompact.dbm.PUSH] , 'updator must be ReCompact.dbm.SET or ReCompact.dbm.PUSH'
+    assert type(updator) in [ReCompact.dbm.SET,
+                             ReCompact.dbm.PUSH], 'updator must be ReCompact.dbm.SET or ReCompact.dbm.PUSH'
     coll = __get_col__(db, data_item_type)
-    ret = coll.update_many(filter.to_mongodb(),updator.to_mongodb())
+    ret = coll.update_many(filter.to_mongodb(), updator.to_mongodb())
     return ret
 
 
@@ -70,6 +71,15 @@ def find_to_objects(db, data_item_type, filter):
     ret = coll.find(filter.to_mongodb())
     for x in list(ret):
         yield data_item_type(x)
+
+
+def delete(db, data_item_type, filter):
+    import pymongo
+    assert isinstance(db, pymongo.mongo_client.database.Database), f'db must be pymongo.mongo_client.database.Database'
+    assert isinstance(filter, Docs.Fields), 'filter must be ReCompact.dbm.DbObject.Filter'
+    coll = __get_col__(db, data_item_type)
+    ret = coll.delete_many(filter.to_mongodb())
+    return ret
 
 
 async def find_to_objects_async(db, data_item_type, filter):
@@ -130,16 +140,18 @@ class Aggregrate:
         ret = self.mongo_collection.aggregate(self.pipeline)
         return ret
 
-    def skip(self,number:int):
+    def skip(self, number: int):
         self.pipeline.append({
-            "$skip":number
+            "$skip": number
         })
-        return  self
-    def limit(self,number:int):
+        return self
+
+    def limit(self, number: int):
         self.pipeline.append({
-            "$limit":number
+            "$limit": number
         })
-        return  self
+        return self
+
     def sort(self, *args, **kwargs):
         _sort = {}
         if isinstance(args, tuple):

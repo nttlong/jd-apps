@@ -1,5 +1,8 @@
-<div>
+﻿<div>
     <style>
+        .shadow-box {
+            box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        }
         .header {
             position: relative;
             left: 0;
@@ -38,9 +41,7 @@
                 </option>
             </select>
         </div>
-        <div class="dock full">
-
-        </div>
+        
         <div>
             <input type="button" class="btn btn-primary" value="New Zip File" ng-click="doOpenUploadZipWindow().then()" />
         </div>
@@ -52,14 +53,23 @@
         <div class="row">
             <div class="col-6 " ng-repeat="p in listOfFiles" style="overflow:hidden">
                 <div class="layout-rows">
-                    <div style="min-width:120px" class="">
-                        <div style="min-width:120px;min-height:120px">
-                            <img style="min-width:120px" />
+                    <div style="min-width:140px;max-width:140px" class="">
+                        <div class="layout-rows">
+                            <div class="dock full"></div>
+                            <div class="layout-columns">
+                                <div class="dock full"></div>
+                                <div>
+                                    <img style="min-width:120px;max-width:120px;margin:10px" ng-src="{{p.ThumbUrl}}" ng-if="p.HasThumb" />
+                                </div>
+                                <div class="dock full"></div>
+                            </div>
+                            <div class="dock full"></div>
                         </div>
+                       
                     </div>
-                    <div class="dock full ">
+                    <div class="dock full shadow-box">
                         <div class="row ">
-                            <div class="title">
+                            <div class="title col-12">
                                 <a ng-if="p.MimeType.indexOf('video/')==0" href="javascript:void(0);" ng-click="doOpenInWindows(p).then()">
                                     {{p.FileName}}
                                 </a>
@@ -72,8 +82,8 @@
                             <div class="col-6 title">
                                 <a>Status</a>
                             </div>
-                            <div class="col-6">
-                                {{p.Status}}
+                            <div class="col-6" ng-if="p.Status==1">
+                                Hoàn tất
                             </div>
                         </div>
                         <div class="row">

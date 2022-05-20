@@ -5,7 +5,7 @@ import datetime
 @ReCompact.dbm.table(
     "DocUploadRegister",
     keys=["ServerFileName", "FullFileName"],
-    index=["RegisteredOn", "Status", "FileExt","FileName"]
+    index=["RegisteredOn", "Status", "FileExt","FileName","MainFileId","ThumbFileId"]
 
 )
 class DocUploadRegister:
@@ -35,6 +35,9 @@ class DocUploadRegister:
     SizeUploaded =ReCompact.dbm.field(data_type=int,is_require=False)
     NumOfChunksCompleted = ReCompact.dbm.field(data_type=int, is_require=False)
     MainFileId = ReCompact.dbm.field(data_type=bson.ObjectId)
+    ThumbFileId = ReCompact.dbm.field(data_type=bson.ObjectId)
+    ThumbId  = ReCompact.dbm.field(data_type=str) # depreciate after jun 2022
+    HasThumb = ReCompact.dbm.field(data_type=bool)
 
     @property
     def id(self):

@@ -29,6 +29,6 @@ def source(request,app_name,full_path):
                     ReCompact.dbm.FIELDS.MainFileId==fs._id
                 )
             )
-    ReCompact.HttpStream.streaming_mongo_db_fs(request,fs)
+
 
     return  ReCompact.HttpStream.streaming_mongo_db_fs(request,fs)
