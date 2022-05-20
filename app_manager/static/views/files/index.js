@@ -19,7 +19,7 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
         this.currentApp = this.listOfApp[0];
         this.currentAppName = this.currentApp.Name;
         await this.doLoadAllFiles();
-        this.$applyAsync();
+        this.$apply();
     }
     async doLoadAllFileByApp(appName) {
         this.listOfFiles = await api.post(`files/${appName}/list`, {
@@ -38,7 +38,7 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
     }
     async doOpenInWindows(item) {
         var r = await import("../player/index.js");
-        var player = r.default();
+        var player = await r.default();
         player.playByItem(item);
         player.asWindow();
        
@@ -46,16 +46,16 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
         
     }
     async doOpenUploadWindow() {
-        var uploadForm = (await import("../upload/index.js")).default();
+        var uploadForm = await (await import("../upload/index.js")).default();
         uploadForm.setApp(this.currentAppName);
         uploadForm.asWindow();
     }
     async doOpenUploadZipWindow() {
-        var uploadZipForm = (await import("../zip_upload/index.js")).default();
+        var uploadZipForm =await (await import("../zip_upload/index.js")).default();
         uploadZipForm.setApp(this.currentAppName);
         uploadZipForm.asWindow();
     }
-    async doLoadMore(sender) {
+    doLoadMore(sender) {
         
         api.post(`files/${sender.scope.currentAppName}/list`, {
             Token: window.token,

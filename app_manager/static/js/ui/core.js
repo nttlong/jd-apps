@@ -37,14 +37,14 @@ async function urlWatching(base, onchange) {
     if (old_time_out != -1)
         clearTimeout(old_time_out)
     var old_base = base;
-    function start() {
+    async function  start() {
         if (window.location.href != old_base) {
-            onchange(window.location.pathname.split('/'))
+           await onchange(window.location.pathname.split('/'))
             old_base = window.location.href;
         }
         old_time_out = setTimeout(start,100)
     }
-    start();
+    await start();
 }
 function getModule(path) {
     return new Promise((r, e) => {
@@ -81,8 +81,51 @@ function combine(A, BClass) {
     A.__init__(A);
     return A;
 }
+
+
 class BaseView {
-    setUrl(url) {
+    
+    i18n_loadFromView() {
+        
+        window.language="vn";
+        var url=`${this.url}.${window.language}.json`;
+        
+        
+        return new Promise((resolve,reject)=>{
+            fetch(url)
+            .then(response => response.json())
+            .then(data => resolve(data))
+            .catch(e=>reject(e));;
+        })
+    }
+    i18n_loadFromApp() {
+        
+        window.language="vn";
+        var url=`${document.head.baseURI}static/i18n/${window.language}.json`;
+        
+        
+        return new Promise((resolve,reject)=>{
+            fetch(url)
+            .then(response => response.json())
+            .then(data => resolve(data))
+            .catch(e=>reject(e));
+        })
+    }
+    __merege__(a,b){
+        var ret ={};
+            var keys=Object.keys(a);
+            keys.forEach((k,i)=>{
+                ret[k.toLowerCase()]=a[k]
+            });
+
+            keys=Object.keys(b);
+            keys.forEach((k,i)=>{
+                ret[k.toLowerCase()]=b[k]
+            });
+            return ret;
+        
+    }
+    async setUrl(url) {
         var metaInfo = JSON.parse(JSON.stringify(url));
         if (metaInfo.url)
             this.url = metaInfo.url;
@@ -94,7 +137,29 @@ class BaseView {
         var urlId = URL.createObjectURL(new Blob([this.templateUrl]));
         var id = urlId.split('/')[urlId.split('/').length - 1];
         this.id = id;
+        var dataPage={}
+        var dataApp={}
+        try {
+            dataPage= await this.i18n_loadFromView(this);
+        }
+        catch(e){
 
+        }
+
+        try {
+            dataApp= await this.i18n_loadFromApp(this);
+        }
+        catch(e){
+
+        }
+        debugger;
+        this.$i18n=this.__merege__(dataApp,dataPage);
+        this.$applyAsync();
+        console.log(this.$i18n);
+
+    }
+    $res(key){
+        return (this.$i18n||{})[key.toLowerCase()]||key
     }
     async getLayoutHtml() {
         if (!this._layoutHtml)
@@ -116,8 +181,10 @@ class BaseView {
         var compile = angular.element(document.querySelector('[ng-controller]')).injector().get("$compile");
         this.$elements = $("<div class='test'>" + html + "</div>").contents();
         compile(this.$elements)(this);
+       
         this.$elements.appendTo(ele);
-        this.$applyAsync();
+        this.$apply();
+        
     }
     async asWindow() {
         var win = new ui_window();
@@ -149,12 +216,12 @@ class BaseView {
     }
 }
 function View(url, classView) {
-    function applyResolve(scope) {
+     async function applyResolve(scope) {
         scope = scope || angular.element(document.body).scope().$root;
 
         var subScope = scope.$new(true);
         subScope = combine(subScope, classView)
-        subScope.setUrl(url);
+        await subScope.setUrl(url);
         return subScope;
     };
     return new Promise(function (resolve, reject) {
@@ -170,6 +237,7 @@ function View(url, classView) {
             run();
         };
         new watcher(function () {
+            debugger;
             resolve(applyResolve);
         });
 

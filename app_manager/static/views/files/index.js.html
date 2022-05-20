@@ -36,24 +36,41 @@
             }
     </style>
     <div class="header layout-rows">
-        <div>
+        <div class="layout-rows">
             <div>
-                {{currentAppName}}
+           
+            {{$res("Select app")}}
             </div>
+            <div>
             <select ng-model="currentAppName" ng-change="doLoadAllFiles().then()">
                 <option ng-repeat="p in listOfApp" value="{{p.Name}}">
                     {{p.Name}}
                 </option>
             </select>
+            </div>
+        </div>
+        <div class="dock full"></div>
+        <div>
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Dropdown button
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <a class="dropdown-item" href="#">Action</a>
+                  <a class="dropdown-item" href="#">Another action</a>
+                  <a class="dropdown-item" href="#">Something else here</a>
+                </div>
+              </div>
         </div>
 
         <div>
-            <input type="button" class="btn btn-primary" value="New Zip File" ng-click="doOpenUploadZipWindow().then()" />
+            <input type="button" class="btn btn-primary" value="{{$res('Upload zip and uncompress')}}" ng-click="doOpenUploadZipWindow().then()" />
         </div>
         <div>
             <input type="button" class="btn btn-primary" value="New" ng-click="doOpenUploadWindow().then()" />
         </div>
     </div>
+    
     <div class="dock full" style="margin:15px">
         <div rpct-lazy-scroll source="listOfFiles" item-var="p" class="row" on-request-data="doLoadMore" page-size="20">
             <rpct-template>
@@ -114,6 +131,7 @@
                 
             </rpct-template>
         </div>
-
+       
+        
     </div>
 </div>

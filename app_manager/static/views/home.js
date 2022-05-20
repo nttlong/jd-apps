@@ -13,39 +13,34 @@ var homeView = await View(import.meta, class homeview extends BaseScope {
         
         
     }
+    
     async start() {
-        await urlWatching($("head base").attr("href"), (path) => {
+        await urlWatching($("head base").attr("href"),async (path) => {
             $("#home_view").empty();
             if (path[1]=="edit") {
                 $('#home-page').hide();
-                import("./app_edit/index.js").then(r => {
-                    var view = r.default();
-                    view.doEditApp(path[2]).then();
-                    debugger;
-                    view.render($("#home_view")[0]);
-                    $("#home_view").show();
-                });
+                var r =await import("./app_edit/index.js");
+                var view =await r.default();
+                view.doEditApp(path[2]).then();
+                view.render($("#home_view")[0]);
+                $("#home_view").show();
                 
             }
             if (path[1] == "files") {
                 $('main[role="main"]').hide();
-                import("./files/index.js").then(r => {
-                    var view = r.default();
-                    view.doStartView(path[2]).then();
-                    debugger;
-                    view.render($("#home_view")[0]);
+                var r= await import("./files/index.js");
+                var view = await r.default();
+                await view.doStartView(path[2])
+                await view.render($("#home_view")[0]);
                     $("#home_view").show();
-                });
-
             }
            if (path[1] == "register") {
                $('#home-page').hide();
-               import("./app_edit/index.js").then(r => {
-                   var view = r.default();
-                   view.doNewApp(path[2]).then();
-                   view.render($("#home_view")[0]);
+               var r= await import("./app_edit/index.js");
+                   var view =await r.default();
+                 await  view.doNewApp(path[2]);
+                 await  view.render($("#home_view")[0]);
                    $("#home_view").show();
-               });
 
            }
             if (window.location.href == $("head base").attr("href")) {

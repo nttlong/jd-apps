@@ -45,18 +45,7 @@ rcpLazyScrollModule.directive("rpctLazyScroll", ["$compile",($compile) => {
                     run();
                 });
             }
-
-            async function start() {
-                var pH = await getParentHeight();
-                $(e[0]).parent().css({
-                    "max-height": pH
-                })
-                $(e[0]).css({
-                    "max-height": pH,
-                    "overflow-y": "auto",
-                    "overflow-x":"hidden"
-                });
-                class component {
+            class component {
                     itemTemplate = "";
                     list = [];
                     scope;
@@ -68,12 +57,13 @@ rcpLazyScrollModule.directive("rpctLazyScroll", ["$compile",($compile) => {
                     constructor(scope) {
                         this.scope = scope;
                     }
-                    renderList(renderList, cb) {
-                        var me = this;
+                    renderData(renderList) {
+                        return new Promise((resolve,reject)=>{
+                            var me = this;
                         var div = $("<div></div>");
                         var start = this.list.length;
                         var end = start + renderList.length;
-
+                       
 
                         var index = 0;
                         for (var i = start; i < end; i++) {
@@ -100,7 +90,7 @@ rcpLazyScrollModule.directive("rpctLazyScroll", ["$compile",($compile) => {
                                 div.children().each((index, ce) => {
                                     $(ce).contents().appendTo(ret[0]);
                                 });
-                                cb(ret.contents());
+                                resolve(ret.contents());
                             }
                             else {
                                 setTimeout(watch, 10);
@@ -108,8 +98,21 @@ rcpLazyScrollModule.directive("rpctLazyScroll", ["$compile",($compile) => {
                         }
                         watch();
 
+                        });
+                        
                     }
                 }
+            async function start() {
+                var pH = await getParentHeight();
+                $(e[0]).parent().css({
+                    "max-height": pH
+                })
+                $(e[0]).css({
+                    "max-height": pH,
+                    "overflow-y": "auto",
+                    "overflow-x":"hidden"
+                });
+                
                 var cmp = new component(s);
                 cmp.itemTemplate = $(e[0]).data().displayTemplate;
                 cmp.pageSize = s.$eval(a.pageSize);
@@ -118,19 +121,20 @@ rcpLazyScrollModule.directive("rpctLazyScroll", ["$compile",($compile) => {
                     $(e[0]).removeAttr("data-display-template");
                 }
                 cmp.list = s.$eval(a.source) || [];
-                cmp.renderList(s.$eval(a.source) || [], r => {
-                    //$(e[0]).empty();
-                    //$(e[0]).scrollTop(0);
-                    r.appendTo(e[0]);
-                    cmp.oldList = cmp.list;
-                });
+              
+                var r= await cmp.renderData(s.$eval(a.source)|| [])
+                    $(e[0]).empty();
+                    $(e[0]).scrollTop(0);
+                r.appendTo(e[0]);
+                cmp.oldList = cmp.list;
+                
 
 
                 s.$watch(a.source, (n, o) => {
-
+                    debugger;
                     if (angular.isArray(n)) {
                         if (n !== cmp.oldList) {
-                            cmp.renderList(n, r => {
+                             cmp.renderData(n).then( r => {
                                 $(e[0]).empty();
                                 $(e[0]).scrollTop(0);
                                 cmp.currentPageIndex = 0;
@@ -148,11 +152,14 @@ rcpLazyScrollModule.directive("rpctLazyScroll", ["$compile",($compile) => {
                     var y = $(e[0]).scrollTop();
                     var h = $(e[0]).height();
                     var element = event.target;
-                    if (element.scrollHeight - element.scrollTop === element.clientHeight) {
+                    if (
+                        element.scrollHeight - element.scrollTop +5> element.clientHeight  &&
+                        element.scrollHeight - element.scrollTop -5< element.clientHeight
+                    ) {
                         cmp.onRequestData = s.$eval(a.onRequestData);
                         var function_on_request_data = s[a.onRequestData]
                         if (angular.isDefined(a.onRequestData)) {
-                            
+                            debugger;
                             if (cmp.onRequestData instanceof (async () => { }).constructor) {
                                 var evt = document.createEvent('Event');
                                 evt.initEvent('lazyLoadOnRquestData', true, true);
@@ -164,7 +171,7 @@ rcpLazyScrollModule.directive("rpctLazyScroll", ["$compile",($compile) => {
                                 evt["done"] = (data) => {
                                     if (!data || (data.length == 0))
                                         cmp.currentPageIndex = old_current_page_index;
-                                    cmp.renderList(data, r => {
+                                    cmp.renderData(data).then(r => {
                                         
                                         r.appendTo(e[0]);
 
@@ -183,7 +190,7 @@ rcpLazyScrollModule.directive("rpctLazyScroll", ["$compile",($compile) => {
                                 evt["pageSize"] = cmp.pageSize;
                                 evt["scope"] = s;
                                 evt["done"] = (data) => {
-                                    cmp.renderList(data, r => {
+                                    cmp.renderData(data).then(r => {
 
                                         r.appendTo(e[0]);
 

@@ -132,7 +132,7 @@ def chunk(request, app_name, chunk_info: UploadChunk, error: ReCompact.api_input
                 ReCompact.dbm.FIELDS.MainFileId == fs._id
             )
         )
-        fs_id= fs.id
+        fs_id= fs._id
     else:
         fs_id = upload_item.MainFileId
     assert isinstance(chunk_info.FilePart,UploadedFile)
