@@ -403,7 +403,7 @@ class ui_pdf_rect_picker {
         this.currentPicker = picker;
     }
     getData() {
-        debugger;
+        
         var ret = [];
         this.pageOfPickers.forEach(p => {
             if (p.pickers.length > 0 && p.pageIndex !== undefined && p.pageIndex > 0) {
@@ -844,7 +844,7 @@ class ui_pdf_rect_picker {
             else {
                 console.error(e);
             }
-            debugger;
+            
             throw (e);
         }
     }
@@ -855,7 +855,7 @@ class ui_pdf_rect_picker {
         return this.bufferCanvas[pageIndex] = ui_html.createEle("canvas");
     }
     browseFile() {
-        debugger;
+        
         var me = this;
         return new Promise(function (resolve, reject) {
 

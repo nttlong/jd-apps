@@ -36,7 +36,7 @@ class ui_pdf_desk extends ui_container {
     _orginSize;
 
     constructor(ele, isCustomToolbar) {
-        debugger;
+        
         super();
         this._orginSize = ele.getBoundingClientRect();
         this._isCustomToolbar = isCustomToolbar;
@@ -372,7 +372,7 @@ class ui_pdf_desk extends ui_container {
                         this._onTesseractRecognize(err, undefined);
                     }
                     else {
-                        debugger;
+                        
                         this._onTesseractRecognize(undefined, { text: data.data.text, data: data.data });
                     }
                 }

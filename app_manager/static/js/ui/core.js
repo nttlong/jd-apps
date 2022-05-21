@@ -1,4 +1,16 @@
-﻿
+﻿if (document.head.getElementsByTagName("base").length == 0) {
+    console.error(`
+        it looks like thy forget put base tag in head of thy's html page
+        see :https://www.w3schools.com/tags/tag_base.asp#:~:text=The%20tag%20specifies%20the,inside%20the%20element.
+    `)
+}
+else if(!document.head.getElementsByTagName("base")[0].href)
+{
+    console.error(`
+        it looks like thy forget put base tag in head of thy's html page
+        see; https://www.w3schools.com/tags/tag_base.asp#:~:text=The%20tag%20specifies%20the,inside%20the%20element.
+    `)
+}
 import { ui_window } from "./ui_window.js";
 var callbackList = [];
 function fecthHtml(url) {
@@ -131,7 +143,10 @@ class BaseView {
             this.url = metaInfo.url;
         else
             this.url = url;
-
+        
+        var items = this.url.split('/');
+        var urlLocal = this.url.substring(0, this.url.length - items[items.length - 1].length);
+        this.urlLocation = urlLocal;
         this.templateUrl = this.url + ".html";
 
         var urlId = URL.createObjectURL(new Blob([this.templateUrl]));
@@ -152,10 +167,10 @@ class BaseView {
         catch(e){
 
         }
-        debugger;
+        
         this.$i18n=this.__merege__(dataApp,dataPage);
         this.$applyAsync();
-        console.log(this.$i18n);
+        
 
     }
     $res(key){
@@ -175,6 +190,22 @@ class BaseView {
     getTemplateUrl() {
         return this.templateUrl;
     }
+    onBeforeDestroy(asyncCallBack) {
+        this._onBeforeDestroy = asyncCallBack;
+    }
+    async __render__(ele) {
+
+        var html = await this.getLayoutHtml();
+        var compile = angular.element(document.querySelector('[ng-controller]')).injector().get("$compile");
+        this.$elements = $("<div class='test'>" + html + "</div>").contents();
+        compile(this.$elements)(this);
+
+        this.$elements.appendTo(ele);
+        this.$apply();
+        
+        
+
+    }
     async render(ele) {
         
         var html = await this.getLayoutHtml();
@@ -184,17 +215,88 @@ class BaseView {
        
         this.$elements.appendTo(ele);
         this.$apply();
+        var me = this;
+        function startWatchDestroy() {
+
+            async function run() {
+                if (!$.contains($("body")[0], me.$elements[0])) {
+                    if (me._onBeforeDestroy) {
+                        await me._onBeforeDestroy();
+                    }
+                    me.$destroy();
+                }
+                else {
+                    setTimeout(await run, 10);
+                }
+            }
+            run();
+        }
+        startWatchDestroy();
         
+    }
+    $findEle(selector,timeOut) {
+        var me = this;
+        timeOut = timeOut || 500;
+        var n = timeOut / 100;
+        return new Promise((resolve, reject) => {
+            function run() {
+                if (me.$elements.find(selector).length > 0) {
+                    resolve($(me.$elements.find(selector)[0]));
+                }
+                else {
+                    if (n > 0) {
+                        setTimeout(run, 100);
+                        n--;
+                    }
+                    else {
+                        reject("Timeout,element wasnot found");
+                    }
+                }
+            }
+            run();
+        });
+    }
+    async onResize(asyncCallback) {
+        this._onResize = asyncCallback;
+        return this;
     }
     async asWindow() {
         var win = new ui_window();
         var tmpDir = $("<div></div>");
-        await this.render(tmpDir[0]);
+        await this.__render__(tmpDir[0]);
         win.setBody(tmpDir[0]);
-        win.show();
-        win.onAfterClose(function () {
-            tmpDir.remove();
+        await win.show();
+        var me = this;
+        await win.onBeforeClose(async function () {
+            var ret = true;
+            if (me._onBeforeDestroy) {
+               ret= await me._onBeforeDestroy();
+            }
+            return ret;
         });
+        await win.onAfterClose(async function () {
+            tmpDir.remove();
+            me.$destroy();
+        });
+        await win.onResize(async (x,y) => {
+            if (me._onResize) {
+                await me._onResize(x, y);
+                me.$elements.css({
+                    "min-width": x,
+                    "min-height": y
+                })
+            }
+        });
+    }
+    async loadView(relUrl) {
+        if (relUrl.substring(0, 2) == "./") {
+            relUrl = relUrl.substring(2, relUrl.length);
+        }
+
+        var urlOfView = this.urlLocation + relUrl;
+        var r = await import(urlOfView);
+        var view = await r.default();
+        return view;
     }
     onInit() {
         console.log(this.__proto__.constructor.name + " has init");
@@ -237,7 +339,7 @@ function View(url, classView) {
             run();
         };
         new watcher(function () {
-            debugger;
+            
             resolve(applyResolve);
         });
 

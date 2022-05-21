@@ -1,24 +1,5 @@
-﻿var rcpLazyScrollModule = angular.module("rpct-ui", []);
-/**
- Được sử dụng lồng vào bên trong các component mà nó cần template
- */
-rcpLazyScrollModule.directive("rpctTemplate", [() => {
-    return {
-        restrict: "ECA",
-        scope: false,
-        compile: function (element) {
-            var originHtml = element.html();
-            element.empty();
-            element.remove();
-            return {
-                pre: function (s, e, a, c, t) {
-                    e.parent().attr("data-display-template", encodeURIComponent(escape(originHtml)));
-                    e.remove();
-                }
-            };
-        }
-    }
-}]);
+﻿import rcmpctModule from "./rcmpt.js"
+
 /**
  * How to use: Re-Compact lazy scroll
  * <div rpct-lazy-scroll source='[init data source in scope]' on-request-data=[the function when request more data]>
@@ -26,7 +7,7 @@ rcpLazyScrollModule.directive("rpctTemplate", [() => {
  * </div>
  * 
  * */
-rcpLazyScrollModule.directive("rpctLazyScroll", ["$compile",($compile) => {
+rcmpctModule.directive("rcmpctLazyScroll", ["$compile",($compile) => {
     return {
         restrict:"A",
         link: (s, e, a) => {
@@ -131,7 +112,7 @@ rcpLazyScrollModule.directive("rpctLazyScroll", ["$compile",($compile) => {
 
 
                 s.$watch(a.source, (n, o) => {
-                    debugger;
+                    
                     if (angular.isArray(n)) {
                         if (n !== cmp.oldList) {
                              cmp.renderData(n).then( r => {
@@ -159,7 +140,7 @@ rcpLazyScrollModule.directive("rpctLazyScroll", ["$compile",($compile) => {
                         cmp.onRequestData = s.$eval(a.onRequestData);
                         var function_on_request_data = s[a.onRequestData]
                         if (angular.isDefined(a.onRequestData)) {
-                            debugger;
+                            
                             if (cmp.onRequestData instanceof (async () => { }).constructor) {
                                 var evt = document.createEvent('Event');
                                 evt.initEvent('lazyLoadOnRquestData', true, true);
@@ -215,4 +196,4 @@ rcpLazyScrollModule.directive("rpctLazyScroll", ["$compile",($compile) => {
         }
     }
 }]);
-export default rcpLazyScrollModule
+export default rcmpctModule

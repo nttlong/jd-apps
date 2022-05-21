@@ -138,20 +138,15 @@ class ui_window extends ui_container {
         this._installEvent();
 
     }
-    _raiseEvents(events, next) {
-
-        var sender = new WINDOW_SENDER();
-        sender.index = -1;
-        sender.done = () => {
-            sender.index++;
-            if (sender.index < events.length) {
-                events[sender.index](sender);
-            }
-            else {
-                next();
-            }
+    async _raiseEvents(events, next) {
+        var ret = true;
+        for (var i = 0; i < events.length; i++) {
+            
+            ret = await events[i]();
+            if (!ret) break;
         }
-        sender.done();
+
+        return ret;
     }
     setTitleEle(ele) {
         if (this._titleSpan) {
@@ -192,14 +187,14 @@ class ui_window extends ui_container {
             display: "flex"
         });
     }
-    onResize(cb) {
-        this._onResize = cb;
+    async onResize(asyncCallback) {
+        this._onResize = asyncCallback;
     }
-    onBeforeClose(cb) {
-        this._onBeforeClose.push(cb);
+    async onBeforeClose(asyncCallback) {
+        this._onBeforeClose.push(asyncCallback);
     }
-    onAfterClose(cb) {
-        this._onAfterClose.push(cb);
+    async onAfterClose(asyncCallback) {
+        this._onAfterClose.push(asyncCallback);
     }
     _format() {
         this.css({
@@ -236,16 +231,27 @@ class ui_window extends ui_container {
     }
     _installEvent() {
         var me = this;
+        async function runRaiseEvents() {
+            var ret = true;
+            for (var i = 0; i < me._onBeforeClose.length; i++) {
+                ret = await me._onBeforeClose[i]();
+                if (!ret) break;
+            }
+            return ret;
+        }
         new ui_events.handler(this._close).set({
             onclick: evt => {
-                me._raiseEvents(me._onBeforeClose, () => {
-                    me.css({
-                        display: "none"
-                    });
-                    me._onAfterClose.forEach(f => {
-                        f();
-                    });
-                });
+                runRaiseEvents()
+                    .then(r => {
+                        if (!r) return;
+                          
+                            me.css({
+                                display: "none"
+                            });
+                            me._onAfterClose.forEach(f => {
+                                f().then();
+                            });
+                    })
             }
         });
         this._header.setEvent({
@@ -364,12 +370,15 @@ class ui_window extends ui_container {
         });
         this._resizeable = new ui_events.resizeEdge(this.getEle(), 20);
         this._resizeable.onStartResize(() => {
+            
             this._draggable = false;
             this._starDrag = undefined;
         });
+        
         this._resizeable.onStopResize(() => {
+            console.log(this._raiseOnResize);
             this._draggable = true;
-            this._raiseOnResize();
+            this._raiseOnResize().then();
         });
         this.setEvent({
             onclick: evt => {
@@ -458,14 +467,15 @@ class ui_window extends ui_container {
 
         });
     }
-    show(x, y, cb) {
+    show(x, y) {
         var me = this;
-        setTimeout(() => {
-            me._show(x, y);
-            if (cb) {
-                cb();
-            }
-        }, 100);
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                me._show(x, y);
+                resolve(me);
+            }, 10);
+        });
+        
     }
     _show(x, y) {
         if ((x !== undefined && y !== undefined) ||
@@ -498,10 +508,13 @@ class ui_window extends ui_container {
             });
             this.setOnTop();
         }
-        this._raiseEvents(this._onShow, () => {
-            document.body.appendChild(this.getEle());
-            this.setOnTop();
-        });
+        var me = this;
+        this._raiseEvents(this._onShow).then(r => {
+            if (!r) return;
+            document.body.appendChild(me.getEle());
+            me.setOnTop();
+        })
+           
     }
     setTitle(title) {
         this._titleSpan.innerHTML = title;
@@ -517,19 +530,14 @@ class ui_window extends ui_container {
         this._raiseOnResize();
 
     }
-    _raiseOnResize() {
+    async _raiseOnResize() {
+        
         var style = window.getComputedStyle(this._bodyWind.getEle(), null);
         var h = Number(style.getPropertyValue("height").replace("px", ""));
         var w = Number(style.getPropertyValue("width").replace("px", ""));
         
         if (this._onResize) {
-            try {
-
-
-                this._onResize(w, h);
-            } catch (e) {
-                console.error(e);
-            }
+            await this._onResize(w, h);
         }
     }
     doMaximize() {

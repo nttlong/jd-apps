@@ -284,7 +284,7 @@ var qViews = {
         var cView = views.pop();
         while (cView) {
             cView.ownerScope = scope;
-            debugger;
+            
             await qViews.compileView(cView, Params);
             var cView = views.pop();
         }
@@ -327,7 +327,7 @@ var qViews = {
     compileScript: function compileScript(scriptContent) {
         console.log("Very important");
         var ret = new qViews.scriptCompileInfo();
-        debugger;
+        
 
         var t = eval(scriptContent);
         if (angular.isArray(t)) {
@@ -413,7 +413,7 @@ var qViews = {
                                      ${className}.prototype.__ui_id__=id;   
                              };`
 
-            debugger;
+            
             $(scriptsEles[scriptsEles.length - 1]).text(content);
             content += txtExtens;
             content += `;window.___sync___('${id}',${className})`;
@@ -436,7 +436,7 @@ var qViews = {
                     var $compile = utils.getService("$compile");
                     $compile(view.scope.$element)(view.scope);
                     view.scope.$digest();
-                    debugger;
+                    
                     resolve(view);
                 });
             });

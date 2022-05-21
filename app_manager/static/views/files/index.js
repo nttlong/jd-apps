@@ -1,8 +1,8 @@
 
-import { BaseScope, View } from "../sys/BaseScope.js";
-import { ui_window } from "../../js/ui/ui_window.js";
-import { ui_rect_picker } from "../../js/ui/ui_rect_picker.js";
-import { ui_pdf_desk } from "../../js/ui/ui_pdf_desk.js";
+import { BaseScope, View } from "./../../js/ui/BaseScope.js";
+//import { ui_window } from "../../js/ui/ui_window.js";
+//import { ui_rect_picker } from "../../js/ui/ui_rect_picker.js";
+//import { ui_pdf_desk } from "../../js/ui/ui_pdf_desk.js";
 import api from "../../js/ClientApi/api.js"
 import { redirect, urlWatching, getPaths, msgError } from "../../js/ui/core.js"
 
@@ -12,7 +12,7 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
     listOfFiles = []
     currentAppName = undefined
     async doStartView() {
-        
+
         this.listOfApp = await api.post(`apps/admin/list`, {
             Token: window.token
         })
@@ -28,11 +28,11 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
         this.$applyAsync();
     }
     async doLoadAllFiles() {
-        
+
         this.listOfFiles = await api.post(`files/${this.currentAppName}/list`, {
             Token: window.token,
             PageIndex: 0,
-            PageSize:20
+            PageSize: 20
         });
         this.$applyAsync();
     }
@@ -41,9 +41,9 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
         var player = await r.default();
         player.playByItem(item);
         player.asWindow();
-       
-        
-        
+
+
+
     }
     async doOpenUploadWindow() {
         var uploadForm = await (await import("../upload/index.js")).default();
@@ -51,12 +51,12 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
         uploadForm.asWindow();
     }
     async doOpenUploadZipWindow() {
-        var uploadZipForm =await (await import("../zip_upload/index.js")).default();
+        var uploadZipForm = await (await import("../zip_upload/index.js")).default();
         uploadZipForm.setApp(this.currentAppName);
         uploadZipForm.asWindow();
     }
     doLoadMore(sender) {
-        
+
         api.post(`files/${sender.scope.currentAppName}/list`, {
             Token: window.token,
             PageIndex: sender.pageIndex,
@@ -64,7 +64,7 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
         }).then(r => {
             sender.done(r);
         });
-        
+
     }
 });
 export default filesView;

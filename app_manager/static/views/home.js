@@ -1,5 +1,5 @@
 ﻿
-import { BaseScope, View } from "./sys/BaseScope.js";
+import { BaseScope, View } from "./../js/ui/BaseScope.js";
 import { ui_window } from "../js/ui/ui_window.js";
 import { ui_rect_picker } from "../js/ui/ui_rect_picker.js";
 import { ui_pdf_desk } from "../js/ui/ui_pdf_desk.js";
@@ -15,34 +15,42 @@ var homeView = await View(import.meta, class homeview extends BaseScope {
     }
     
     async start() {
+        var me = this;
         await urlWatching($("head base").attr("href"),async (path) => {
             $("#home_view").empty();
             if (path[1]=="edit") {
                 $('#home-page').hide();
-                var r =await import("./app_edit/index.js");
-                var view =await r.default();
-                view.doEditApp(path[2]).then();
-                view.render($("#home_view")[0]);
+                var view= await me.loadView("app_edit/index.js");
+                //var view =await import("./app_edit/index.js");
+                await view.doEditApp(path[2]);
+                await view.render($("#home_view")[0]);
                 $("#home_view").show();
                 
             }
             if (path[1] == "files") {
-                $('main[role="main"]').hide();
-                var r= await import("./files/index.js");
-                var view = await r.default();
+                $('#home-page').hide();
+                var view = await me.loadView("./files/index.js")
                 await view.doStartView(path[2])
                 await view.render($("#home_view")[0]);
-                    $("#home_view").show();
+                $("#home_view").show();
+                
             }
            if (path[1] == "register") {
                $('#home-page').hide();
-               var r= await import("./app_edit/index.js");
-                   var view =await r.default();
-                 await  view.doNewApp(path[2]);
-                 await  view.render($("#home_view")[0]);
-                   $("#home_view").show();
+               var view = await me.loadView("./app_edit/index.js")
+               await  view.doNewApp(path[2]);
+               await  view.render($("#home_view")[0]);
+               $("#home_view").show();
 
-           }
+            }
+            if (path[1] == "test") {
+                $('#home-page').hide();
+                var r = await import("./test/index.js");
+                var view = await r.default();
+                await view.render($("#home_view")[0]);
+                $("#home_view").show();
+
+            }
             if (window.location.href == $("head base").attr("href")) {
                 $("#home_view").hide();
                 $('#home-page').show();

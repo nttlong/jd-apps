@@ -311,7 +311,7 @@ var ui_html = {
     showEleInContainerWithPosMouseEventPosition: function (container, ele, evt) {
         var pos = getClientCoordinate(evt, container);
         ele.style.position = "absolute";
-        debugger;
+        
         ele.style.left = pos.x.toString() + "px";
         ele.style.top = pos.y.toString() + "px";
         ele.style.display = "block";

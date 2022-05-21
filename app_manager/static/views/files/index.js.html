@@ -42,6 +42,13 @@
             {{$res("Select app")}}
             </div>
             <div>
+                <input bs4-select placeholder="{{$res('Chọn ứng dụng')}}" 
+                       data-source="listOfApp" 
+                       value-member="Name" 
+                       display-member="Name"
+                       ng-model="currentAppName" style="width:200px"/>
+                </div>
+            <div>
             <select ng-model="currentAppName" ng-change="doLoadAllFiles().then()">
                 <option ng-repeat="p in listOfApp" value="{{p.Name}}">
                     {{p.Name}}
@@ -72,8 +79,8 @@
     </div>
     
     <div class="dock full" style="margin:15px">
-        <div rpct-lazy-scroll source="listOfFiles" item-var="p" class="row" on-request-data="doLoadMore" page-size="20">
-            <rpct-template>
+        <div rcmpct-lazy-scroll source="listOfFiles" item-var="p" class="row" on-request-data="doLoadMore" page-size="20">
+            <rcmpct-template>
                 <div class="col-6 col-md-6 col-sm-12 col-xs-12">
                     <div class="layout-rows  shadow-box" style="height:200px">
                         <div style="min-width:140px;max-width:140px" class="shadow-box">
@@ -129,7 +136,7 @@
                     </div>
                 </div>
                 
-            </rpct-template>
+            </rcmpct-template>
         </div>
        
         

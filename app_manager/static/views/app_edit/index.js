@@ -1,8 +1,5 @@
 
-import { BaseScope, View } from "../sys/BaseScope.js";
-import { ui_window } from "../../js/ui/ui_window.js";
-import { ui_rect_picker } from "../../js/ui/ui_rect_picker.js";
-import { ui_pdf_desk } from "../../js/ui/ui_pdf_desk.js";
+import { BaseScope, View } from "./../../js/ui/BaseScope.js";
 import api from "../../js/ClientApi/api.js"
 import { redirect, urlWatching, getPaths, msgError } from "../../js/ui/core.js"
 
@@ -23,7 +20,7 @@ var appEditView = await View(import.meta, class EditAppView extends BaseScope {
         this.$applyAsync();
     }
     async doUpdateApp() {
-        debugger;
+        
         var me = this;
         var logoFiles = me.$elements.find("#logo")[0].files;
         var logoFile = undefined
