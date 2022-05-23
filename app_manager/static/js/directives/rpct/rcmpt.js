@@ -44,24 +44,43 @@ rcmpctModule.directive("rcmpctProgressbar", [() => {
         replace: true,
         template: `<div><div id='progress' style="position:relative;display:none"></div></div>`,
         link: (s, e, a) => {
-            
+            function getParentWidth() {
+                return new Promise((resolve, reject) => {
+                    function run() {
+                        if ($.contains($('body')[0], e[0]) && $(e[0]).parent().innerWidth()>0) {
+                            resolve($(e[0]).parent().innerWidth());
+                        }
+                        else {
+                            setTimeout(run, 10);
+                        }
+                    }
+                    run();
+                });
+            }
             class component {
 
             }
-            $(e[0]).find("#progress").css({
-                "background-color":a.color||"red",
-                "left": "0",
-                "width": "0%",
-                "height":"100%"
-            });
-            a.$observe("ngValue", v => {
-                if (v > 0) {
-                    $(e[0]).find("#progress").show();
-                    $(e[0]).find("#progress").css({
-                        "width": v + "%"
-                    });
-                }
-            });
+            var start = async () => {
+                var w = await getParentWidth();
+                $(e[0]).css({
+                    "width":w
+                })
+                $(e[0]).find("#progress").css({
+                    "background-color": a.color || "red",
+                    "left": "0",
+                    "width": "0%",
+                    "height": "100%"
+                });
+                a.$observe("ngValue", v => {
+                    if (v > 0) {
+                        $(e[0]).find("#progress").show();
+                        $(e[0]).find("#progress").css({
+                            "width": v + "%"
+                        });
+                    }
+                });
+            }
+            start().then();
 
         }
     }

@@ -10,6 +10,9 @@ from django.http import JsonResponse,HttpResponse
 class Filter:
     PageSize= (int,False)
     PageIndex = (int,False)
+    FieldSearch =(str,False)
+    ValueSearch =(str,False)
+
 
 @ReCompact.api_input.map_param(cls_params=Filter)
 @require_http_methods(["POST"])
@@ -29,14 +32,19 @@ def get_list(request,app_name,data:Filter,error:ReCompact.api_input.Error):
     import ReCompact.db_context
     import mimetypes
     import ReCompact.dbm
+    import re
 
     db = ReCompact.db_context.get_db(app_name)
 
 
     agg = ReCompact.dbm.DbObjects.aggregrate(db, api_models.Model_Files.DocUploadRegister)
+    if data.ValueSearch and data.ValueSearch!="" and data.FieldSearch=="FileName":
+        agg = agg.match(
+            ReCompact.dbm.FILTER.FileName==re.compile(data.ValueSearch,re.IGNORECASE)
+        )
     agg = agg.sort(
-        ReCompact.dbm.DbObjects.FIELDS.RegisteredOn.asc(),
-        ReCompact.dbm.DbObjects.FIELDS.Name.asc(),
+        ReCompact.dbm.DbObjects.FIELDS.RegisterOn.desc(),
+        ReCompact.dbm.DbObjects.FIELDS.FileName.asc()
     ).skip(data.PageSize*data.PageIndex).limit(data.PageSize)
     ret_list = list(agg)
     ret=[]

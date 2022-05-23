@@ -28,13 +28,19 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
         this.$applyAsync();
     }
     async doLoadAllFiles() {
-
+        var me = this;
+        debugger;
         this.listOfFiles = await api.post(`files/${this.currentAppName}/list`, {
             Token: window.token,
             PageIndex: 0,
-            PageSize: 20
+            PageSize: 20,
+            FieldSearch: "FileName",
+            ValueSearch: me.fileNameSearchValue
         });
         this.$applyAsync();
+    }
+    async doSearchByFileName() {
+        await this.doLoadAllFiles();
     }
     async doOpenInWindows(item) {
         var r = await import("../player/index.js");
@@ -60,7 +66,9 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
         api.post(`files/${sender.scope.currentAppName}/list`, {
             Token: window.token,
             PageIndex: sender.pageIndex,
-            PageSize: sender.pageSize
+            PageSize: sender.pageSize,
+            FieldSearch: "FileName",
+            ValueSearch: sender.scope.fileNameSearchValue
         }).then(r => {
             sender.done(r);
         });

@@ -1,26 +1,19 @@
-<div style="width:700px" class="layout-rows">
-    <div style="width:200px">
+<div style="padding:10px">
+    <rcmpct-grid cols="1fr 2fr">
 
-    </div>
-    <div class="dock full debug">
-        <div class="row">
-            <div class="col-4">
-                Select file
-            </div>
-            <div class="col-8">
-                <input type="file" id="file" accept="zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed">
+        <label>{{$res("Select file")}}:</label>
+        <div>
+            <input type="file" id="file"  accept="zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed"/>
+        </div>
+        <label>{{$res("File size")}}:</label><label>{{info.SizeUploadedInHumanReadable}}</label>
+        <div style="grid-column:1/-1">
+            <rcmpct-progressbar style="width:100%;height:24px" ng-value="{{info.Percent}}" color="#000000" />
+        </div>
 
-            </div>
+        <div style="grid-column:1/-1">
+            <input type="button" class="btn btn-primary btn-small" style="float:right" value="{{$res('Upload')}}" ng-click="doUploadZipFile().then()" />
+
         </div>
-        <div class="row">
-            <div class="col-12">
-                {{info}}
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <input type="button" class="btn btn-primary" value="Upload" ng-click="doUploadZipFile().then()" />
-            </div>
-        </div>
-    </div>
+    </rcmpct-grid>
+    
 </div>

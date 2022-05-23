@@ -1,5 +1,7 @@
 import asyncio
 
+import ReCompact.dbm
+
 
 def __get_col__(db, data_item_type):
     """
@@ -162,4 +164,18 @@ class Aggregrate:
         self.pipeline.append({
             "$sort": _sort
         })
+        return self
+
+    def match(self, filter):
+        _match = {}
+        if isinstance(filter, Docs.Fields):
+            self.pipeline.append({
+                "$match": filter.to_mongodb()
+            })
+        elif isinstance(filter, dict):
+            self.pipeline.append({
+                "$match": filter
+            })
+        else:
+            raise Exception(f"Thy's filter must be ReCompact.dbm.FIELDS or  dict")
         return self

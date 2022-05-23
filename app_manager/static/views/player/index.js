@@ -10,8 +10,8 @@ var playerView = await View(import.meta, class PlayerView extends BaseScope {
            
            
             var jQVideo = await me.$findEle("video");
-            jQVideo.attr("width", w)
-            jQVideo.attr("height", h)
+            jQVideo.attr("width", w-20)
+            jQVideo.attr("height", h-20)
         });
         
     }
