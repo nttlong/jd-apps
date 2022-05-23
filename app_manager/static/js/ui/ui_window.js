@@ -83,6 +83,7 @@ class ui_window extends ui_container {
         this._header.getEle().setAttribute("class", "header");
         this._header.css({
             height: "32px",
+            padding:"0"
             //marginTop:"20px"
         });
         this.undraggable();

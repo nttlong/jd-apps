@@ -37,18 +37,7 @@
     </style>
     <div class="header layout-rows">
         <div class="layout-rows">
-            <div>
-           
-            {{$res("Select app")}}
-            </div>
-            <div>
-                <input bs4-select placeholder="{{$res('Chọn ứng dụng')}}" 
-                       data-source="listOfApp" 
-                       value-member="Name" 
-                       display-member="Name"
-                       ng-model="currentAppName" style="width:200px"/>
-                </div>
-            <div>
+           <div>
             <select ng-model="currentAppName" ng-change="doLoadAllFiles().then()">
                 <option ng-repeat="p in listOfApp" value="{{p.Name}}">
                     {{p.Name}}
@@ -57,7 +46,7 @@
             </div>
         </div>
         <div class="dock full"></div>
-        <div>
+        <!--<div>
             <div class="dropdown">
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   Dropdown button
@@ -68,20 +57,66 @@
                   <a class="dropdown-item" href="#">Something else here</a>
                 </div>
               </div>
-        </div>
+        </div>-->
 
         <div>
-            <input type="button" class="btn btn-primary" value="{{$res('Upload zip and uncompress')}}" ng-click="doOpenUploadZipWindow().then()" />
+            <div class="btn-group">
+                <input type="button" class="btn btn-primary btn-sm" value="{{$res('New compress')}}" ng-click="doOpenUploadZipWindow().then()" />
+                <input type="button" class="btn btn-primary btn-sm" value="{{$res('New')}}" ng-click="doOpenUploadWindow().then()" />
+            </div>
+            
         </div>
         <div>
-            <input type="button" class="btn btn-primary" value="New" ng-click="doOpenUploadWindow().then()" />
+            
         </div>
     </div>
     
     <div class="dock full" style="margin:15px">
         <div rcmpct-lazy-scroll source="listOfFiles" item-var="p" class="row" on-request-data="doLoadMore" page-size="20">
             <rcmpct-template>
-                <div class="col-6 col-md-6 col-sm-12 col-xs-12">
+                <rcmpct-grid cols="(,700,auto)(700,,auto auto)"  class="shadow-box" >
+                    <rcmpct-grid cols="180px minmax(0,1fr)">
+                        <div>
+                            <img style="min-width:120px;max-width:120px;margin:10px" ng-src="{{p.ThumbUrl}}" ng-if="p.HasThumb" />
+                        </div>
+                        <rcmpct-grid cols="30% 70%">
+
+                            <div style="overflow:hidden;text-overflow:ellipsis;grid-column:1/-1">
+                                <a style="" ng-if="p.MimeType.indexOf('video/')==0" href="javascript:void(0);" ng-click="doOpenInWindows(p).then()">
+                                    {{p.FileName}}
+                                </a>
+
+                                <a style="text-overflow:ellipsis;white-space:nowrap" ng-if="p.MimeType.indexOf('video/')!=0" ng-href="{{p.UrlOfServerPath}}" target="_blank">{{p.FileName}}</a>
+                            </div>
+
+                            <a>Status</a>
+                            <label>
+                                Hoàn tất
+                            </label>
+
+                        </rcmpct-grid>
+                    </rcmpct-grid>
+                    
+                    <!--<div class="debug">
+        
+    </div>
+    <div class="debug">
+        <rcmpct-grid cols="220px  minmax(0,1fr)">
+            <div>
+                <label>
+                    {{$res("File name")}}
+                </label>
+            </div>
+            <div>
+                
+            </div>
+
+        </rcmpct-grid>
+    </div>-->
+
+                </rcmpct-grid>
+                
+                <!--<div class="col-6 col-md-6 col-sm-12 col-xs-12">
                     <div class="layout-rows  shadow-box" style="height:200px">
                         <div style="min-width:140px;max-width:140px" class="shadow-box">
                             <div class="layout-rows">
@@ -134,7 +169,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>-->
                 
             </rcmpct-template>
         </div>
