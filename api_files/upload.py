@@ -151,6 +151,18 @@ def chunk(request, app_name, chunk_info: UploadChunk, error: ReCompact.api_input
     NumOfChunksCompleted+=1
     if NumOfChunksCompleted== upload_item.NumOfChunks:
         Status=1
+        try:
+            import ReCompact.kafka_producer
+            topic =ReCompact.kafka_producer.get_producer().file_upload.topic
+
+            topic.send(dict(
+
+                FileName=temp_upload_file,
+                UploadItem=upload_item.DICT
+
+            ))
+        except Exception as e:
+            print(e)
     ReCompact.dbm.DbObjects.update(
         db,
         api_models.Model_Files.DocUploadRegister,
@@ -171,6 +183,9 @@ def chunk(request, app_name, chunk_info: UploadChunk, error: ReCompact.api_input
         SizeUploadedInHumanReadable = humanize.filesize.naturalsize(SizeUploaded),
         Status=Status
     )
+    # produce a new topc name file_upload
+
+
 
     ret_h =JsonResponse(ret_dict,safe=True)
     return ret_h

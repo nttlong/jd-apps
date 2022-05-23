@@ -14,3 +14,4 @@ moviepy~=1.0.3
 ipython ~=7.33.0
 matplotlib-inline~=0.1.3
 opencv-python~=4.5.5.64
+confluent-kafka~=1.8.2

@@ -47,3 +47,5 @@ TEMP_UPLOAD_DIR_: "C:/code/python/tmp/web"
 TEMP_UNZIP_DIR_: "C:/code/python/tmp/unzip"
 TEMP_UPLOAD_DIR: "//192.168.18.36/Share/DjangoWeb/temp"
 TEMP_UNZIP_DIR: "//192.168.18.36/Share/DjangoWeb/unzip"
+KAFKA:
+  BROKERS: [192.168.18.36:9092]

@@ -113,6 +113,9 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+KAFKA = dict(
+    BROKERS=["192.168.18.36:9092"]
+)
 
 
 # Internationalization
