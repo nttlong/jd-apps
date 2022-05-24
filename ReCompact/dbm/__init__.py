@@ -80,6 +80,9 @@ def __ob_get_attr__(*args, **kwargs):
 
     if attr_name == "JSON_DATA":
         from django.http import JsonResponse
+        import json
+        from bson import ObjectId
+
         return JsonResponse(dict(
             data=instance.__fields__
         ), safe=False)
@@ -91,7 +94,7 @@ def __ob_get_attr__(*args, **kwargs):
     if attr_name.__len__() > 4 and attr_name[0:2] == "__" and attr_name[-2:] == "__":
         return obj_type.__original_getattribute__(instance, attr_name)
     if not hasattr(obj_type, attr_name):
-        raise Exception(f'{attr_name} was not found in {obj_type.__module__}.{obj_type.__name__}. Does you mean JSON_DATA or DICT for Web api?')
+        raise Exception(f'{attr_name} was not found in {obj_type.__module__}.{obj_type.__name__}. Does thee mean JSON_DATA or DICT for Web api?')
 
     if instance.__dict__.get("__fields__", None) == None:
         instance.__dict__["__fields__"] = {}
