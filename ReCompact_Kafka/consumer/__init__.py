@@ -2,7 +2,7 @@ from confluent_kafka import Consumer
 import asyncio
 
 import threading
-
+import Recompact_Logs
 
 class Consumer_obj(Consumer):
     """
@@ -10,6 +10,26 @@ class Consumer_obj(Consumer):
     """
 
     def __init__(self, topic, on_consum, on_consum_error, *args, **kwargs):
+        import sys
+        if not callable(on_consum):
+            raise Exception("on_consum mus be a function")
+        if on_consum.__code__.co_argcount!=3:
+            raise  Exception(f"{on_consum.__module__}.{on_consum.__name__} at location .\n"
+                             f"{sys.modules[on_consum.__module__].__file__}.\n"
+                             f" must have 3 arguments:\n"
+                             f" First for consumer.\n"
+                             f" Second for msg.\n"
+                             f" The last for logger,\n"
+                             f"")
+        if not callable(on_consum_error):
+            raise Exception("on_consum_error mus be a function")
+        if on_consum_error.__code__.co_argcount!=3:
+            raise  Exception(f"{on_consum_error.__module__}.{on_consum_error.__name__} at location.\n"
+                             f"{sys.modules[on_consum_error.__module__].__file__}.\n"
+                             f"must have 2 arguments:\n"
+                             f" First for msg.\n"
+                             f" The last for logger.\n"
+                             f"")
         self.topic = topic
         self.on_consum = on_consum
         self.on_consum_error = on_consum_error
@@ -36,29 +56,37 @@ class Consumer_obj(Consumer):
 
     def __watch_topic__(self, topic_key, handler, on_error) -> threading.Thread:
         def run(o, tk, h, e):
+            import os
+            logger = Recompact_Logs.get_logger(os.path.join(h.__module__,h.__name__))
+            logger.info(f"start {h.__module__}.{h.__name__}")
             o.subscribe([tk])
             while True:
-                msg = o.poll(1.0)
+                try:
+                    msg = o.poll(1.0)
 
-                if msg is None:
-                    continue
-                if msg.error():
-                    if callable(on_error):
-                        e(msg)
-                    continue
-                if callable(handler):
-                    """
-                    Quan trọng, chỗ này tạo thread để chạy
-                    """
-                    import threading
-                    run_th = threading.Thread(
-                        target=h,
-                        args= (
-                            o,msg,
+                    if msg is None:
+                        continue
+                    if msg.error():
+                        if callable(on_error):
+                            e(msg)
+                        continue
+                    if callable(handler):
+                        """
+                        Quan trọng, chỗ này tạo thread để chạy
+                        """
+                        import threading
+                        run_th = threading.Thread(
+                            target=h,
+                            args= (
+                                o,
+                                msg,
+                                logger,
+                            )
                         )
-                    )
-                    run_th.start()
-                    run_th.join()
+                        run_th.start()
+                        run_th.join()
+                except Exception as e:
+                    logger.debug(e)
 
         ret = threading.Thread(
             target=run,

@@ -5,7 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/app_auth" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.7 (jd-apps)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.7 (jd-apps) (2)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
