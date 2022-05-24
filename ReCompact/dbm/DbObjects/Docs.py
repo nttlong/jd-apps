@@ -157,6 +157,8 @@ class BaseFields(object):
             self.__tree__ = data
 
 
+
+
 class Fields(BaseFields):
     """
     Mongodb parable document field example:
@@ -536,7 +538,10 @@ class Fields(BaseFields):
                     self.__dict__["__alias__"]: {self.__name__: self.__tree__}
                 }
         if self.__tree__ == None:
-            return self.__name__
+            if self.__name__ is not None:
+                return self.__name__
+            else:
+                return self.__field_name__
         return self.__tree__
 
 
