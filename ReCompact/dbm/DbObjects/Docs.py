@@ -17,8 +17,8 @@ def get_field_expr(x, not_prefix=False):
         else:
             return x.__tree__
     elif type(x) == str:
-        import expression_parser
-        return expression_parser.to_mongobd(x)
+        import ReCompact.dbm.DbObjects.expression_parser
+        return ReCompact.dbm.DbObjects.expression_parser.to_mongobd(x)
     else:
         return x
 
@@ -519,6 +519,18 @@ class Fields(BaseFields):
             get_field_expr(self, True): -1
         }
 
+    def __repr__(self):
+        import datetime
+        def defaultconverter(o):
+            if isinstance(o, datetime.datetime):
+                return o.__str__()
+        ret = self.to_mongodb()
+        if isinstance(ret,str):
+            return ret
+        if isinstance(ret,dict):
+            import json
+            return json.dumps(ret,default = defaultconverter)
+
     def to_mongodb(self):
         """
         parse to mongodb expression
@@ -541,7 +553,8 @@ class Fields(BaseFields):
             if self.__name__ is not None:
                 return self.__name__
             else:
-                return self.__field_name__
+                self.__name__ = self.__field_name__
+                return self.__name__
         return self.__tree__
 
 

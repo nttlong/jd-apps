@@ -27,7 +27,7 @@ def table(
         import ReCompact.dbm.DbObjects.Docs
         for k,v in cls.__dict__.items():
             if isinstance(v,ReCompact.dbm.DbObjects.Docs.Fields):
-                v.__field_name__=k
+                v.__name__=k
         meta = __get_meta__(cls)
         setattr(meta, "table_name", table_name)
         setattr(meta, "keys", keys)
