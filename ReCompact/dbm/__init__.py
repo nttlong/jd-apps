@@ -1,4 +1,3 @@
-
 class __base__:
     def __init__(self):
         self.__fields__ = {}
@@ -14,7 +13,7 @@ def __get_all_fields__(cls):
     ret = {}
     for k, v in cls.__dict__.items():
         if isinstance(v, field):
-            ret[k] = v
+            ret[v] = v
     return ret
 
 
@@ -24,10 +23,6 @@ def table(
         index=None
 ):
     def ret(cls):
-        import ReCompact.dbm.DbObjects.Docs
-        for k,v in cls.__dict__.items():
-            if isinstance(v,ReCompact.dbm.DbObjects.Docs.Fields):
-                v.__name__=k
         meta = __get_meta__(cls)
         setattr(meta, "table_name", table_name)
         setattr(meta, "keys", keys)
@@ -43,14 +38,13 @@ def table(
         return cls
 
     return ret
-from .  DbObjects import Docs
 
-class field(Docs.Fields):
+
+class field:
 
     # def __getitem__(self, item):
 
     def __init__(self, data_type=str, max_len=-1, is_require=False):
-        super().__init__()
         self.data_type = data_type
         self.max_len = max_len
         self.is_require = is_require

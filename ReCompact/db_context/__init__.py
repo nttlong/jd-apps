@@ -11,8 +11,57 @@ from watchdog.events import FileSystemEventHandler
 
 __lock__ = threading.Lock()
 __cnn__ = None
+__cnns__ = {}
+def get_db_connection(
+        host:str,
+        port:int,
+        username:str,
+        password:str,
+        authSource:str,
+        authMechanism:str = "SCRAM-SHA-1",
+        replicaSet:str = None
 
+)-> pymongo.mongo_client.MongoClient:
+    cnn_key = ";".join([
+        ";".join(host),
+        str(port),
+        username,
+        password,
+        authSource,
+        authMechanism
+    ]).lower()
+    global __cnn__
+    global __cnns__
+    if __cnns__.get(cnn_key,None) is None:
+        __lock__.acquire()
+        try:
+            ret_cnn = None
+            if replicaSet is not None:
+                ret_cnn = pymongo.mongo_client.MongoClient(
+                    host=host,
+                    port=port,
+                    username=username,
+                    password=password,
+                    authSource=authSource,
+                    authMechanism=authMechanism,
+                    replicaSet=replicaSet
+                )
+            else:
+                ret_cnn = pymongo.mongo_client.MongoClient(
+                    host=host,
+                    port=port,
+                    username=username,
+                    password=password,
+                    authSource=authSource,
+                    authMechanism=authMechanism
+                )
+            __cnns__[cnn_key] = ret_cnn
+        except Exception as e:
+            raise e
+        finally:
+            __lock__.release()
 
+    return __cnns__.get(cnn_key)
 def get_db(db_name=None) -> pymongo.database.Database:
     global __cnn__
     global __lock__
@@ -118,6 +167,7 @@ def create_mongodb_fs_from_file(
     """
     Tạo file trong mongodb theo noi dung nam trong full_path_to_file
     """
+    fs = None
     try:
         dir_path, file_name = os.path.split(full_path_to_file)
         g = db_get_gridfs(db)
