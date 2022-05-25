@@ -4,11 +4,20 @@ import cv2
 from PIL import Image
 import io
 import matplotlib
-def video_create_thumb(in_put,scale_witdh,scale_height,second=5):
+def video_create_thumb(in_put,scale_witdh,scale_height,second=5)->io.BytesIO:
+    """
+    Hàm này sẽ cắt 1 khung trong file video
+    Bóp lại vừa vặn với khung scale_width,scale_height
+    :param in_put:
+    :param scale_witdh:
+    :param scale_height:
+    :param second:
+    :return:
+    """
     clip= VideoFileClip(
         in_put
     )
-    clip = clip.subclip(0, 5)
+    clip = clip.subclip(0, second)
     frame = clip.get_frame(0)
     height,width,_ = frame.shape
     rate = scale_witdh/width # Mac dinh la bop theo chieu rong

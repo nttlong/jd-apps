@@ -49,6 +49,11 @@ class DocUploadRegister:
     OriginalFileId = ReCompact.dbm.field(data_type=bson.ObjectId) # Trường hợp xử lý OCR thành công
     # thông tin này sẽ lưu lại file gốc, trong khi đó file gốc sẽ được cập nhật lại bằng nôi dung file mới
     # đã được OCR
+    LastModifiedOn = ReCompact.dbm.field(data_type=datetime.datetime)
+    VideoDuration = ReCompact.dbm.field(data_type=int)  # thời lượng tính bằng giây
+    VideoFPS = ReCompact.dbm.field(data_type=int) # Số khung hình trên giây
+    VideoResolutionWidth = ReCompact.dbm.field(data_type=int) # Độ phân giải ngang
+    VideoResolutionHeight = ReCompact.dbm.field(data_type=int)  # Độ phân giải dọc
 
 
 

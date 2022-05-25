@@ -50,14 +50,56 @@ consumer_files_services_upload_thumb_office = ReCompact_Kafka.consumer.create(
     on_consum_error=files_process_handlers.files_services_upload.error,
 )
 
-th1 = consumer_files_services_upload.get_thread()
-th2 = consumer_files_services_upload_thumb_pdf.get_thread()
-th3 = consumer_files_services_upload_thumb_office.get_thread()
-th1.start()
-th2.start()
-th3.start()
-th1.join()
-th2.join()
-th3.join()
+"""
+Xử lý ảnh thumb video
+"""
+import files_process_handlers.files_services_upload_thumb_video
+
+consumer_files_services_upload_thumb_video = ReCompact_Kafka.consumer.create(
+    topic_id="files.services.upload.thumb.video",
+    group_id=f"files.services.upload.thumb.video.{g_id}",
+    server =re_process.config.kafka_broker,
+    on_consum=files_process_handlers.files_services_upload_thumb_video.handler,
+    on_consum_error=files_process_handlers.files_services_upload.error,
+)
+
+import files_process_handlers.files_services_upload_elastic
+consumer_files_services_upload_elastic = ReCompact_Kafka.consumer.create(
+    topic_id="files.services.upload.elastic",
+    group_id=f"files.services.upload.elastic.{g_id}",
+    server =re_process.config.kafka_broker,
+    on_consum=files_process_handlers.files_services_upload_elastic.handler,
+    on_consum_error=files_process_handlers.files_services_upload.error,
+)
+
+import files_process_handlers.files_services_upload_ocr_pdf
+
+consumer_files_services_upload_ocr_pdf = ReCompact_Kafka.consumer.create(
+    topic_id="files.services.upload.ocr.pdf",
+    group_id=f"files.services.upload.ocr.pdf.{g_id}",
+    server =re_process.config.kafka_broker,
+    on_consum=files_process_handlers.files_services_upload_ocr_pdf.handler,
+    on_consum_error=files_process_handlers.files_services_upload.error,
+)
+
+th_upload = consumer_files_services_upload.get_thread()
+# th2 = consumer_files_services_upload_thumb_pdf.get_thread()
+# th3 = consumer_files_services_upload_thumb_office.get_thread()
+th_video_thumb = consumer_files_services_upload_thumb_video.get_thread()
+# th_consumer_files_services_upload_elastic = consumer_files_services_upload_elastic.get_thread()
+th_consumer_files_services_upload_ocr_pdf = consumer_files_services_upload_ocr_pdf.get_thread()
+# th_upload.start()
+# th2.start()
+# th3.start()
+# th_upload.join()
+# th_video_thumb.start()
+# th_consumer_files_services_upload_elastic.start()
+th_consumer_files_services_upload_ocr_pdf.start()
+# th1.join()
+# th2.join()
+# th3.join()
+# th_video_thumb.join()
+# th_consumer_files_services_upload_elastic.join()
+th_consumer_files_services_upload_ocr_pdf.join()
 while True:
     pass

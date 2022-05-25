@@ -251,7 +251,7 @@ def handler_use_libre_office(consumer: ReCompact_Kafka.consumer.Consumer_obj, ms
     )
     logger.info(f"update thumb id of {upload_id} with value  {thumb_file_path}")
     print(f"update thumb id of {file_name} with value  {thumb_file_path}")
-    fx= ret
+    consumer.commit(msg)
 
 
 

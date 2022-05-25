@@ -8,20 +8,23 @@ import bson
 import pymongo.database
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+import io
 
 __lock__ = threading.Lock()
 __cnn__ = None
 __cnns__ = {}
-def get_db_connection(
-        host:str,
-        port:int,
-        username:str,
-        password:str,
-        authSource:str,
-        authMechanism:str = "SCRAM-SHA-1",
-        replicaSet:str = None
 
-)-> pymongo.mongo_client.MongoClient:
+
+def get_db_connection(
+        host: str,
+        port: int,
+        username: str,
+        password: str,
+        authSource: str,
+        authMechanism: str = "SCRAM-SHA-1",
+        replicaSet: str = None
+
+) -> pymongo.mongo_client.MongoClient:
     cnn_key = ";".join([
         ";".join(host),
         str(port),
@@ -32,7 +35,7 @@ def get_db_connection(
     ]).lower()
     global __cnn__
     global __cnns__
-    if __cnns__.get(cnn_key,None) is None:
+    if __cnns__.get(cnn_key, None) is None:
         __lock__.acquire()
         try:
             ret_cnn = None
@@ -62,6 +65,8 @@ def get_db_connection(
             __lock__.release()
 
     return __cnns__.get(cnn_key)
+
+
 def get_db(db_name=None) -> pymongo.database.Database:
     global __cnn__
     global __lock__
@@ -74,7 +79,7 @@ def get_db(db_name=None) -> pymongo.database.Database:
             __lock__.acquire()
             import web.settings
             db_config = web.settings.DATABASES["default"]["CLIENT"]
-            if db_config.get("replicaSet",None):
+            if db_config.get("replicaSet", None):
                 __cnn__ = pymongo.mongo_client.MongoClient(
                     host=db_config["host"],
                     port=db_config["port"],
@@ -121,11 +126,12 @@ def get_mongodb_file_by_file_id(db: pymongo.database.Database,
     assert isinstance(file_id, bson.objectid.ObjectId), 'id must be pymongo.bson.objectid.ObjectId'
     return db_get_gridfs(db).get(file_id)
 
+
 def mongodb_file_create(
         db: pymongo.database.Database,
-        file_name:str,
-        chunk_size:int,
-        file_size:int
+        file_name: str,
+        chunk_size: int,
+        file_size: int
 ) -> gridfs.grid_file.GridIn:
     g = db_get_gridfs(db)
     fs = g.new_file()
@@ -145,13 +151,14 @@ def mongodb_file_create(
     )
     return fs
 
+
 def mongodb_file_add_chunks(
         db: pymongo.database.Database,
-        fs_id:bson.ObjectId,
-        chunk_index:int,
-        data:bytes
-        ):
-    assert isinstance(fs_id,bson.ObjectId)
+        fs_id: bson.ObjectId,
+        chunk_index: int,
+        data: bytes
+):
+    assert isinstance(fs_id, bson.ObjectId)
     fs_chunks = db.get_collection("fs.chunks")
     fs_chunks.insert_one({
         "_id": bson.objectid.ObjectId(),
@@ -159,11 +166,13 @@ def mongodb_file_add_chunks(
         "n": chunk_index,
         "data": data
     })
+
+
 def create_mongodb_fs_from_file(
         db: pymongo.database.Database,
         full_path_to_file,
-        chunk_size= 4194304
-        ) -> gridfs.grid_file.GridIn:
+        chunk_size=4194304
+) -> gridfs.grid_file.GridIn:
     """
     Tạo file trong mongodb theo noi dung nam trong full_path_to_file
     """
@@ -177,21 +186,18 @@ def create_mongodb_fs_from_file(
         fs.close()
         db.get_collection("fs.files").update_one(
             {
-                "_id":fs._id
+                "_id": fs._id
             },
             {
-                "$set":{
-                    "chunkSize":chunk_size,
-                    "length":os.path.getsize(full_path_to_file)
+                "$set": {
+                    "chunkSize": chunk_size,
+                    "length": os.path.getsize(full_path_to_file)
                 }
             }
         )
         fs_chunks = db.get_collection("fs.chunks")
 
-
-
-
-        n=0
+        n = 0
 
         with open(full_path_to_file, 'rb') as r_file:
             read_data = r_file.read(chunk_size)
@@ -200,10 +206,59 @@ def create_mongodb_fs_from_file(
                     "_id": bson.objectid.ObjectId(),
                     "files_id": fs._id,
                     "n": n,
-                    "data":read_data
+                    "data": read_data
                 })
                 read_data = r_file.read(chunk_size)
-                n= n+1
+                n = n + 1
+
+    except Exception as e:
+        raise e
+    finally:
+        fs.close()
+    return fs
+
+
+def create_mongodb_fs_from_io_array(
+        db: pymongo.database.Database,
+        stm: io.BytesIO,
+        chunk_size=4194304
+) -> gridfs.grid_file.GridIn:
+    """
+    Tạo file trong mongodb theo noi dung nam trong full_path_to_file
+    """
+    fs = None
+    try:
+
+        g = db_get_gridfs(db)
+        fs = g.new_file()
+        fs.name = "unknown"
+        fs.filename = "unknown"
+        fs.close()
+        db.get_collection("fs.files").update_one(
+            {
+                "_id": fs._id
+            },
+            {
+                "$set": {
+                    "chunkSize": chunk_size,
+                    "length": stm.getbuffer().nbytes
+                }
+            }
+        )
+        fs_chunks = db.get_collection("fs.chunks")
+
+        n = 0
+
+        read_data = stm.read(chunk_size)
+        while read_data.__len__() > 0:
+            fs_chunks.insert_one({
+                "_id": bson.objectid.ObjectId(),
+                "files_id": fs._id,
+                "n": n,
+                "data": read_data
+            })
+            read_data = stm.read(chunk_size)
+            n = n + 1
 
     except Exception as e:
         raise e

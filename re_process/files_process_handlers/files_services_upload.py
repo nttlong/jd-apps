@@ -34,6 +34,10 @@ def handler(consumer,msg,logger ):
         producer.send_msg_sync(f"{msg.topic()}.elastic", data)
         logger.info(f"kafka raise event {msg.topic()}.thumb.office")
         producer.send_msg_sync(f"{msg.topic()}.thumb.office", data)
+    if 'video/' in mime_type:
+        logger.info(f"kafka raise event {msg.topic()}.thumb.video")
+        print(f"kafka raise event {msg.topic()}.thumb.video")
+        producer.send_msg_sync(f"{msg.topic()}.thumb.video", data)
     consumer.commit(msg)
 
 
