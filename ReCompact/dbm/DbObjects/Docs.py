@@ -517,7 +517,7 @@ class Fields(BaseFields):
             get_field_expr(self, True): -1
         }
 
-    def to_mongodb(self):
+    def __to_mongodb__(self):
         """
         parse to mongodb expression
         :return:
@@ -538,6 +538,19 @@ class Fields(BaseFields):
         if self.__tree__ == None:
             return self.__name__
         return self.__tree__
+
+    def to_mongodb(self):
+        ret = self.__to_mongodb__()
+        return ret
+
+    def __repr__(self):
+        ret = self.to_mongodb()
+        if isinstance(ret,str):
+            return ret
+        elif isinstance(ret,dict):
+            from bson import json_util
+            import json
+            return json.dumps(ret, default=json_util.default)
 
 
 filters = Fields(None, True)

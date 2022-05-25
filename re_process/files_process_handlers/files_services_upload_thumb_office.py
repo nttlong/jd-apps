@@ -158,6 +158,7 @@ def handler_use_libre_office(consumer: ReCompact_Kafka.consumer.Consumer_obj, ms
     file_path = data["FilePath"]  # Đường dẫn đến file vật lý
     upload_info = data["UploadInfo"]
     file_ext = upload_info["FileExt"]
+    file_name = upload_info["FileName"]
     if file_ext=="pdf":
         """
         file pdf bỏ qua
@@ -192,7 +193,8 @@ def handler_use_libre_office(consumer: ReCompact_Kafka.consumer.Consumer_obj, ms
         logger.info(full_comand_line)
         p = subprocess.Popen(full_comand_line  , shell=True)
         p.communicate() # Đợi
-        os.rmdir(full_user_profile_path) # Xóa user thư mục profile
+        import shutil
+        shutil.rmtree(full_user_profile_path)
         logger.info(f"Process file {file_path} to image is finish")
     thumb_file_path = os.path.join(out_put_dir, f"{upload_id}_thumb.png")
     if not os.path.isfile(thumb_file_path):
@@ -233,18 +235,23 @@ def handler_use_libre_office(consumer: ReCompact_Kafka.consumer.Consumer_obj, ms
         db=db,
         full_path_to_file= thumb_file_path
     )
+    logger.info(f"save {thumb_file_path} is success at ")
     """
     Đã đưa file vào xong
     """
 
     ret =ReCompact.dbm.DbObjects.update(
         db,
-        data_item_type= api_models.Model_Files,
-        filter= api_models.Model_Files.DocUploadRegister._id == upload_id,
+        data_item_type= api_models.Model_Files.DocUploadRegister,
+        filter= ReCompact.dbm.FILTER._id == upload_id,
         updator= ReCompact.dbm.SET (
-            api_models.Model_Files.DocUploadRegister.ThumbFileId<<fs._id
+            ReCompact.dbm.FIELDS.ThumbFileId==fs._id,
+            ReCompact.dbm.FIELDS.HasThumb==True
         )
     )
+    logger.info(f"update thumb id of {upload_id} with value  {thumb_file_path}")
+    print(f"update thumb id of {file_name} with value  {thumb_file_path}")
+    fx= ret
 
 
 

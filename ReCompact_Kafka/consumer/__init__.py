@@ -59,7 +59,10 @@ class Consumer_obj(Consumer):
             import os
             logger = Recompact_Logs.get_logger(os.path.join(h.__module__,h.__name__))
             logger.info(f"start {h.__module__}.{h.__name__}")
-            o.subscribe([tk])
+            try:
+                o.subscribe([tk])
+            except Exception as e:
+                logger.debug(e)
             while True:
                 try:
                     msg = o.poll(1.0)

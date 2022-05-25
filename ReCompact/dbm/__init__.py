@@ -25,9 +25,9 @@ def table(
 ):
     def ret(cls):
         meta = __get_meta__(cls)
-        for k,v in cls.__dict__.items():
-            if isinstance(v,Fields):
-                v.__name__ = k
+        # for k,v in cls.__dict__.items():
+        #     if isinstance(v,Fields):
+        #         v.__name__ = k
         setattr(meta, "table_name", table_name)
         setattr(meta, "keys", keys)
         setattr(meta, "index", index)
@@ -47,7 +47,7 @@ def table(
 
 
 
-class field(Fields):
+class field():
     """
     Định nghĩa một field trong mongodb
     """
@@ -55,7 +55,7 @@ class field(Fields):
     # def __getitem__(self, item):
 
     def __init__(self, data_type=str, max_len=-1, is_require=False):
-        super().__init__()
+
         self.data_type = data_type
         self.max_len = max_len
         self.is_require = is_require
@@ -88,6 +88,11 @@ def __ob_set_attr__(*args, **kwargs):
 def __ob_get_attr__(*args, **kwargs):
     instance = args[0]
     attr_name = args[1]
+
+    # if isinstance(type(instance).__dict__.get(attr_name,None),Fields):
+    #     ret = Fields()
+    #     ret.__name__ == attr_name
+    #     return ret
 
     if attr_name == "JSON_DATA":
         from django.http import JsonResponse

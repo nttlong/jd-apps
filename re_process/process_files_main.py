@@ -53,11 +53,11 @@ consumer_files_services_upload_thumb_office = ReCompact_Kafka.consumer.create(
 th1 = consumer_files_services_upload.get_thread()
 th2 = consumer_files_services_upload_thumb_pdf.get_thread()
 th3 = consumer_files_services_upload_thumb_office.get_thread()
-# th1.start()
-# th2.start()
+th1.start()
+th2.start()
 th3.start()
-# th1.join()
-# th2.join()
+th1.join()
+th2.join()
 th3.join()
 while True:
     pass
