@@ -142,6 +142,8 @@ def handler_use_aspose(consumer: ReCompact_Kafka.consumer.Consumer_obj, msg, log
 def handler_use_libre_office(consumer: ReCompact_Kafka.consumer.Consumer_obj, msg, logger: logging.Logger):
     """
     Sử dụng Libre Office
+    Chú ý: Không cần bắt lỗi trong trường hợp không cần thiết
+           Nếu lỗi xãy ra hệ thống sẽ tự động ghi nhận
     :param consumer:
     :param msg:
     :param logger:
@@ -157,6 +159,9 @@ def handler_use_libre_office(consumer: ReCompact_Kafka.consumer.Consumer_obj, ms
     upload_info = data["UploadInfo"]
     file_ext = upload_info["FileExt"]
     if file_ext=="pdf":
+        """
+        file pdf bỏ qua
+        """
         consumer.commit(msg)
         return
 
@@ -187,6 +192,7 @@ def handler_use_libre_office(consumer: ReCompact_Kafka.consumer.Consumer_obj, ms
         logger.info(full_comand_line)
         p = subprocess.Popen(full_comand_line  , shell=True)
         p.communicate() # Đợi
+        os.rmdir(full_user_profile_path) # Xóa user thư mục profile
         logger.info(f"Process file {file_path} to image is finish")
     thumb_file_path = os.path.join(out_put_dir, f"{upload_id}_thumb.png")
     if not os.path.isfile(thumb_file_path):
@@ -210,5 +216,35 @@ def handler_use_libre_office(consumer: ReCompact_Kafka.consumer.Consumer_obj, ms
         img = img.resize((nw, nh), Image.ANTIALIAS)
         img.save(thumb_file_path)
         logger.info(f"Create thumb {file_path} is success at {thumb_file_path}")
+    """
+    Bước cuối cùng cập nhật ảnh thumb
+    """
+
+    import ReCompact.dbm.DbObjects # Dùng để thao tác dữ liệu ter6n mongodb
+    import re_process.mongo_db # Dùng để lấy database thao tác
+    import ReCompact.db_context # Dùng để tạo file trên mongodb
+    import api_models.Model_Files # Sử dụng model
+    import ReCompact.dbm
+    db = re_process.mongo_db.get_db(app_name)
+    """
+    Đưa file thumb vào fs.file của  database
+    """
+    fs = ReCompact.db_context.create_mongodb_fs_from_file(
+        db=db,
+        full_path_to_file= thumb_file_path
+    )
+    """
+    Đã đưa file vào xong
+    """
+
+    ret =ReCompact.dbm.DbObjects.update(
+        db,
+        data_item_type= api_models.Model_Files,
+        filter= api_models.Model_Files.DocUploadRegister._id == upload_id,
+        updator= ReCompact.dbm.SET (
+            api_models.Model_Files.DocUploadRegister.ThumbFileId<<fs._id
+        )
+    )
+
 
 
