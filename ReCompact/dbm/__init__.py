@@ -1,3 +1,4 @@
+from .DbObjects.Docs import Fields
 class __base__:
     def __init__(self):
         self.__fields__ = {}
@@ -13,7 +14,7 @@ def __get_all_fields__(cls):
     ret = {}
     for k, v in cls.__dict__.items():
         if isinstance(v, field):
-            ret[v] = v
+            ret[k] = v
     return ret
 
 
@@ -24,6 +25,9 @@ def table(
 ):
     def ret(cls):
         meta = __get_meta__(cls)
+        for k,v in cls.__dict__.items():
+            if isinstance(v,Fields):
+                v.__name__ = k
         setattr(meta, "table_name", table_name)
         setattr(meta, "keys", keys)
         setattr(meta, "index", index)
@@ -40,11 +44,18 @@ def table(
     return ret
 
 
-class field:
+
+
+
+class field(Fields):
+    """
+    Định nghĩa một field trong mongodb
+    """
 
     # def __getitem__(self, item):
 
     def __init__(self, data_type=str, max_len=-1, is_require=False):
+        super().__init__()
         self.data_type = data_type
         self.max_len = max_len
         self.is_require = is_require
@@ -94,7 +105,8 @@ def __ob_get_attr__(*args, **kwargs):
     if attr_name.__len__() > 4 and attr_name[0:2] == "__" and attr_name[-2:] == "__":
         return obj_type.__original_getattribute__(instance, attr_name)
     if not hasattr(obj_type, attr_name):
-        raise Exception(f'{attr_name} was not found in {obj_type.__module__}.{obj_type.__name__}. Does thee mean JSON_DATA or DICT for Web api?')
+        raise Exception(
+            f'{attr_name} was not found in {obj_type.__module__}.{obj_type.__name__}. Does thee mean JSON_DATA or DICT for Web api?')
 
     if instance.__dict__.get("__fields__", None) == None:
         instance.__dict__["__fields__"] = {}
@@ -113,7 +125,7 @@ def __on__init__(*args, **kwargs):
         if not hasattr(cls, k):
             raise Exception(f'{k} was not found in {cls.__module__}.{cls.__name__}')
         f = getattr(cls, k)
-        assert isinstance(f, field),f"{k} must be {field} but got {type(f)}"
+        assert isinstance(f, field), f"{k} must be {field} but got {type(f)}"
         if f.is_require and v == None:
             raise Exception(f'{k} in {cls.__module__}.{cls.__name__} is required')
         if v == None:
@@ -143,6 +155,8 @@ class SET:
         return {
             "$set": self.mongo_set
         }
+
+
 class PUSH:
     def __init__(self, *args, **kwargs):
         self.mongo_set = {}

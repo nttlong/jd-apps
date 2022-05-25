@@ -5,7 +5,15 @@ import datetime
 @ReCompact.dbm.table(
     "DocUploadRegister",
     keys=["ServerFileName", "FullFileName"],
-    index=["RegisteredOn", "Status", "FileExt","FileName","MainFileId","ThumbFileId"]
+    index=[
+        "RegisteredOn",
+        "Status",
+        "FileExt",
+        "FileName",
+        "MainFileId",
+        "ThumbFileId",
+        "OriginalFileId"
+    ]
 
 )
 class DocUploadRegister:
@@ -38,6 +46,12 @@ class DocUploadRegister:
     ThumbFileId = ReCompact.dbm.field(data_type=bson.ObjectId)
     ThumbId  = ReCompact.dbm.field(data_type=str) # depreciate after jun 2022
     HasThumb = ReCompact.dbm.field(data_type=bool)
+    OriginalFileId = ReCompact.dbm.field(data_type=bson.ObjectId) # Trường hợp xử lý OCR thành công
+    # thông tin này sẽ lưu lại file gốc, trong khi đó file gốc sẽ được cập nhật lại bằng nôi dung file mới
+    # đã được OCR
+
+
+
 
     @property
     def id(self):
