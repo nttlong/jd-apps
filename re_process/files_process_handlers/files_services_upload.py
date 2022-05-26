@@ -1,8 +1,24 @@
-def handler(consumer,msg,logger ):
+"""
+File này khai báo 1 handler dùng để bắt sự kiện file upload tùy theo loại file mà hệ thống sẽ trigger các sự kiện khác
+Hiện tại:
+
+
+
+"""
+
+import logging
+
+topic_key = "files.services.upload"
+
+def handler(consumer, msg, logger):
+    """
+
+    :type msg: object
+    """
     import ReCompact_Kafka.consumer
     import ReCompact_Kafka.producer
     import re_process.config
-    assert isinstance(consumer,ReCompact_Kafka.consumer.Consumer_obj)
+    assert isinstance(consumer, ReCompact_Kafka.consumer.Consumer_obj)
     data = consumer.get_json(msg)
     print(consumer.get_topic_id(msg))
     import ReCompact_Kafka.consumer
@@ -17,7 +33,11 @@ def handler(consumer,msg,logger ):
     file_name = upload_info["FileName"]
     mime_type = upload_info["MimeType"]
     file_ext = upload_info["FileExt"]
-    producer.send_msg_sync(f"{msg.topic()}.thumb", data)
+    try:
+        producer.send_msg_sync(f"{msg.topic()}.thumb", data)
+    except Exception as e:
+        logger.debug(e)
+
 
     if '/pdf' in mime_type:
         producer.send_msg_sync(f"{msg.topic()}.ocr.pdf", data)
@@ -41,5 +61,28 @@ def handler(consumer,msg,logger ):
     consumer.commit(msg)
 
 
-def error(err,msg,logger):
+def error(err, msg, logger: logging.Logger):
+    logger.debug(err)
     print(err)
+
+
+import uuid
+
+import ReCompact_Kafka.consumer
+import re_process.config
+import Recompact_Logs
+
+id = str(uuid.uuid4())
+consumer = ReCompact_Kafka.consumer.create(
+    topic_id=topic_key,
+    group_id=f"files.services.upload.{id}",
+    server=re_process.config.kafka_broker,
+    on_consum=handler,
+    on_consum_error=error,
+
+)
+if __name__ == '__main__':
+    """
+        Nếu chạy file này một cách độc lập
+    """
+    consumer.run()

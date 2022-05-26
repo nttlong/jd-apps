@@ -5,8 +5,9 @@ import ReCompact.db_context
 import ReCompact.dbm
 import api_models.Model_Files
 import ReCompact.HttpStream
-@require_http_methods(["GET"])
-def source(request,app_name,full_path):
+
+async def source(request,app_name,full_path):
+    print(f"load video {full_path}")
     db = ReCompact.db_context.get_db(app_name)
     upload_item = ReCompact.dbm.DbObjects.find_one_to_dict(
         db,
@@ -32,3 +33,11 @@ def source(request,app_name,full_path):
 
 
     return  ReCompact.HttpStream.streaming_mongo_db_fs(request,fs)
+
+# import asyncio
+# from asyncio import coroutine
+#
+# @require_http_methods(["GET"])
+# def source(request,app_name,full_path):
+#     result = asyncio.get_event_loop().run_until_complete(__source__(request,app_name,full_path))
+#     return result

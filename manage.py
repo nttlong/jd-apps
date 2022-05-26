@@ -15,26 +15,34 @@ def main():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
-    import web.settings
-    config_path = str(web.settings.BASE_DIR.absolute().joinpath("config.yaml"))
-    if not config_path:
-        print("no config argumetn found, please call with config= <path to yaml setting>")
-    else:
-        import ReEngine
-        ReEngine.init(config_path)
-        assert isinstance(ReEngine.info,dict)
-        port =ReEngine.info.get("PORT",None)
+    import web.yaml_settings
+    # config_path = str(web.settings.BASE_DIR.absolute().joinpath("config.yaml"))
+    # if not config_path:
+    #     print("no config argumetn found, please call with config= <path to yaml setting>")
+    # else:
+        # import ReEngine
+        # ReEngine.init(config_path)
+        # assert isinstance(ReEngine.info,dict)
+        # port =ReEngine.info.get("PORT",None)
 
-        if not port:
-            raise Exception("'PORT' was not found in '{}'".format(config_path))
-        assert isinstance(port,int),"'PORT' in '{}' must be a number".format(config_path)
+        # if not web.yaml_settings.PORT:
+        #     raise Exception("'PORT' was not found in '{}'".format(config_path))
+        # assert isinstance(port,int),"'PORT' in '{}' must be a number".format(config_path)
+    args= []
+    if web.yaml_settings.PORT is not None:
         args =[
             sys.argv[0],
             "runserver",
-            "0.0.0.0:{}".format(port)
+            f"{web.settings.HOST}:{web.settings.PORT}"
         ]
-        ReEngine.apply_settings()
-        execute_from_command_line(sys.argv)
+    else:
+        args = [
+            sys.argv[0],
+            "runserver",
+            f"{web.settings.HOST}"
+        ]
+
+    execute_from_command_line(args)
 
 
 if __name__ == '__main__':

@@ -59,3 +59,19 @@ def handler(
         )
     )
     consumer.commit(msg)
+
+def error(err,msg,logger):
+    logger.debug(err)
+import ReCompact_Kafka.consumer
+import re_process.config
+import uuid
+__id__ = str(uuid.uuid4())
+consumer = ReCompact_Kafka.consumer.create(
+    topic_id="files.services.upload.thumb.video",
+    group_id=f"files.services.upload.thumb.video.{__id__}",
+    server =re_process.config.kafka_broker,
+    on_consum=handler,
+    on_consum_error=error,
+)
+if __name__ == "main":
+    consumer.run()

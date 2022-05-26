@@ -16,6 +16,7 @@ class RangeFileWrapper(object):
 
     def close(self):
         if hasattr(self.filelike, 'close'):
+            print("self.filelike.close")
             self.filelike.close()
 
     def __iter__(self):
@@ -55,7 +56,7 @@ def streaming_mongo_db_fs(request,file:gridfs.grid_file.GridOut):
         resp['Content-Length'] = str(length)
         resp['Content-Range'] = 'bytes %s-%s/%s' % (first_byte, last_byte, size)
     else:
-        resp = StreamingHttpResponse(FileWrapper(file), content_type=content_type)
+        resp = StreamingHttpResponse(RangeFileWrapper(file), content_type=content_type)
         resp['Content-Length'] = str(size)
     resp['Accept-Ranges'] = 'bytes'
     return resp

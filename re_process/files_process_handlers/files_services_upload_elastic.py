@@ -28,3 +28,17 @@ def handler(
     shutil.copy(file_path, out_put_folder)
     logger.info(f"Copy file {file_path} to {out_put_folder}")
     consumer.commit(msg)
+
+def error(err,msg,logger):
+    logger.debug(err)
+
+import uuid
+__id__ = str(uuid.uuid4())
+import ReCompact_Kafka.consumer
+consumer = ReCompact_Kafka.consumer.create(
+    topic_id="files.services.upload.elastic",
+    group_id=f"files.services.upload.elastic.{__id__}",
+    server =re_process.config.kafka_broker,
+    on_consum=handler,
+    on_consum_error=error,
+)

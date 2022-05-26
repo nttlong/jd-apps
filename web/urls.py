@@ -38,9 +38,8 @@ for app_name in ReEngine.info["APPS"].keys():
                 urlpatterns += static(value+"static/", document_root=staic_path_of_app)
             else:
                 import web.settings
-                web.settings.STATICFILES_DIRS=[staic_path_of_app]
-
-            # urlpatterns += static("/static/", document_root=staic_path_of_app)
+                # web.settings.STATICFILES_DIRS=[staic_path_of_app]
+                urlpatterns += static("/static/", document_root=staic_path_of_app)
 
     except Exception as e:
         print(f"load url of {app_name} is fail {e}")

@@ -1,3 +1,7 @@
+"""
+File này chỉ xử lý các topic files.services.upload
+"""
+
 import consum_upload_file
 import config
 

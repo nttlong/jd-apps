@@ -9,7 +9,7 @@ import pymongo.database
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import io
-
+from gridfs import GridFSBucket
 __lock__ = threading.Lock()
 __cnn__ = None
 __cnns__ = {}
@@ -114,7 +114,12 @@ def get_mongodb_file_by_file_name(db: pymongo.database.Database, file_name) -> g
     """
     Lấy file grid trong mongodb
     """
-    return db_get_gridfs(db).find_one({"filename": file_name})
+    fs= GridFSBucket(db,chunk_size_bytes=1024*1024*10)
+    ret = fs.open_download_stream_by_name(
+        file_name
+    ).seekable()
+    return ret
+    # return db_get_gridfs(db).find_one({"filename": file_name})
 
 
 def get_mongodb_file_by_file_id(db: pymongo.database.Database,
@@ -124,7 +129,13 @@ def get_mongodb_file_by_file_id(db: pymongo.database.Database,
 
     """
     assert isinstance(file_id, bson.objectid.ObjectId), 'id must be pymongo.bson.objectid.ObjectId'
-    return db_get_gridfs(db).get(file_id)
+    fs = GridFSBucket(db,chunk_size_bytes= 4194304 )
+    ret = fs.open_download_stream(
+        file_id
+    )
+    return ret
+
+    # return db_get_gridfs(db).get(file_id)
 
 
 def mongodb_file_create(

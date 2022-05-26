@@ -9,7 +9,12 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
+HOST = "0.0.0.0"
+IS_HTTPS = False
+PORT = None
 import mimetypes
+import sys
+
 mimetypes.add_type("application/javascript", ".js", True)
 mimetypes.add_type("text/css", ".css", True)
 from pathlib import Path
@@ -18,7 +23,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 import ReCompact.web
+import ReEngine
 ReCompact.web.set_working_dir(BASE_DIR)
+config_path = BASE_DIR.absolute().joinpath("config.yaml")
+ReEngine.init(str(config_path))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -29,8 +37,13 @@ SECRET_KEY = 'django-insecure-v)o9^1!i4zx0-tx=k_g*c$zqq^1=$$2tjwl0(ipp_$_eo&i0$h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [
+    HOST
+]
+LOGIN_URL = "auth/login"
+CORS_ALLOW_ALL_ORIGINS = True
+TEMP_UPLOAD_DIR =r'\\192.168.18.36\Share\DjangoWeb'
+TEMP_UNZIP_DIR = r'\\192.168.18.36\Share\UnzipDjangoWeb'
 
 # Application definition
 # from apps.file_explorer.apps import FileExplorerConfig
@@ -135,6 +148,18 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 import ReEngine
+ROOT_URL = f"http://0.0.0.0:8000"
+ReEngine.apply_settings_modudle(sys.modules[__name__])
+if IS_HTTPS:
+    if PORT is not None :
+        ROOT_URL = f"https://{HOST}:{PORT}"
+    else:
+        ROOT_URL = f"https://{HOST}"
+else:
+    if PORT is not None:
+        ROOT_URL = f"http://{HOST}:{PORT}"
+    else:
+        ROOT_URL = f"http://{HOST}"
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
 
@@ -147,10 +172,11 @@ for k,v in ReEngine.info["APPS"].items():
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
+
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SITE_ID=1
-ROOT_URL = "http://0.0.0.0:8000"
-LOGIN_URL = "auth/login"
-CORS_ALLOW_ALL_ORIGINS = True
-TEMP_UPLOAD_DIR =r'\\192.168.18.36\Share\DjangoWeb'
-TEMP_UNZIP_DIR = r'\\192.168.18.36\Share\UnzipDjangoWeb'
+ALLOWED_HOSTS = [HOST]
+
+
+

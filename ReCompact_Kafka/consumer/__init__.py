@@ -55,7 +55,7 @@ class Consumer_obj(Consumer):
         return msg.topic()
 
     def __watch_topic__(self, topic_key, handler, on_error) -> threading.Thread:
-        def run(o, tk, h, e):
+        def __run__(o, tk, h, e):
             import os
             logger = Recompact_Logs.get_logger(os.path.join(h.__module__,h.__name__))
             logger.info(f"start {h.__module__}.{h.__name__}")
@@ -70,10 +70,10 @@ class Consumer_obj(Consumer):
                     if msg is None:
                         continue
                     if msg.error():
-                        if callable(on_error):
+                        if callable(e):
                             e(msg)
                         continue
-                    if callable(handler):
+                    if callable(h):
                         """
                         Quan trọng, chỗ này tạo thread để chạy
                         """
@@ -92,7 +92,7 @@ class Consumer_obj(Consumer):
                     logger.debug(e)
 
         ret = threading.Thread(
-            target=run,
+            target=__run__,
             args=(
                 self,
                 topic_key,
@@ -102,13 +102,66 @@ class Consumer_obj(Consumer):
         )
         return ret
 
+    def run(self):
+        """
+        Chạy vòng lặp vô hạn cho consumer
+        :return:
+        """
+        import os
+        h=self.on_consum
+        tk= self.topic
+        o=self
+        e=self.on_consum_error
+        logger = Recompact_Logs.get_logger(os.path.join(h.__module__, h.__name__))
+        logger.info(f"start {h.__module__}.{h.__name__}")
+        try:
+            o.subscribe([tk])
+        except Exception as e:
+            logger.debug(e)
+        while True:
+            try:
+                msg = o.poll(1.0)
+
+                if msg is None:
+                    continue
+                if msg.error():
+                    if callable(e):
+                        e(msg)
+                    continue
+                if callable(h):
+                    """
+                    Quan trọng, chỗ này tạo thread để chạy
+                    """
+                    import threading
+                    run_th = threading.Thread(
+                        target=h,
+                        args=(
+                            o,
+                            msg,
+                            logger,
+                        )
+                    )
+                    run_th.start()
+                    run_th.join()
+            except Exception as e:
+                logger.debug(e)
+        pass
+
     def get_thread(self):
+        """
+        Tạo 1 thread để chạy consumer
+        :return:
+        """
         return self.__watch_topic__(
             self.topic,
             self.on_consum,
             self.on_consum_error
 
         )
+    def start_and_join(self):
+        th = self.get_thread()
+        th.start()
+        th.join()
 
 
 """

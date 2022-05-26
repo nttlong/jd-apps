@@ -46,3 +46,29 @@ def apply_settings(attr_value=None):
     if not os.path.isdir(settings.TEMP_UNZIP_DIR):
         raise Exception(f"{settings.TEMP_UNZIP_DIR} was not found. The directory serve for uncompress file")
 
+def apply_settings_modudle(settings):
+    import sys
+
+
+    sys.path.append(settings.BASE_DIR.absolute())
+    # sys.path.append(settings.BASE_DIR.absolute().joinpath("apps").joinpath("file_explorer"))
+    sys.path.append(settings.BASE_DIR.absolute().joinpath("ReEngine"))
+    global info
+    for k,v in info.items():
+        if k=="DATABASE":
+            settings.DATABASES["default"]= v
+            # pass
+
+
+
+        elif hasattr(settings,k):
+            try:
+                setattr(settings,k,v)
+            except Exception as e:
+                raise Exception("Fail to load '{} in settings".format(k))
+    settings.TEMP_UPLOAD_DIR=settings.TEMP_UPLOAD_DIR.replace('/',os.sep)
+    if not os.path.isdir(settings.TEMP_UPLOAD_DIR):
+        raise Exception(f"{settings.TEMP_UPLOAD_DIR} was not found. The directory serve for file upload temporary")
+    settings.TEMP_UNZIP_DIR = settings.TEMP_UNZIP_DIR.replace('/', os.sep)
+    if not os.path.isdir(settings.TEMP_UNZIP_DIR):
+        raise Exception(f"{settings.TEMP_UNZIP_DIR} was not found. The directory serve for uncompress file")

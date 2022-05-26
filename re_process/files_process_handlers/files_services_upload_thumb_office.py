@@ -253,5 +253,19 @@ def handler_use_libre_office(consumer: ReCompact_Kafka.consumer.Consumer_obj, ms
     print(f"update thumb id of {file_name} with value  {thumb_file_path}")
     consumer.commit(msg)
 
+def error(err,msg,logger:logging.Logger):
+    logger.debug(err)
 
-
+import uuid
+__id__ =str(uuid.uuid4())
+import ReCompact_Kafka.consumer
+import re_process.config
+consumer = ReCompact_Kafka.consumer.create(
+    topic_id="files.services.upload.thumb.office",
+    group_id=f"files.services.upload.thumb.office.{__id__}",
+    server =re_process.config.kafka_broker,
+    on_consum= handler_use_libre_office,
+    on_consum_error=error,
+)
+if __name__ == "main":
+    consumer.run()

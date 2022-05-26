@@ -1,7 +1,7 @@
+HOST: "172.16.9.78"
+IS_HTTPS: False
 PORT: 8000
-ALLOWED_HOSTS: [
-                 "172.16.9.78"
-]
+
 DATABASE:
   ENGINE: 'djongo'
   NAME: 'lv-docs'
@@ -12,7 +12,7 @@ DATABASE:
     username: 'admin-doc'
     password: '123456'
     authSource: 'lv-docs'
-    replicaSet: rs0
+#    replicaSet: rs0
     authMechanism: SCRAM-SHA-1
   CLIENT_:
     host: localhost
@@ -40,8 +40,7 @@ APPS:
 
 
 
-ROOT_URL: "http://172.16.9.78:8000"
-ROOT_URL_: "http://192.168.1.2:8000"
+
 LOGIN_URL: "auth/login"
 TEMP_UPLOAD_DIR_: "C:/code/python/tmp/web"
 TEMP_UNZIP_DIR_: "C:/code/python/tmp/unzip"
