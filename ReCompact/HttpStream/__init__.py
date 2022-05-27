@@ -4,27 +4,28 @@ import mimetypes
 from wsgiref.util import FileWrapper
 import gridfs
 from django.http.response import StreamingHttpResponse
-
+import gc
 range_re = re.compile(r'bytes\s*=\s*(\d+)\s*-\s*(\d*)', re.I)
 
 
 class RangeFileWrapper(object):
     def __init__(self, filelike, blksize=2097152, offset=0, length=None):
-        fs = filelike
+
+
 
         self.filelike = filelike
         self.filelike.seek(offset, os.SEEK_SET)
-        if length is None:
-            self.remaining = fs.length - offset-fs.tell()
-        else:
-            self.remaining = fs.length
+
+        self.remaining = length
         self.blksize = blksize
         self.next_blksize = blksize
 
     def close(self):
         if hasattr(self.filelike, 'close'):
-            print("self.filelike.close")
+
             self.filelike.close()
+        gc.set_threshold(1000, 15, 15)
+        gc.collect()
 
     def __iter__(self):
         return self
@@ -53,12 +54,14 @@ class RangeFileWrapper(object):
         from multiprocessing.pool import ThreadPool
         pool = ThreadPool(processes=4)
 
-        async_result = pool.apply_async(read_async, ())  # tuple of args for foo
+        async_result = pool.apply_async(read_async, ())
 
         # do some other stuff in the main process
 
         return_val = async_result.get()  #
         if return_val is None:
+            gc.set_threshold(1000, 15, 15)
+            gc.collect()
             raise StopIteration()
 
         # loop = asyncio.get_event_loop()
@@ -99,4 +102,5 @@ def streaming_mongo_db_fs(request, file: gridfs.grid_file.GridOut):
         resp = StreamingHttpResponse(FileWrapper(file),                                     content_type=content_type)
         resp['Content-Length'] = str(size)
     resp['Accept-Ranges'] = 'bytes'
+
     return resp
