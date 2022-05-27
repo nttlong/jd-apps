@@ -3,15 +3,18 @@ Lưu ý:
  Với các file đã đươc OCR có thể bị lỗi
 
 """
-
+import bson
 import logging
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
-
+import re_process.mongo_db
 import ReCompact_Kafka.consumer
 import re_process.config
-
-
+import api_models.Model_Files
+import ReCompact.dbm.DbObjects
+import ReCompact.db_context
+import datetime
+topic ="files.services.upload.ocr.pdf"
 def handler(
         consumer: ReCompact_Kafka.consumer.Consumer_obj,
         msg,
@@ -55,7 +58,46 @@ def handler(
         if os.path.isfile(out_put_file_path):
                 import shutil
                 shutil.copy(out_put_file_path,fs_craller_path)
-                consumer.commit(msg)
+                db = re_process.mongo_db(app_name)
+                upload_data_item = ReCompact.dbm.DbObjects.find_one_to_dict(
+                    db = db,
+                    data_item_type= api_models.Model_Files.DocUploadRegister,
+                    filter= ReCompact.dbm.FILTER._id == upload_id
+                )
+                process_history = upload_info.get("ProcessHistories", [])
+                process_history += [
+                    api_models.Model_Files.DocUploadRegister.ProcessHistory(
+                        _id= bson.ObjectId(),
+                        ProcessOn=datetime.datetime.now(),
+                        ProcessAction=topic,
+                        UploadId=upload_id
+                    )
+                ]
+
+                fs = ReCompact.db_context.create_mongodb_fs_from_file(
+                    db =db,
+                    full_path_to_file= out_put_file_path
+
+                )
+                ReCompact.dbm.DbObjects.update(
+                    db,
+                    data_item_type=api_models.Model_Files.DocUploadRegister,
+                    filter=   ReCompact.dbm.FILTER._id == upload_id,
+                    updator= ReCompact.dbm.SET(
+
+                        ReCompact.dbm.FIELDS.MainFileId == fs._id,
+                        ReCompact.dbm.FIELDS.OriginalFileId == upload_data_item.get("OriginalFileId"),
+                        ReCompact.dbm.FIELDS.LastModifiedOn == datetime.datetime.now(),
+                        ReCompact.dbm.FIELDS.DocUploadRegister.ProcessHistory ==process_history
+
+
+                    )
+                )
+
+                if upload_data_item is None:
+                    consumer.commit(msg)
+                    return
+
         else:
             import shutil
             shutil.copy(file_path, fs_craller_path)
@@ -69,11 +111,11 @@ __id__ = str(uuid.uuid4())
 import re_process.config
 import ReCompact_Kafka.consumer
 consumer = ReCompact_Kafka.consumer.create(
-    topic_id="files.services.upload.ocr.pdf",
-    group_id=f"files.services.upload.ocr.pdf.{__id__}",
+    topic_id=topic,
+    group_id=f"{topic}.{__id__}",
     server=re_process.config.kafka_broker,
     on_consum=handler,
     on_consum_error=error,
 )
-if __name__ == "main":
+if __name__ == "__main__":
     consumer.run()

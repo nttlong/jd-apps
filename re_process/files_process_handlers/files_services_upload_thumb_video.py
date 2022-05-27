@@ -73,5 +73,5 @@ consumer = ReCompact_Kafka.consumer.create(
     on_consum=handler,
     on_consum_error=error,
 )
-if __name__ == "main":
+if __name__ == "__main__":
     consumer.run()

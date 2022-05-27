@@ -1,6 +1,6 @@
 import ReCompact.dbm
 import datetime
-
+import bson
 
 @ReCompact.dbm.table(
     "DocUploadRegister",
@@ -12,12 +12,27 @@ import datetime
         "FileName",
         "MainFileId",
         "ThumbFileId",
-        "OriginalFileId"
+        "OriginalFileId",
+        "ProcessHistories.ProcessOn",
+        "ProcessHistories.ProcessAction",
+        "ProcessHistories.UploadId",
+        "OCRFileId"
+
     ]
 
 )
 class DocUploadRegister:
-    import bson
+    @ReCompact.dbm.table(
+        "DocUploadRegister_Processhistory",
+        keys= ["ProcessOn,UploadId"]
+    )
+    class ProcessHistory:
+        _id = ReCompact.dbm.field(data_type=bson.ObjectId)
+        ProcessOn = ReCompact.dbm.field(data_type=datetime.datetime,is_require=True)
+        ProcessAction = ReCompact.dbm.field(data_type=str,is_require= True)
+        UploadId = ReCompact.dbm.field(data_type=str,is_require= True)
+
+
     _id = ReCompact.dbm.field(data_type=str)
     FileName = ReCompact.dbm.field(data_type=str, is_require=True)
     """
@@ -49,15 +64,13 @@ class DocUploadRegister:
     OriginalFileId = ReCompact.dbm.field(data_type=bson.ObjectId) # Trường hợp xử lý OCR thành công
     # thông tin này sẽ lưu lại file gốc, trong khi đó file gốc sẽ được cập nhật lại bằng nôi dung file mới
     # đã được OCR
+    OCRFileId = ReCompact.dbm.field(data_type=bson.ObjectId)
     LastModifiedOn = ReCompact.dbm.field(data_type=datetime.datetime)
     VideoDuration = ReCompact.dbm.field(data_type=int)  # thời lượng tính bằng giây
     VideoFPS = ReCompact.dbm.field(data_type=int) # Số khung hình trên giây
     VideoResolutionWidth = ReCompact.dbm.field(data_type=int) # Độ phân giải ngang
     VideoResolutionHeight = ReCompact.dbm.field(data_type=int)  # Độ phân giải dọc
-
-
-
-
+    ProcessHistories = ReCompact.dbm.field(data_type= list)
     @property
     def id(self):
         return self._id

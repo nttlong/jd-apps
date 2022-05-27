@@ -20,3 +20,4 @@ aspose-words~=22.5.0
 PyMuPDF~=1.19.6
 matplotlib~=3.5.2
 ocrmypdf~=13.4.5
+Cython~=0.29.30

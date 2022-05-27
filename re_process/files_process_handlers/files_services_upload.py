@@ -6,6 +6,7 @@ Hiện tại:
 
 """
 
+
 import logging
 
 topic_key = "files.services.upload"
@@ -47,7 +48,9 @@ def handler(consumer, msg, logger):
         consumer.commit(msg)
         return
     if 'image/' in mime_type:
+        logger.info(f"{msg.topic()}.ocr.image", data)
         producer.send_msg_sync(f"{msg.topic()}.ocr.image", data)
+        logger.info(f"{msg.topic()}.thumb.image", data)
         producer.send_msg_sync(f"{msg.topic()}.thumb.image", data)
     if file_ext in re_process.config.office_extension:
         logger.info(f"kafka raise event {msg.topic()}.elastic")
