@@ -128,8 +128,7 @@ def get_list(request,app_name,data:Filter,error:ReCompact.api_input.Error):
                     VideoDuration =x.get("VideoDuration",None),
                     VideoFPS =x.get("VideoFPS",None),
                     VideoResolutionWidth =x.get("VideoResolutionWidth",None),
-                    VideoResolutionHeight =x.get("VideoResolutionHeight",None),
-                    ProcessHistories =ProcessHistories
+                    VideoResolutionHeight =x.get("VideoResolutionHeight",None)
                 )
             ]
 
