@@ -96,7 +96,7 @@
 
                                 <a style="text-overflow:ellipsis;white-space:nowrap" ng-if="p.MimeType.indexOf('video/')!=0" ng-href="{{p.UrlOfServerPath}}" target="_blank">{{p.FileName}}</a>
                             </div>
-                            
+
                             <label>{{$res("Status")}}</label>
                             <div>
                                 <label ng-if="p.Status==1">
@@ -112,13 +112,19 @@
                             <label>
                                 {{p.SizeInHumanReadable}}
                             </label>
-                            
+
                             <label>
                                 {{$res("Created on")}}
                             </label>
                             <label>
                                 {{p.RegisterOn|date:'dd-MM-yyyy'}}
                             </label>
+                            <label ng-if="p.UrlDfOCRSource && p.UrlDfOCRSource!=null">
+                                {{$res("OCR content")}}
+                            </label>
+                            <a ng-if="p.UrlDfOCRSource && p.UrlDfOCRSource!=null" ng-href="{{p.UrlDfOCRSource}}" target="_blank">
+                                {{$res("View")}}
+                            </a>
 
                         </rcmpct-grid>
                     </rcmpct-grid>

@@ -110,7 +110,16 @@ def get_list(request,app_name,data:Filter,error:ReCompact.api_input.Error):
                     item["_id"]=None
             else:
                 ProcessHistories =[]
-
+            original_file_id = x.get("OriginalFileId", None)
+            url_of_original_source = None
+            if original_file_id is not None:
+                original_file_id=str(original_file_id)
+                url_of_original_source=f"{request._current_scheme_host}/api/files/{app_name}/original/{x.get('FullFileName',None)}"
+            OCR_file_id = x.get("OCRFileId",None)
+            url_of_ocr_source = None
+            if OCR_file_id is not None:
+                OCR_file_id=str(OCR_file_id)
+                url_of_ocr_source =f"{request._current_scheme_host}/api/files/{app_name}/ocr/{x.get('FullFileName',None)}"
             ret+=[
                 dict(
                     Status =x.get("Status",0),
@@ -122,13 +131,16 @@ def get_list(request,app_name,data:Filter,error:ReCompact.api_input.Error):
                     UrlOfServerPath =f"{request._current_scheme_host}/api/files/{app_name}/directory/{x.get('FullFileName',None)}",
                     HasThumb = x.get("HasThumb",False),
                     ThumbUrl =ThumbUrl,
-                    OriginalFileId= x.get("OriginalFileId",None),
-                    OCRFileId =x.get("OCRFileId",None),
+                    # OriginalFileId= x.get("OriginalFileId",None),
+                    # OCRFileId =x.get("OCRFileId",None),
                     LastModifiedOn = x.get("LastModifiedOn",None),
                     VideoDuration =x.get("VideoDuration",None),
                     VideoFPS =x.get("VideoFPS",None),
                     VideoResolutionWidth =x.get("VideoResolutionWidth",None),
-                    VideoResolutionHeight =x.get("VideoResolutionHeight",None)
+                    VideoResolutionHeight =x.get("VideoResolutionHeight",None),
+                    ProcessHistories=ProcessHistories,
+                    UrlOfOriginalSource = url_of_original_source,
+                    UrlDfOCRSource =url_of_ocr_source
                 )
             ]
 
