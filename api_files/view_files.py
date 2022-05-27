@@ -103,6 +103,14 @@ def get_list(request,app_name,data:Filter,error:ReCompact.api_input.Error):
                     )
 
         else:
+            ProcessHistories = x.get("ProcessHistories", None)
+
+            if isinstance(ProcessHistories,list):
+                for item in ProcessHistories:
+                    item["_id"]=None
+            else:
+                ProcessHistories =[]
+
             ret+=[
                 dict(
                     Status =x.get("Status",0),
@@ -113,7 +121,15 @@ def get_list(request,app_name,data:Filter,error:ReCompact.api_input.Error):
                     SizeInHumanReadable =x.get("SizeInHumanReadable",None),
                     UrlOfServerPath =f"{request._current_scheme_host}/api/files/{app_name}/directory/{x.get('FullFileName',None)}",
                     HasThumb = x.get("HasThumb",False),
-                    ThumbUrl =ThumbUrl
+                    ThumbUrl =ThumbUrl,
+                    OriginalFileId= x.get("OriginalFileId",None),
+                    OCRFileId =x.get("OCRFileId",None),
+                    LastModifiedOn = x.get("LastModifiedOn",None),
+                    VideoDuration =x.get("VideoDuration",None),
+                    VideoFPS =x.get("VideoFPS",None),
+                    VideoResolutionWidth =x.get("VideoResolutionWidth",None),
+                    VideoResolutionHeight =x.get("VideoResolutionHeight",None),
+                    ProcessHistories =ProcessHistories
                 )
             ]
 

@@ -82,7 +82,7 @@
     <div class="dock full" style="margin:15px">
         <div rcmpct-lazy-scroll source="listOfFiles" item-var="p" class="row" on-request-data="doLoadMore" page-size="20">
             <rcmpct-template>
-                <rcmpct-grid cols="(,700,auto)(700,,auto auto)"  class="shadow-box" >
+                <rcmpct-grid cols="(,700,100%)(700,,50% 50%)"  class="shadow-box" >
                     <rcmpct-grid cols="180px minmax(0,1fr)">
                         <div>
                             <img style="min-width:120px;max-width:120px;margin:10px" ng-src="{{p.ThumbUrl}}" ng-if="p.HasThumb" />
@@ -96,11 +96,23 @@
 
                                 <a style="text-overflow:ellipsis;white-space:nowrap" ng-if="p.MimeType.indexOf('video/')!=0" ng-href="{{p.UrlOfServerPath}}" target="_blank">{{p.FileName}}</a>
                             </div>
-
+                            
                             <label>{{$res("Status")}}</label>
+                            <div>
+                                <label ng-if="p.Status==1">
+                                    {{$res("Finished")}}
+                                </label>
+                                <label ng-if="p.Status==0">
+                                    {{$res("Pennding")}}
+                                </label>
+                            </div>
                             <label>
-                                Hoàn tất
+                                {{$res("Size")}}
                             </label>
+                            <label>
+                                {{p.SizeInHumanReadable}}
+                            </label>
+                            
                             <label>
                                 {{$res("Created on")}}
                             </label>
