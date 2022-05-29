@@ -6,8 +6,12 @@ Second call set_root_app_dir
 Call get_logger to create new logger instance
 """
 import logging
+
 import os
 __log__path__:str = None
+
+import pathlib
+
 """
 local varibale of log path
 """
@@ -48,6 +52,8 @@ def get_logger(
 
     :return: A completely logging.Logger
     """
+    if os.path.isfile(dir_to_log):
+        dir_to_log = str(pathlib.Path(dir_to_log).parent)
     global __log__path__
     global  __root_app_dir__
     if __log__path__ is None: # check has set_root_dir call
@@ -69,7 +75,7 @@ def get_logger(
         os.makedirs(full_path_to_log_dir)
     full_path_to_log =os.path.join(full_path_to_log_dir,module_name+".txt")
     ret = logging.getLogger(module_name)
-    ret.setLevel(logging.INFO)
+    ret.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s:%(levelname)s : %(name)s : %(message)s')
     file_handler = logging.FileHandler(full_path_to_log)
     file_handler.setFormatter(formatter)

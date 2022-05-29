@@ -1,4 +1,4 @@
-debug: False
+debug: True
 #---------------------------------------
 #Declare host and port
 #-------------------------------------
@@ -7,4 +7,6 @@ port: 5012
 #------------------------------------------
 # Specify template folder
 #------------------------------------------------
-template: template2
+template_folder: template
+static: C:/code/python/dj/jd-apps/app_manager/static
+static_url: /static
