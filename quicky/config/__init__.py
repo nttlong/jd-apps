@@ -79,7 +79,7 @@ class Config:
         self.logger = self.get_loger(__name__)
         self.load_yaml_config()
         self.full_url_root = f"http://{self.host}"
-        self.full_url_app = self.full_url_root
+
         self.full_url_static = self.full_url_root+self.static_url
         """
         Url gốc của host
@@ -91,6 +91,7 @@ class Config:
                 self.full_url_root = f"http://{self.host}:{self.port}"
             else:
                 self.full_url_root = f"http://{self.host}"
+        self.full_url_app = self.full_url_root
         if self.host_dir is not None and self.host_dir!='/':
             self.full_url_app = self.full_url_root+self.host_dir
 
@@ -125,11 +126,11 @@ class Config:
                                             f"Thy should check static in '{self.app_config_file}'"
 
                             raise Exception(exception_msg)
-                        __full_static_dir__ = v
+                        self.full_static_dir = v
                     else:
-                        __full_static_dir__ = os.path.join(self.app_dir, v)
-                        if not os.path.isdir(__full_static_dir__):
-                            os.makedirs(__full_static_dir__)
+                        self.full_static_dir = os.path.join(self.app_dir, v)
+                        if not os.path.isdir(self.full_static_dir):
+                            os.makedirs(self.full_static_dir)
                 if k == "template_folder":
                     if os.path.isabs(v):
                         if not os.path.isdir(v):

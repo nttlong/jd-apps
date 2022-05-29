@@ -2,7 +2,7 @@ debug: True
 #---------------------------------------
 #Declare host and port
 #-------------------------------------
-host: "192.168.1.2"
+host: "172.16.9.78"
 port: 5012
 https: False
 host_dir: '/'
@@ -12,5 +12,5 @@ description: This is a application for file explorer
 # Specify template folder
 #------------------------------------------------
 template_folder: templates
-static: C:/code/python/dj/jd-apps/app_manager/static
+static: C:/dj-apps-2022-05-25/jd-apps/app_manager/static
 static_url: /static

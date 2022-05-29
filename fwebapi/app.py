@@ -1,7 +1,7 @@
 import routes
 app =routes.app
 app_config = routes.app_config
-import routes.api_files
+
 
 
 if __name__ == '__main__':

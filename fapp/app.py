@@ -15,7 +15,7 @@ if __name__ == '__main__':
     app.run(
           debug=app_config.debug,
           host= app_config.host,
-          port=app_config.port
+          port=app_config.port,
     )
 
 

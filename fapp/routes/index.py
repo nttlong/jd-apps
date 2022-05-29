@@ -9,12 +9,12 @@ from flask import send_from_directory
 
 @app.route(app_config.get_route_path('/<path:path>'))
 def single_page_app(path):
-    name = 'Rosalia'
+
     return render_template('index.html',app=app_config)
 
 @app.route(app_config.get_route_path('/'))
 @app.route('/index')
-def index():
+async def index():
     name = 'Rosalia'
     return render_template('index.html',app=app_config)
 
