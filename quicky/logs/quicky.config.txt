@@ -1,0 +1,1 @@
+2022-05-29 11:24:28,879:DEBUG : quicky.config : C:\code\python\dj\jd-apps\quicky\config.yaml was not found
