@@ -11,7 +11,8 @@ class Config:
         if not os.path.isfile(app_file):
             if not os.path.isdir(app_file):
                 raise Exception(f"{app_file} was not found")
-
+        else:
+            app_file = str(pathlib.Path(app_file).parent)
         """
         Create config form app_dir
         :param app_dir:
