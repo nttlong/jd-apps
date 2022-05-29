@@ -5,7 +5,9 @@ debug: True
 host: "192.168.1.2"
 port: 5012
 https: False
-host_dir: '/files'
+host_dir: '/'
+name: file explorer
+description: This is a application for file explorer
 #------------------------------------------
 # Specify template folder
 #------------------------------------------------

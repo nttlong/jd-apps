@@ -21,3 +21,7 @@ PyMuPDF~=1.19.6
 matplotlib~=3.5.2
 ocrmypdf~=13.4.5
 Cython~=0.29.30
+flask~=2.1.2
+flask-RESTful~=0.3.9
+flask-restplus~=0.13.0
+Flask-JWT~=0.3.2
