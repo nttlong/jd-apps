@@ -4,9 +4,11 @@ debug: True
 #-------------------------------------
 host: "192.168.1.2"
 port: 5012
+https: False
+host_dir: '/files'
 #------------------------------------------
 # Specify template folder
 #------------------------------------------------
-template_folder: template
+template_folder: templates
 static: C:/code/python/dj/jd-apps/app_manager/static
 static_url: /static
