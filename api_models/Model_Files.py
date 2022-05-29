@@ -71,6 +71,4 @@ class DocUploadRegister:
     VideoResolutionWidth = ReCompact.dbm.field(data_type=int) # Độ phân giải ngang
     VideoResolutionHeight = ReCompact.dbm.field(data_type=int)  # Độ phân giải dọc
     ProcessHistories = ReCompact.dbm.field(data_type= list)
-    @property
-    def id(self):
-        return self._id
+

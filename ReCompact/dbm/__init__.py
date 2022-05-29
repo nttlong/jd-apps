@@ -1,3 +1,16 @@
+proxy_call =[
+        "insert_one",
+        "insert_many",
+        "find",
+        "find_one",
+        "delete_many",
+        "delete_one",
+        "update_many",
+        "update_one"
+    ]
+import pymongo.database
+
+import ReCompact.dbm
 from .DbObjects.Docs import Fields
 class __base__:
     def __init__(self):
@@ -18,6 +31,18 @@ def __get_all_fields__(cls):
     return ret
 
 
+class xx:
+    def __lshift__(self, other):
+        pass
+    def __call__(self, *args, **kwargs):
+        pass
+
+def __obj_lshift__(*args,**kwargs):
+    if not isinstance(args[1],pymongo.database.Database):
+        raise Exception("right argument of left shift must be pymongo.database.Database")
+    setattr(args[0],"__db__",args[1])
+import ReCompact.dbm.db_actions
+
 def table(
         table_name,
         keys=None,
@@ -25,9 +50,19 @@ def table(
 ):
     def ret(cls):
         meta = __get_meta__(cls)
-        # for k,v in cls.__dict__.items():
-        #     if isinstance(v,Fields):
-        #         v.__name__ = k
+        setattr(cls,"__lshift__", __obj_lshift__)
+        setattr(cls, "insert_one", ReCompact.dbm.db_actions.insert_one)
+        setattr(cls, "insert", ReCompact.dbm.db_actions.insert_many)
+        setattr(cls, "update_one", ReCompact.dbm.db_actions.update_one)
+        setattr(cls, "update", ReCompact.dbm.db_actions.update_many)
+        setattr(cls, "delete_one", ReCompact.dbm.db_actions.delete_one)
+        setattr(cls, "delete", ReCompact.dbm.db_actions.delete_many)
+        setattr(cls, "find_one", ReCompact.dbm.db_actions.find_one)
+        setattr(cls, "find", ReCompact.dbm.db_actions.find)
+
+        for k,v in cls.__dict__.items():
+            if isinstance(v,ReCompact.dbm.field):
+                v.__name__ = k
         setattr(meta, "table_name", table_name)
         setattr(meta, "keys", keys)
         setattr(meta, "index", index)
@@ -59,6 +94,21 @@ class field():
         self.data_type = data_type
         self.max_len = max_len
         self.is_require = is_require
+    @property
+    def f(self):
+        """
+        Get mongod doc field
+        :return:
+        """
+        return getattr(ReCompact.dbm.FIELDS,self. __name__)
+
+    @property
+    def n(self):
+        """
+        Get name of field
+        :return:
+        """
+        return self.__name__
 
 
 def __ob_set_attr__(*args, **kwargs):
@@ -68,6 +118,11 @@ def __ob_set_attr__(*args, **kwargs):
     cls_type = type(args[0])
     attr_name = args[1]
     attr_value = args[2]
+    check=["__db__"]
+    if attr_name in check:
+        instance.__dict__[attr_name] = attr_value
+
+        return
     if not hasattr(cls_type, attr_name):
         raise Exception(f'{cls_type.__module__ + "." + cls_type.__name__} do not have property {attr_name}')
     f = getattr(cls_type, attr_name)
@@ -107,6 +162,9 @@ def __ob_get_attr__(*args, **kwargs):
         return instance.__fields__
     assert isinstance(attr_name, str)
     obj_type = type(instance)
+    global  proxy_call
+    if attr_name in proxy_call:
+        return obj_type.__original_getattribute__(instance, attr_name)
     if attr_name.__len__() > 4 and attr_name[0:2] == "__" and attr_name[-2:] == "__":
         return obj_type.__original_getattribute__(instance, attr_name)
     if not hasattr(obj_type, attr_name):
