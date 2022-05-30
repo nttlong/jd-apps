@@ -3,14 +3,19 @@ import datetime
 import threading
 __lock__ = threading.Lock()
 __is_has_fix_json__ = False
+
+import bson
+
 if not __is_has_fix_json__:
     __lock__.acquire()
     fn =json.JSONEncoder.default
     def __fix__json__(*args,**kwargs):
         if isinstance(args,tuple) and isinstance(args[1],datetime.datetime):
+            return args[1].isoformat()
+        if isinstance(args,tuple) and isinstance(args[1],bson.ObjectId):
             v=args[1]
-            assert isinstance(v,datetime.datetime)
-            return v.isoformat()
+            assert isinstance(v,bson.ObjectId)
+            return str(v)
         else:
             return fn(*args,**kwargs)
     json.JSONEncoder.default=__fix__json__
@@ -68,14 +73,15 @@ def table(
 ):
     def ret(cls):
         meta = __get_meta__(cls)
+        setattr(cls, "set", ReCompact.dbm.db_actions.__obj_set__)
         setattr(cls,"__rshift__", ReCompact.dbm.db_actions.__obj_rshift__)
         setattr(cls, "__lshift__", ReCompact.dbm.db_actions.__obj_lshift__)
         setattr(cls, "insert_one", ReCompact.dbm.db_actions.insert_one)
         setattr(cls, "insert", ReCompact.dbm.db_actions.insert_many)
         setattr(cls, "update_one", ReCompact.dbm.db_actions.update_one)
-        setattr(cls, "update", ReCompact.dbm.db_actions.update_many)
+        setattr(cls, "update_many", ReCompact.dbm.db_actions.update_many)
         setattr(cls, "delete_one", ReCompact.dbm.db_actions.delete_one)
-        setattr(cls, "delete", ReCompact.dbm.db_actions.delete_many)
+        setattr(cls, "delete_many", ReCompact.dbm.db_actions.delete_many)
         setattr(cls, "find_one", ReCompact.dbm.db_actions.find_one)
         setattr(cls, "find", ReCompact.dbm.db_actions.find)
         setattr(cls,"__iter__",ReCompact.dbm.db_actions.__ob_iter__)
@@ -163,6 +169,14 @@ def __ob_set_attr__(*args, **kwargs):
 def __ob_get_attr__(*args, **kwargs):
     instance = args[0]
     attr_name = args[1]
+    if attr_name=="set":
+        return type(instance).__original_getattribute__(instance, attr_name)
+    if attr_name=="__dict__":
+        return type(instance).__original_getattribute__(instance, attr_name)
+    if instance.__dict__.get("__is_queryable__",None)==True:
+        cls = type(instance)
+        if cls.__meta__.__fields__.get(attr_name,None) is not None:
+            return getattr( ReCompact.dbm.FIELDS,args[1])
 
     # if isinstance(type(instance).__dict__.get(attr_name,None),Fields):
     #     ret = Fields()
@@ -203,11 +217,8 @@ def __on__init__(*args, **kwargs):
             args[0].__dict__["__fields__"] = args[1]
             return
     elif args.__len__()==1:
-        args[0].__dict__["__fields__"] ={}
-        cls = type(args[0])
-        for k,v in cls.__dict__.items():
-            if isinstance(v,field):
-                args[0].__dict__["__fields__"][k]=v
+        args[0].__dict__["__is_queryable__"]=True
+
     instance = args[0]
 
     cls = type(instance)
