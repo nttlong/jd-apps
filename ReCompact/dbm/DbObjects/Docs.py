@@ -1,5 +1,8 @@
+import datetime
 import re
 import json
+
+import bson
 
 
 def get_field_expr(x, not_prefix=False):
@@ -58,14 +61,38 @@ def get_str(d, t=0):
         return d.__str__()
 
 
+def __convert_colon_to_equal(fx):
+    k = list(fx.keys())
+    v = fx[k[0]]
+    if type(v) in [
+        str,
+        int,
+        bool,
+        bson.ObjectId,
+        datetime.datetime,
+        float
+    ]:
+        return {
+            k[0]: {
+                "$eq": v
+            }
+
+        }
+    else:
+        return fx
+
+
 def __apply__(fn, a, b):
     if isinstance(b, Fields):
+        left = __convert_colon_to_equal(get_field_expr(a))
+        right = __convert_colon_to_equal(get_field_expr(b))
+
         ret_tree = {
-            fn: [get_field_expr(a), get_field_expr(b)]
+            fn: [left, right]
         }
         setattr(a, "__tree__", ret_tree)
 
-    elif isinstance(b,str):
+    elif isinstance(b, str):
         ret_tree = {
             fn: [get_field_expr(a), b]
         }
@@ -81,9 +108,20 @@ def __apply__(fn, a, b):
         }
         setattr(a, "__tree__", ret_tree)
     else:
-        ret_tree = {
-            fn: [get_field_expr(a), b]
-        }
+        left_op = get_field_expr(a)
+        if type(b) in [str, int, bool, float, datetime.datetime, bson.ObjectId] and fn == "$ne" and type(
+                left_op) == str:
+            if left_op[0:1] == "$":
+                left_op = left_op[1:]
+            ret_tree = {
+                left_op: {
+                    "$ne": b
+                }
+            }
+        else:
+            ret_tree = {
+                fn: [get_field_expr(a), b]
+            }
         setattr(a, "__tree__", ret_tree)
     return a
 
@@ -151,7 +189,7 @@ class BaseFields(object):
         self.__name__ = None
         self.__tree__ = None
         self.__for_filter__ = for_filter
-        if isinstance(data,str):
+        if isinstance(data, str):
             self.__name__ = data
         else:
             self.__tree__ = data
@@ -162,6 +200,7 @@ class Fields(BaseFields):
     Mongodb parable document field example:
     Fields().Amount*Fields().Price will be compile to {'$multiply': ['$Amount', '$Price']}
     """
+
     def __getattr__(self, item):
         ret_field = None
         if self.__name__ != None:
@@ -212,9 +251,9 @@ class Fields(BaseFields):
         return __apply__("$mod", self, other)
 
     def __eq__(self, other):
-        if isinstance(self.to_mongodb(),str):
-            self.__tree__= {
-                self.to_mongodb():other
+        if isinstance(self.to_mongodb(), str):
+            self.__tree__ = {
+                self.to_mongodb(): other
             }
             return self
         if self.__dict__.get("__for_filter__", True):
@@ -240,19 +279,27 @@ class Fields(BaseFields):
         return __apply__("$eq", self, other)
 
     def __ne__(self, other):
-        if self.__dict__.get("__for_filter__", True):
-            if type(other) == str:
-                self.__tree__ = {
-                    self.__name__: {"$ne": {
-                        "$regex": re.compile("^" + other + "$", re.IGNORECASE)
-                    }}
-                }
-                return self
-            else:
-                self.__tree__ = {
-                    self.__name__: {"$ne": other}
-                }
-                return self
+
+        if type(other) == str:
+            self.__tree__ = {
+                self.__name__: {"$ne": {
+                    "$regex": re.compile("^" + other + "$", re.IGNORECASE)
+                }}
+            }
+            return self
+        elif type(other) in [int, float, bool, bson.ObjectId, datetime.datetime]:
+            n = self.__name__
+            if n[0:1] == "$":
+                n = n[1:]
+            self.__tree__ = {
+                n: {"$ne": other}
+            }
+            return self
+        else:
+            self.__tree__ = {
+                self.__name__: {"$ne": other}
+            }
+            return self
         return __apply__("$ne", self, other)
 
     def __le__(self, other):
@@ -522,7 +569,7 @@ class Fields(BaseFields):
         parse to mongodb expression
         :return:
         """
-        if self.__dict__.get("__alias__",None):
+        if self.__dict__.get("__alias__", None):
             if self.__tree__ == None:
                 return {
                     self.__dict__["__alias__"]: self.__name__
@@ -545,9 +592,9 @@ class Fields(BaseFields):
 
     def __repr__(self):
         ret = self.to_mongodb()
-        if isinstance(ret,str):
+        if isinstance(ret, str):
             return ret
-        elif isinstance(ret,dict):
+        elif isinstance(ret, dict):
             from bson import json_util
             import json
             return json.dumps(ret, default=json_util.default)
@@ -560,4 +607,3 @@ document = Fields()
 def fields():
     # type: () -> object
     return Fields()
-

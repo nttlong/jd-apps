@@ -167,16 +167,21 @@ def __ob_set_attr__(*args, **kwargs):
 
 
 def __ob_get_attr__(*args, **kwargs):
+    import ReCompact.dbm
     instance = args[0]
     attr_name = args[1]
     if attr_name=="set":
         return type(instance).__original_getattribute__(instance, attr_name)
+    if attr_name=="aggregate":
+        import ReCompact.dbm.aggregate
+
+        return ReCompact.dbm.aggregate.Aggregate(instance)
     if attr_name=="__dict__":
         return type(instance).__original_getattribute__(instance, attr_name)
     if instance.__dict__.get("__is_queryable__",None)==True:
         cls = type(instance)
         if cls.__meta__.__fields__.get(attr_name,None) is not None:
-            return getattr( ReCompact.dbm.FIELDS,args[1])
+            return getattr(ReCompact.dbm.FIELDS,args[1])
 
     # if isinstance(type(instance).__dict__.get(attr_name,None),Fields):
     #     ret = Fields()
