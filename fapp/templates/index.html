@@ -31,14 +31,16 @@
     window.token = "Token";
     window.abs_url = "{{app.full_url_root}}";
     window.full_app_url = "{{app.full_url_app}}";
+    window.api_url ="{{app.api_url}}"
 </script>
 <script type="module" defer>
 
     import appModule from "./static/js/app.js"
     import homeView from "./static/views/home.js"
     var hs =await homeView();
-    await hs.getListOfApps();
     await hs.render(document.getElementById("view"));
+    await hs.getListOfApps();
+
     await hs.start()
 
 

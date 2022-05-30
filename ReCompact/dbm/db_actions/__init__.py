@@ -8,7 +8,7 @@ def __get_col__(db, data_item_type):
     :param data_item_type:
     :return:
     """
-    assert isinstance(data_item_type,type),f"data_item_type must be a type"
+    assert isinstance(data_item_type, type), f"data_item_type must be a type"
     import pymongo
     coll_name = data_item_type.__meta__.table_name
     coll = db.get_collection(coll_name)
@@ -42,38 +42,46 @@ def __get_col__(db, data_item_type):
         return coll
     return coll
 
-def get_all_args(*args,**kwargs):
+
+def get_all_args(*args, **kwargs):
     instance = args[0]
     data = args[1]
     db = getattr(instance, "__db__")
-    coll = __get_col__(db,type(instance))
-    return db,instance,coll,data,
-def get_all_args_with_filter(*args,**kwargs):
+    coll = __get_col__(db, type(instance))
+    return db, instance, coll, data,
+
+
+def get_all_args_with_filter(*args, **kwargs):
     instance = args[0]
     filter = args[1]
     data = args[1]
     db = getattr(instance, "__db__")
-    coll = __get_col__(db,type(instance))
-    return db,instance,coll,filter,data
+    coll = __get_col__(db, type(instance))
+    return db, instance, coll, filter, data
 
-def insert_one(*args,**kwargs):
-    db,instance,coll,data = get_all_args(*args,**kwargs)
-    assert isinstance(coll,pymongo.database.Collection)
+
+def insert_one(*args, **kwargs):
+    db, instance, coll, data = get_all_args(*args, **kwargs)
+    assert isinstance(coll, pymongo.database.Collection)
     try:
         ret = coll.insert_one(data)
-        return None,ret
+        return None, ret
     except Exception as e:
         return e, None
-def insert_many(*args,**kwargs):
-    db,instance,coll,data = get_all_args(*args,**kwargs)
+
+
+def insert_many(*args, **kwargs):
+    db, instance, coll, data = get_all_args(*args, **kwargs)
     assert isinstance(coll, pymongo.database.Collection)
     try:
         ret = coll.insert_many(data)
         return None, ret
     except Exception as e:
         return e, None
-def update_many(*args,**kwargs):
-    db,instance,coll,filter,data=get_all_args_with_filter(*args,**kwargs)
+
+
+def update_many(*args, **kwargs):
+    db, instance, coll, filter, data = get_all_args_with_filter(*args, **kwargs)
     assert isinstance(coll, pymongo.database.Collection)
     try:
         ret = coll.update_many(filter=filter.to_mongodb(),
@@ -82,8 +90,9 @@ def update_many(*args,**kwargs):
     except Exception as e:
         return e, None
 
-def update_one(*args,**kwargs):
-    db,instance,coll,filter,data=get_all_args_with_filter(*args,**kwargs)
+
+def update_one(*args, **kwargs):
+    db, instance, coll, filter, data = get_all_args_with_filter(*args, **kwargs)
     assert isinstance(coll, pymongo.database.Collection)
     try:
         ret = coll.update_many(filter=filter.to_mongodb(),
@@ -92,18 +101,42 @@ def update_one(*args,**kwargs):
     except Exception as e:
         return e, None
 
-def delete_many(*args,**kwargs):
-    db,instance,coll,filter,data=get_all_args_with_filter(*args,**kwargs)
+
+def delete_many(*args, **kwargs):
+    db, instance, coll, filter, data = get_all_args_with_filter(*args, **kwargs)
     raise NotImplemented()
 
-def delete_one(*args,**kwargs):
-    db,instance,coll,filter,data=get_all_args_with_filter(*args,**kwargs)
+
+def delete_one(*args, **kwargs):
+    db, instance, coll, filter, data = get_all_args_with_filter(*args, **kwargs)
     raise NotImplemented()
 
-def find_one(*args,**kwargs):
+
+def find_one(*args, **kwargs):
     db, instance, data = get_all_args(*args, **kwargs)
     raise NotImplemented()
 
-def find(*args,**kwargs):
+
+def find(*args, **kwargs):
     db, instance, data = get_all_args(*args, **kwargs)
     raise NotImplemented()
+
+
+def __ob_iter__(*args, **kwargs):
+    instance = args[0]
+    db = instance.__db__
+    coll = __get_col__(db, type(instance))
+    assert isinstance(coll, pymongo.collection.Collection)
+    for x in coll.find({}):
+        yield x
+
+
+def __obj_lshift__(*args, **kwargs):
+    if not isinstance(args[1], pymongo.database.Database):
+        raise Exception("right argument of left shift must be pymongo.database.Database")
+    setattr(args[0], "__db__", args[1])
+
+def __obj_rshift__(*args, **kwargs):
+    if not isinstance(args[1], pymongo.database.Database):
+        raise Exception("right argument of left shift must be pymongo.database.Database")
+    setattr(args[0], "__db__", args[1])

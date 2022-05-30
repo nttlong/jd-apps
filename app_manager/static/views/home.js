@@ -30,9 +30,10 @@ var homeView = await View(import.meta, class homeview extends BaseScope {
             if (path[1] == "files") {
                 $('#home-page').hide();
                 var view = await me.loadView("./files/index.js")
-                await view.doStartView(path[2])
                 await view.render($("#home_view")[0]);
                 $("#home_view").show();
+                await view.doStartView(path[2])
+                
                 
             }
            if (path[1] == "register") {

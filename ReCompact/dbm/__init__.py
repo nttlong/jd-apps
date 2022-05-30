@@ -1,3 +1,22 @@
+import json
+import datetime
+import threading
+__lock__ = threading.Lock()
+__is_has_fix_json__ = False
+if not __is_has_fix_json__:
+    __lock__.acquire()
+    fn =json.JSONEncoder.default
+    def __fix__json__(*args,**kwargs):
+        if isinstance(args,tuple) and isinstance(args[1],datetime.datetime):
+            v=args[1]
+            assert isinstance(v,datetime.datetime)
+            return v.isoformat()
+        else:
+            return fn(*args,**kwargs)
+    json.JSONEncoder.default=__fix__json__
+    __is_has_fix_json__= True
+    __lock__.release()
+
 proxy_call =[
         "insert_one",
         "insert_many",
@@ -36,11 +55,10 @@ class xx:
         pass
     def __call__(self, *args, **kwargs):
         pass
+    def __iter__(self):
+        return list(self)
 
-def __obj_lshift__(*args,**kwargs):
-    if not isinstance(args[1],pymongo.database.Database):
-        raise Exception("right argument of left shift must be pymongo.database.Database")
-    setattr(args[0],"__db__",args[1])
+
 import ReCompact.dbm.db_actions
 
 def table(
@@ -50,7 +68,8 @@ def table(
 ):
     def ret(cls):
         meta = __get_meta__(cls)
-        setattr(cls,"__lshift__", __obj_lshift__)
+        setattr(cls,"__rshift__", ReCompact.dbm.db_actions.__obj_rshift__)
+        setattr(cls, "__lshift__", ReCompact.dbm.db_actions.__obj_lshift__)
         setattr(cls, "insert_one", ReCompact.dbm.db_actions.insert_one)
         setattr(cls, "insert", ReCompact.dbm.db_actions.insert_many)
         setattr(cls, "update_one", ReCompact.dbm.db_actions.update_one)
@@ -59,6 +78,7 @@ def table(
         setattr(cls, "delete", ReCompact.dbm.db_actions.delete_many)
         setattr(cls, "find_one", ReCompact.dbm.db_actions.find_one)
         setattr(cls, "find", ReCompact.dbm.db_actions.find)
+        setattr(cls,"__iter__",ReCompact.dbm.db_actions.__ob_iter__)
 
         for k,v in cls.__dict__.items():
             if isinstance(v,ReCompact.dbm.field):
@@ -182,7 +202,14 @@ def __on__init__(*args, **kwargs):
         if isinstance(kwargs, dict):
             args[0].__dict__["__fields__"] = args[1]
             return
+    elif args.__len__()==1:
+        args[0].__dict__["__fields__"] ={}
+        cls = type(args[0])
+        for k,v in cls.__dict__.items():
+            if isinstance(v,field):
+                args[0].__dict__["__fields__"][k]=v
     instance = args[0]
+
     cls = type(instance)
     for k, v in kwargs.items():
         if not hasattr(cls, k):

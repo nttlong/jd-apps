@@ -14,3 +14,4 @@ description: This is a application for file explorer
 template_folder: templates
 static: C:/dj-apps-2022-05-25/jd-apps/app_manager/static
 static_url: /static
+api_url: http://172.16.9.78:5432

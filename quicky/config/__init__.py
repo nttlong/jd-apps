@@ -28,6 +28,7 @@ class Config:
         self.port =None
         self.https=False
         self.api_dir="api"
+        self.api_url = "http://"+self.host + "/api"
 
 
         self.app_dir = str(pathlib.Path(app_file))

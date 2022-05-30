@@ -10,7 +10,7 @@ import { rcmpactModule } from "./directives/rpct/grid.js";
 //import qNgView from "./directives/ngView.js";
 //setServerApiHostUrl("http://192.168.18.36:5010/api/default");
 
-api.setUrl(window.abs_url + "/api")
+api.setUrl(window.api_url)
 
 var appModule = angular.module("app", [module_name,
     rcmpctModule.name,
