@@ -17,11 +17,13 @@ class Employees:
     BirtDate = ReCompact.dbm.field(data_type=datetime.datetime,is_require=True)
     STT = ReCompact.dbm.field(data_type=int, is_require=True)
 employees= Employees()
-emp_code =employees.Code
-expx =  emp_code!=1
-expx2 = employees.FirstName!="123"
-expx3 =expx2 & expx
-print(expx3)
+# emp_code =employees.Code
+# expx =  emp_code!=1
+# expx2 = employees.FirstName!="123"
+filter_b = employees.BirtDate
+filter_b=filter_b==datetime.datetime.now()
+# expx3 =expx2 & expx
+print(filter_b)
 
 cnn =  pymongo.mongo_client.MongoClient(
     host="192.168.18.36",
@@ -31,7 +33,7 @@ cnn =  pymongo.mongo_client.MongoClient(
 db=cnn.get_database(("test_001"))
 employees<<db # Set database
 try:
-    ret =employees.find_one(expx3)
+    ret =employees.find_one(filter_b)
     print("OK")
     print(ret)
 except Exception as ex:

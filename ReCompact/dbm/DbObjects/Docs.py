@@ -83,6 +83,14 @@ def __convert_colon_to_equal(fx):
 
 
 def __apply__(fn, a, b):
+    if type(b) in [str, int, bool, datetime.datetime, bson.ObjectId] and a.__tree__ is None:
+        a.__tree__ = {
+            a.__name__: {
+                fn: b
+            }
+        }
+        return a
+
     if isinstance(b, Fields):
         left = __convert_colon_to_equal(get_field_expr(a))
         right = __convert_colon_to_equal(get_field_expr(b))
@@ -251,9 +259,9 @@ class Fields(BaseFields):
         return __apply__("$mod", self, other)
 
     def __eq__(self, other):
-        if isinstance(self.to_mongodb(), str):
+        if self.__tree__ is None: #Còn nguyên thủy chưa xử lý
             self.__tree__ = {
-                self.to_mongodb(): other
+                self.__name__: other
             }
             return self
         if self.__dict__.get("__for_filter__", True):
@@ -312,6 +320,8 @@ class Fields(BaseFields):
         return __apply__("$gte", self, other)
 
     def __gt__(self, other):
+
+
         return __apply__("$gt", self, other)
 
     def __and__(self, other):
