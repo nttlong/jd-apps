@@ -1,6 +1,7 @@
 import json
 import datetime
 import threading
+
 __lock__ = threading.Lock()
 __is_has_fix_json__ = False
 
@@ -8,34 +9,40 @@ import bson
 
 if not __is_has_fix_json__:
     __lock__.acquire()
-    fn =json.JSONEncoder.default
-    def __fix__json__(*args,**kwargs):
-        if isinstance(args,tuple) and isinstance(args[1],datetime.datetime):
+    fn = json.JSONEncoder.default
+
+
+    def __fix__json__(*args, **kwargs):
+        if isinstance(args, tuple) and isinstance(args[1], datetime.datetime):
             return args[1].isoformat()
-        if isinstance(args,tuple) and isinstance(args[1],bson.ObjectId):
-            v=args[1]
-            assert isinstance(v,bson.ObjectId)
+        if isinstance(args, tuple) and isinstance(args[1], bson.ObjectId):
+            v = args[1]
+            assert isinstance(v, bson.ObjectId)
             return str(v)
         else:
-            return fn(*args,**kwargs)
-    json.JSONEncoder.default=__fix__json__
-    __is_has_fix_json__= True
+            return fn(*args, **kwargs)
+
+
+    json.JSONEncoder.default = __fix__json__
+    __is_has_fix_json__ = True
     __lock__.release()
 
-proxy_call =[
-        "insert_one",
-        "insert_many",
-        "find",
-        "find_one",
-        "delete_many",
-        "delete_one",
-        "update_many",
-        "update_one"
-    ]
+proxy_call = [
+    "insert_one",
+    "insert_many",
+    "find",
+    "find_one",
+    "delete_many",
+    "delete_one",
+    "update_many",
+    "update_one"
+]
 import pymongo.database
 
 import ReCompact.dbm
 from .DbObjects.Docs import Fields
+
+
 class __base__:
     def __init__(self):
         self.__fields__ = {}
@@ -58,13 +65,16 @@ def __get_all_fields__(cls):
 class xx:
     def __lshift__(self, other):
         pass
+
     def __call__(self, *args, **kwargs):
         pass
+
     def __iter__(self):
         return list(self)
 
 
 import ReCompact.dbm.db_actions
+
 
 def table(
         table_name,
@@ -74,7 +84,7 @@ def table(
     def ret(cls):
         meta = __get_meta__(cls)
         setattr(cls, "set", ReCompact.dbm.db_actions.__obj_set__)
-        setattr(cls,"__rshift__", ReCompact.dbm.db_actions.__obj_rshift__)
+        setattr(cls, "__rshift__", ReCompact.dbm.db_actions.__obj_rshift__)
         setattr(cls, "__lshift__", ReCompact.dbm.db_actions.__obj_lshift__)
         setattr(cls, "insert_one", ReCompact.dbm.db_actions.insert_one)
         setattr(cls, "insert", ReCompact.dbm.db_actions.insert_many)
@@ -84,10 +94,10 @@ def table(
         setattr(cls, "delete_many", ReCompact.dbm.db_actions.delete_many)
         setattr(cls, "find_one", ReCompact.dbm.db_actions.find_one)
         setattr(cls, "find", ReCompact.dbm.db_actions.find)
-        setattr(cls,"__iter__",ReCompact.dbm.db_actions.__ob_iter__)
+        setattr(cls, "__iter__", ReCompact.dbm.db_actions.__ob_iter__)
 
-        for k,v in cls.__dict__.items():
-            if isinstance(v,ReCompact.dbm.field):
+        for k, v in cls.__dict__.items():
+            if isinstance(v, ReCompact.dbm.field):
                 v.__name__ = k
         setattr(meta, "table_name", table_name)
         setattr(meta, "keys", keys)
@@ -105,9 +115,6 @@ def table(
     return ret
 
 
-
-
-
 class field():
     """
     Định nghĩa một field trong mongodb
@@ -116,17 +123,17 @@ class field():
     # def __getitem__(self, item):
 
     def __init__(self, data_type=str, max_len=-1, is_require=False):
-
         self.data_type = data_type
         self.max_len = max_len
         self.is_require = is_require
+
     @property
     def f(self):
         """
         Get mongod doc field
         :return:
         """
-        return getattr(ReCompact.dbm.FIELDS,self. __name__)
+        return getattr(ReCompact.dbm.FIELDS, self.__name__)
 
     @property
     def n(self):
@@ -144,20 +151,24 @@ def __ob_set_attr__(*args, **kwargs):
     cls_type = type(args[0])
     attr_name = args[1]
     attr_value = args[2]
-    check=["__db__"]
+    check = ["__db__"]
     if attr_name in check:
         instance.__dict__[attr_name] = attr_value
 
         return
+    if attr_name == "select":
+        return instance.__dict__.get("__select__")
+    if attr_name == "__pipeline__":
+        return instance.__dict__.get("__pipeline__")
     if not hasattr(cls_type, attr_name):
         raise Exception(f'{cls_type.__module__ + "." + cls_type.__name__} do not have property {attr_name}')
     f = getattr(cls_type, attr_name)
 
     assert isinstance(f, field)
-    if attr_value == None and f.is_require == False:
+    if attr_value is None and f.is_require == False:
         instance.__dict__["__fields__"] = None
 
-    if f.is_require and attr_value == None:
+    if f.is_require and attr_value is None:
         raise Exception(f'{cls_type.__module__ + "." + cls_type.__name__}.{attr_name} is require')
     if f.data_type != type(attr_value):
         raise Exception(f'{cls_type.__module__ + "." + cls_type.__name__}.{attr_name} is must be {f.data_type}')
@@ -170,18 +181,43 @@ def __ob_get_attr__(*args, **kwargs):
     import ReCompact.dbm
     instance = args[0]
     attr_name = args[1]
-    if attr_name=="set":
+    if attr_name in ["select", "__select__"]:
+        if instance.__dict__.get("__select__", None) is None:
+            import ReCompact.dbm.aggregate
+            instance.__dict__["__select__"] = ReCompact.dbm.aggregate.SelectAggregate(instance)
+        return instance.__dict__["__select__"]
+    if attr_name == "filter":
+        if instance.__dict__.get("__filter__", None) is None:
+            import ReCompact.dbm.aggregate
+            instance.__dict__["__filter__"] = ReCompact.dbm.aggregate.FilterAggregate(instance)
+        return instance.__dict__["__filter__"]
+    if attr_name == "sort":
+        if instance.__dict__.get("__sort__", None) is None:
+            import ReCompact.dbm.aggregate
+            instance.__dict__["__sort__"] = ReCompact.dbm.aggregate.SortAggregate(instance)
+        return instance.__dict__["__sort__"]
+    if attr_name == "skip":
+        if instance.__dict__.get("__skip__", None) is None:
+            import ReCompact.dbm.aggregate
+            instance.__dict__["__skip__"] = ReCompact.dbm.aggregate.SkipAggregate(instance)
+        return instance.__dict__["__skip__"]
+    if attr_name == "limit":
+        if instance.__dict__.get("__limit__", None) is None:
+            import ReCompact.dbm.aggregate
+            instance.__dict__["__limit__"] = ReCompact.dbm.aggregate.LimitAggregate(instance)
+        return instance.__dict__["__limit__"]
+    if attr_name == "set":
         return type(instance).__original_getattribute__(instance, attr_name)
-    if attr_name=="aggregate":
+    if attr_name == "aggregate":
         import ReCompact.dbm.aggregate
 
         return ReCompact.dbm.aggregate.Aggregate(instance)
-    if attr_name=="__dict__":
+    if attr_name == "__dict__":
         return type(instance).__original_getattribute__(instance, attr_name)
-    if instance.__dict__.get("__is_queryable__",None)==True:
+    if instance.__dict__.get("__is_queryable__", None) == True:
         cls = type(instance)
-        if cls.__meta__.__fields__.get(attr_name,None) is not None:
-            return getattr(ReCompact.dbm.FIELDS,args[1])
+        if cls.__meta__.__fields__.get(attr_name, None) is not None:
+            return getattr(ReCompact.dbm.FIELDS, args[1])
 
     # if isinstance(type(instance).__dict__.get(attr_name,None),Fields):
     #     ret = Fields()
@@ -201,7 +237,7 @@ def __ob_get_attr__(*args, **kwargs):
         return instance.__fields__
     assert isinstance(attr_name, str)
     obj_type = type(instance)
-    global  proxy_call
+    global proxy_call
     if attr_name in proxy_call:
         return obj_type.__original_getattribute__(instance, attr_name)
     if attr_name.__len__() > 4 and attr_name[0:2] == "__" and attr_name[-2:] == "__":
@@ -216,13 +252,23 @@ def __ob_get_attr__(*args, **kwargs):
 
 
 def __on__init__(*args, **kwargs):
+    if isinstance(args, tuple) and args.__len__() == 3 and isinstance(args[1], pymongo.mongo_client.MongoClient):
+        args[0].__dict__["__is_queryable__"] = True
+        db = args[1].get_database(args[2])
+        args[0].__db__ = db
+        return
     if kwargs == {} and args.__len__() > 1:
         kwargs = args[1]
         if isinstance(kwargs, dict):
             args[0].__dict__["__fields__"] = args[1]
             return
-    elif args.__len__()==1:
-        args[0].__dict__["__is_queryable__"]=True
+        elif isinstance(kwargs, pymongo.database.Database):
+            args[0].__dict__["__is_queryable__"] = True
+            args[0].__db__ = kwargs
+            return
+
+    elif args.__len__() == 1:
+        args[0].__dict__["__is_queryable__"] = True
 
     instance = args[0]
 

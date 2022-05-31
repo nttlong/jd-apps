@@ -4,6 +4,9 @@ import json
 import ReCompact.dbm
 import pymongo.mongo_client
 import bson
+import api_models.Model_Files
+
+
 @ReCompact.dbm.table(
     table_name="Employees",
     index=["Name"],
@@ -11,29 +14,40 @@ import bson
 )
 class Employees:
     Id = ReCompact.dbm.field(data_type=bson.ObjectId)
-    Code= ReCompact.dbm.field(data_type=str,is_require=True)
-    FirstName = ReCompact.dbm.field(data_type=str,is_require=True)
+    Code = ReCompact.dbm.field(data_type=str, is_require=True)
+    FirstName = ReCompact.dbm.field(data_type=str, is_require=True)
     LastName = ReCompact.dbm.field(data_type=str, is_require=True)
-    BirtDate = ReCompact.dbm.field(data_type=datetime.datetime,is_require=True)
+    BirtDate = ReCompact.dbm.field(data_type=datetime.datetime, is_require=True)
     STT = ReCompact.dbm.field(data_type=int, is_require=True)
-employees= Employees()
-# emp_code =employees.Code
-# expx =  emp_code!=1
-# expx2 = employees.FirstName!="123"
-filter_b = employees.BirtDate
-filter_b=filter_b==datetime.datetime.now()
-# expx3 =expx2 & expx
-print(filter_b)
 
-cnn =  pymongo.mongo_client.MongoClient(
+
+cnn = pymongo.mongo_client.MongoClient(
     host="192.168.18.36",
     port=27018
 )
 
-db=cnn.get_database(("test_001"))
-employees<<db # Set database
+db = cnn.get_database(("test_001"))
+files = api_models.Model_Files.DocUploadRegister(cnn, "lv-cms")
+files.select(
+    files.ServerFileName, (files.ServerFileName, "firstName")
+).filter(
+    files.ServerFileName=="XXX"
+).skip(1000).limit(300)
+
+
+files.sort(files.ServerFileName.asc(),files.MainFileId.desc())
+items = list(files)
+# emp_code =employees.Code
+# expx =  emp_code!=1
+# expx2 = employees.FirstName!="123"
+# filter_b = employees.BirtDate
+# filter_b=filter_b==datetime.datetime.now()
+# expx3 =expx2 & expx
+print(items)
+
+# employees<<db # Set database
 try:
-    ret =employees.find_one(filter_b)
+    ret = files.find_one(files.ServerFileName == "AAA.png")
     print("OK")
     print(ret)
 except Exception as ex:

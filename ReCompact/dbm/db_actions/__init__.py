@@ -259,6 +259,14 @@ def __ob_iter__(*args, **kwargs):
     db = instance.__db__
     coll = __get_col__(db, type(instance))
     assert isinstance(coll, pymongo.collection.Collection)
+    if hasattr(instance,"__pipeline__"):
+        import ReCompact.dbm.aggregate
+        pipeline  = getattr(instance,"__pipeline__")
+        instance.__pipeline__ =[]
+        for x in coll.aggregate(pipeline):
+            yield x
+
+
     for x in coll.find({}):
         yield x
 
