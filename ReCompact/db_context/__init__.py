@@ -117,7 +117,7 @@ def get_mongodb_file_by_file_name(db: pymongo.database.Database, file_name) -> g
     fs= GridFSBucket(db,chunk_size_bytes=1024*1024*10)
     ret = fs.open_download_stream_by_name(
         file_name
-    ).seekable()
+    )
     return ret
     # return db_get_gridfs(db).find_one({"filename": file_name})
 

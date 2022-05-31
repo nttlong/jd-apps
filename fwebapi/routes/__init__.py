@@ -28,4 +28,8 @@ app = Flask(
 )
 app.json_encoder = ModelEncoder
 CORS(app)
+@app.after_request
+def add_header(response):
+    response.cache_control.max_age = 300
+    return response
 api = Api(app)

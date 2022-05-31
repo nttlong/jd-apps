@@ -14,7 +14,7 @@ def single_page_app(path):
 
 @app.route(app_config.get_route_path('/'))
 @app.route('/index')
-async def index():
+def index():
     name = 'Rosalia'
     return render_template('index.html',app=app_config)
 

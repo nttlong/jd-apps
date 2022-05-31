@@ -263,12 +263,12 @@ def __ob_iter__(*args, **kwargs):
         import ReCompact.dbm.aggregate
         pipeline  = getattr(instance,"__pipeline__")
         instance.__pipeline__ =[]
-        for x in coll.aggregate(pipeline):
+        curor = coll.aggregate(pipeline)
+        for x in curor:
             yield x
-
-
-    for x in coll.find({}):
-        yield x
+    else:
+        for x in coll.find({}):
+            yield x
 
 
 def __obj_lshift__(*args, **kwargs):
