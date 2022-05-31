@@ -1,9 +1,10 @@
+import os
+
 from . import app
 from . import api
 from . import app_config
 from flask_restful import Resource
-from . import api_streaming_video
-from . import  BluePrintStream
+
 import flask_restful
 import api_models.Model_Files
 import pymongo.mongo_client
@@ -13,11 +14,11 @@ import datetime
 import fwebapi.database
 import api_models.ModelApps
 import re
-from . import tes001
+
 from flask import Response,stream_with_context
 import mimetypes
 cnn = fwebapi.database.connection
-from . send_file import send_file_partial
+
 from flask import Flask, jsonify, request
 class Files(Resource):
     def post(self, app_name):
@@ -47,7 +48,7 @@ class Files(Resource):
 api.add_resource(Files, app_config.get_route_path('/files/<app_name>/list'))
 # @BluePrintStream.core.route(app_config.get_route_path('/files/<app_name>/<path:directory>'))
 @app.route(app_config.get_route_path('/files/<app_name>/<path:directory>'), methods=["GET"])
-def source(app_name,directory):
+async def source(app_name,directory):
     import ReCompact.db_context
     files = api_models.Model_Files.DocUploadRegister(cnn, app_name)
     if directory.startswith("directory/"):
@@ -78,25 +79,11 @@ def source(app_name,directory):
         return Response(status=404)
     else:
         mime_type, _ = mimetypes.guess_type(directory)
+        import flask_streaming.grid_fs_stream
+        return flask_streaming.grid_fs_stream.streaming_content(
+            mime_type=mime_type,
+            request=request,
+            fs=fs
 
-        def generate():
-            # create and return your data in small parts here
-            chunk = 2024 * 1024 * 2
-            data = [1]
-            while data.__len__() > 0:
-                data = fs.read(chunk)
-                yield data
-            fs.close()
+        )
 
-        if r"video/" in mime_type:
-
-            # start, end = test.get_range(request)
-            # return test.partial_response(fs,mime_type, start, end)
-            return BluePrintStream.video(fs,mime_type)
-            # return send_file_partial(fs,request,mime_type)
-
-        else:
-            ret = Response(stream_with_context(generate()))
-            ret.mimetype = mime_type
-            return ret
-    return {}

@@ -1,7 +1,5 @@
 from __future__ import print_function
-from tornado.wsgi import WSGIContainer
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
+
 import routes.api_apps
 import routes.api_files
 import routes
@@ -19,7 +17,7 @@ if __name__ == '__main__':
           debug=app_config.debug,
           host= app_config.host,
           port=app_config.port,
-            threaded=True
+          threaded=True
     )
     # print(app_config.full_url_root)
     # http_server = HTTPServer(WSGIContainer(app))
