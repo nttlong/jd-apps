@@ -1,65 +1,56 @@
-2022-06-01 13:58:01.923626: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 13:58:01.937625: wfastcgi.py 3.0.0 initialized
-2022-06-01 13:58:04.993880: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 13:58:05.052885: wfastcgi.py 3.0.0 initialized
-2022-06-01 13:58:10.775046: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 13:58:10.792048: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:05:59.076735: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:05:59.136274: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:10:49.881684: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:10:49.954565: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:10:52.542614: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:10:52.560589: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:10:57.175564: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:10:57.204567: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:13:14.790112: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:13:14.874118: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:13:18.747861: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:13:18.910874: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:13:55.490461: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:13:55.527465: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:14:42.626038: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:14:42.656086: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:14:44.649599: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:14:44.728604: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:15:39.191866: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:15:39.232870: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:25:47.275915: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:25:47.366896: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:25:54.433537: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:25:54.460991: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:25:56.567633: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:25:56.585656: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:26:03.569466: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:26:03.583464: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:31:51.436769: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:31:51.450812: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:31:54.553866: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:31:54.554865: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:31:54.571875: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:33:16.787356: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:33:16.806365: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:33:20.356848: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:33:20.387851: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:33:23.648549: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:33:23.662550: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:35:47.685186: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:35:47.694188: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:35:50.152004: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:35:50.160004: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:36:03.646904: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:36:03.670996: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:37:40.299361: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:37:40.311355: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:37:42.678726: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:37:42.692739: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:37:47.183218: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:37:47.295178: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:38:31.141623: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:38:31.251614: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:38:57.366169: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:38:57.386166: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:39:00.697966: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:39:00.710965: wfastcgi.py 3.0.0 initialized
-2022-06-01 14:39:02.778380: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
-2022-06-01 14:39:02.787379: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:12:05.516559: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:12:05.534551: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:12:08.443633: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:12:08.490901: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:12:10.701888: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:12:10.778094: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:15:59.603917: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:15:59.694517: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:18:14.899190: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:18:15.021209: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:18:17.710605: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:18:17.773695: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:18:20.029341: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:18:20.151709: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:18:26.885946: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:18:26.922951: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:24:28.892832: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:24:28.906835: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:24:51.072142: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:24:51.109144: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:24:54.294435: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:24:54.307433: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:24:56.786653: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:24:56.860660: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:25:05.553440: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:25:05.692451: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:28:22.960410: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:28:22.972405: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:28:44.045976: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:28:44.061441: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:31:02.010033: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:31:02.025034: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:31:42.898396: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:31:42.908401: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:31:47.440724: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:31:47.566737: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:42:40.680950: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:42:40.696943: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:42:47.208800: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:42:47.241800: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:42:50.109517: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:42:50.139403: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:47:48.409829: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:47:48.468926: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:47:52.030085: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:47:52.040086: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:47:54.149831: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:47:54.165856: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:48:00.039094: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:48:00.050097: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:52:29.969041: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:52:29.989051: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:52:37.046857: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:52:37.062857: wfastcgi.py 3.0.0 initialized
+2022-06-01 15:52:46.603224: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 15:52:46.620226: wfastcgi.py 3.0.0 initialized
