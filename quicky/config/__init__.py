@@ -25,6 +25,7 @@ class Config:
                 Debug or release.It will  be overwrite by congfig.yalm
         """
         self.host = "127.0.0.1"
+        self.binding ="0.0.0.0"
         self.port =None
         self.https=False
         self.api_dir="api"

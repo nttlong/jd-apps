@@ -48,7 +48,7 @@ class Files(Resource):
 api.add_resource(Files, app_config.get_route_path('/files/<app_name>/list'))
 # @BluePrintStream.core.route(app_config.get_route_path('/files/<app_name>/<path:directory>'))
 @app.route(app_config.get_route_path('/files/<app_name>/<path:directory>'), methods=["GET"])
-async def source(app_name,directory):
+def source(app_name,directory):
     import ReCompact.db_context
     files = api_models.Model_Files.DocUploadRegister(cnn, app_name)
     if directory.startswith("directory/"):

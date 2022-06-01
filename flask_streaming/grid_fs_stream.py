@@ -25,7 +25,7 @@ def streaming_content(fs:gridfs.GridOut,mime_type:str,request,chunk_size=1024*32
         while data.__len__() > 0:
             data = fs.read(chunk)
             yield data
-        fs.close()
+
 
     def read_from_to(start, end):
         """
@@ -78,6 +78,7 @@ def streaming_content(fs:gridfs.GridOut,mime_type:str,request,chunk_size=1024*32
         """
         Báo cho thiết bị biết phạm vi củ nôi dung
         """
+        fs.close()
         return res
     if request.range and request.range.ranges[0][1] is None and request.range.ranges[0][0] == 0:
 
@@ -87,6 +88,7 @@ def streaming_content(fs:gridfs.GridOut,mime_type:str,request,chunk_size=1024*32
         """
         """
         res.headers.add("Content-Range", f"bytes {0}-{fs.length - 1}/{fs.length}")
+        fs.close()
         return res
     if request.range and request.range.ranges[0][1] is None and request.range.ranges[0][0] > 0:
         """
@@ -98,10 +100,15 @@ def streaming_content(fs:gridfs.GridOut,mime_type:str,request,chunk_size=1024*32
         """
         start = request.range.ranges[0][0]
         end = fs.length
+        limit_size =300*1024*1024
+        if end-start >limit_size :
+            end = limit_size +start
+
 
         res = Response(stream_with_context(read_from_to(start, end)), status=206, mimetype=mime_type)
-        res.headers.add("Content-Length", f"{fs.length - start}")
+        res.headers.add("Content-Length", f"{end - start}")
         res.headers.add("Content-Range", f"bytes {start}-{end - 1}/{fs.length}")
+        fs.close()
         return res
     else:
         raise Exception()
