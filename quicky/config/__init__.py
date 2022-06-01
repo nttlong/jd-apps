@@ -5,6 +5,32 @@ from .. import logs
 from .. import yaml_reader
 from .. import logs
 import yaml
+class MediaConfig:
+    def __int__(self):
+        self.streaming_buffering_in_KB=32
+        """
+        Khi streaming video để bảo đảm tốc độ cho ngưởi xem cần một bộ đệm RAM với dung lương là 
+        8 bit * chất lương hỗ trợ ví dụ 4K thì 8*4=32KB 
+        """
+        self.streaming_segment_size_in_KB=0
+        """
+        Streaming Segment Size: Chiều dài cho mỗi phân đoạn streaming
+        Khi trình duyệt request 1 file video hoặc 1 file audio server sẽ hồi đáp lại
+        một số lượng byte với kích thước  streaming_segment_size_in_KB*1024, 
+        trong thời gian thiết bị đang trình chiếu nội dung, thì server fecth tiếp segment 2,..
+        Chế độ giới hạn (giá trị >0):
+            1 -Mặc dù ở chế độ giới hạn Segment nội dung có bị ngắt, nhưng người dùng sẽ không cảm nhận được
+            2- Một số thiết bị trình chiếu nôi dung như Windows Media Player hay VLC media player, 
+                hoặc các trình tải nội dung như Download manager chỉ có thể tải được Segment đầu tiên và sẽ không
+                nhận được nội dung đầy đủ. Tất cả các trình duyệt Web luôn nhận đầy đủ thông tin.
+        Chế độ không giới hạn (giá trị=0, đây là giá trị mặc định):
+            1 - Ở chế độ này Server sẽ streaming liên tục cho đến hết nôi dung, kg ngắt quãng.
+            2- Tất cả mọi thiết bị nhận được đầy đủ thông tin
+            Chú ý: Ở chế độ này khi host trên IIS với FastCGI thì phải vào thư mục:
+            C:\Windows\System32\inetsrv\config tìm trang applicationHost.config
+            Thẻ fastCgi bổ sung thêm activityTimeout="60000" requestTimeout="60000" instanceMaxRequests="1000000"
+              
+        """
 class Config:
     def __init__(self,app_file_or_folder):
         app_file = app_file_or_folder
@@ -30,6 +56,10 @@ class Config:
         self.https=False
         self.api_dir="api"
         self.api_url = "http://"+self.host + "/api"
+        self.media = MediaConfig()
+        """
+        Phần cấu hình cho media
+        """
 
 
         self.app_dir = str(pathlib.Path(app_file))
@@ -97,6 +127,7 @@ class Config:
         if self.host_dir is not None and self.host_dir!='/':
             self.full_url_app = self.full_url_root+self.host_dir
 
+
     def get_loger(self,name)->logging.Logger:
         logs.set_root_app_dir(self.app_dir)  # Cài đặt thư mục app cho log
         logs.set_root_dir(self.app_logs_dir)
@@ -121,6 +152,16 @@ class Config:
         try:
             self.meta = yaml_reader.from_file(self.app_config_file)
             for k,v in self.meta.items():
+                if k=="media":
+                    if isinstance(v,dict):
+                        self.media.streaming_buffering_in_KB = v.get(
+                            "streaming_buffering_in_KB",
+                            self.media.streaming_buffering_in_KB
+                        )
+                        self.media.streaming_segment_size_in_KB = v.get(
+                            "streaming_buffering_in_KB",
+                            self.media.streaming_segment_size_in_KB
+                        )
                 if k == "static":
                     if os.path.isabs(v):
                         if not os.path.isdir(v):
