@@ -1,12 +1,10 @@
 from __future__ import print_function
-import wfastcgi
-import routes.api_apps
-import routes.api_files
+
 import routes
 app =routes.app
 app_config = routes.app_config
 
-import routes.api_file_upload
+# import routes.api_file_upload
 
 
 if __name__ == '__main__':

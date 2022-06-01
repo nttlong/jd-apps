@@ -9,6 +9,8 @@ import pathlib
 from flask_restful import Resource, Api
 from flask_cors import CORS
 import pathlib
+import flask_ext_app
+
 
 
 app_config = quicky.config.Config(str(pathlib.Path(__file__).parent.parent))
@@ -26,6 +28,7 @@ app = Flask(
     static_url_path=app_config.static_url,
     template_folder= app_config.full_template_path
 )
+flask_ext_app.save_config(app,app_config)
 app.json_encoder = ModelEncoder
 CORS(app)
 @app.after_request
@@ -33,3 +36,11 @@ def add_header(response):
     response.cache_control.max_age = 300
     return response
 api = Api(app)
+import flask_app_controller.content
+
+app.add_url_rule(app_config.get_route_path('/files/<app_name>/<path:directory>'),"source",flask_app_controller.content.source,methods=["GET"])
+
+import flask_app_controller.apps
+api.add_resource(flask_app_controller.apps.Apps, app_config.get_route_path('/apps/<app_name>/list'))
+import flask_app_controller.files
+api.add_resource(flask_app_controller.files.Files, app_config.get_route_path('/files/<app_name>/list'))

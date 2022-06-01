@@ -36,4 +36,4 @@ class App(Resource):
         ret =apps.find_one(apps.Name==find_app_name)
         return ret
 api.add_resource(App, app_config.get_route_path('/apps/<app_name>/get'))
-api.add_resource(Apps, app_config.get_route_path('/apps/<app_name>/list'))
+

@@ -143,3 +143,11 @@ OSError: [Errno 22] Invalid argument
 2022-06-01 16:55:43.430540: wfastcgi.py 3.0.0 initialized
 2022-06-01 16:55:45.228409: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
 2022-06-01 16:55:45.238411: wfastcgi.py 3.0.0 initialized
+2022-06-01 16:58:18.320936: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 16:58:18.330935: wfastcgi.py 3.0.0 initialized
+2022-06-01 16:58:26.091582: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 16:58:26.100579: wfastcgi.py 3.0.0 initialized
+2022-06-01 16:58:28.203368: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 16:58:28.219383: wfastcgi.py 3.0.0 initialized
+2022-06-01 17:12:25.766459: wfastcgi.py will restart when files in C:\dj-apps-2022-05-25\jd-apps\ are changed: .*((\.xx)|(\.yy))$
+2022-06-01 17:12:25.780460: wfastcgi.py 3.0.0 initialized
