@@ -2,9 +2,9 @@ debug: True
 #---------------------------------------
 #Declare host and port
 #-------------------------------------
-host: "172.16.9.78"
+#host: "172.16.9.78"
 binding: "0.0.0.0"
-#host: 192.168.1.2
+host: 192.168.1.2
 port: 5012
 https: False
 host_dir: '/'
@@ -14,11 +14,11 @@ description: This is a application for file explorer
 # Specify template folder
 #------------------------------------------------
 template_folder: templates
-static: C:/dj-apps-2022-05-25/jd-apps/app_manager/static
-#static: C:/code/python/jd-apps/app_manager/static
+#static: C:/dj-apps-2022-05-25/jd-apps/app_manager/static
+static: C:/code/python/jd-apps/app_manager/static
 static_url: /static
-api_url: http://172.16.9.78:5432
-#api_url: http://192.168.1.2:5432
+#api_url: http://172.16.9.78:5432
+api_url: http://192.168.1.2:5432
 #api_url: http://172.16.7.81:8001
 media:
   streaming_buffering_in_KB: 32 # Tuy theo dung luong RAM cua server va chat luong video can ho tro vi du chat luong 4k

@@ -1,7 +1,8 @@
 
 debug: true
 description: Create congfig.yaml and mappall quicky.config.Congfig attr to congfig.yaml
-host: 172.16.9.78
+host_: 172.16.9.78
+host: 192.168.1.2
 binding: 0.0.0.0
 #host: 192.168.1.2
 host_dir: /

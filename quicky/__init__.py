@@ -1,26 +1,32 @@
-import asyncio
-def deasync(*args,**kwargs):
+import flask
+from flask_restful import Resource, Api
+from . import config
+__app__= None
+__api_dir__= '/api'
 
-    def wrapper(*x,**y):
-        handler = x[0]
-        def run(*a,**b):
-            # import time
-            # time.sleep(0.001)
-            # async_response = []
-            #
-            # async def run_and_capture_result(*b,**d):
-            #     r = await handler(*b,**d)
-            #     async_response.append(r)
-            # loop=None
-            # try:
-            #     # loop = asyncio.get_running_loop()
-            # except Exception as e:
-            #     cc=e
-            # coroutine = asyncio.coroutine(handler(*a,**b))
-            # loop =asyncio.get_running_loop()
-            # ret =loop.run_until_complete(coroutine)
-            return handler(*a,**b)
-
-        return run
-
-    return wrapper
+class QuickyApp(flask.app.Flask):
+    def __init__(self,name,app_config:config.Config):
+        super().__init__(
+            name,
+            static_folder=app_config.full_static_dir,
+            static_url_path=app_config.static_url,
+            template_folder=app_config.full_template_path
+        )
+        self.app_config=app_config
+        self.api = Api(self)
+        global __app__
+        __app__= self
+def set_api_die(path):
+    global __api_dir__
+    __api_dir__=path
+def get_app()->QuickyApp:
+    global __app__
+    return __app__
+def api_add_resource(controller_class,url_path:str):
+    global __api_dir__
+    if __api_dir__=='/':
+        get_app().api.add_resource(controller_class,get_app().app_config.get_route_path(url_path))
+    else:
+        get_app().api.add_resource(controller_class,get_app().app_config.get_route_path(__api_dir__+ url_path))
+def add_handler(path, handler,endpoint,methods=['GET']):
+    get_app().add_url_rule(get_app().app_config.get_route_path(path),endpoint,handler,methods)
