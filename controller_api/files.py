@@ -1,4 +1,3 @@
-
 from flask_restful import Resource
 
 import api_models.Model_Files
@@ -6,13 +5,18 @@ import api_models.ModelApps
 import re
 
 import db_connection
+
 cnn = db_connection.connection
 
 from flask import request
 
 import quicky
 
+
 class Files(Resource):
+    """
+    Controller lấy danh sách các file
+    """
     def post(self, app_name):
         app_config = quicky.get_app().app_config
         json_data = request.get_json(force=True)
@@ -29,9 +33,18 @@ class Files(Resource):
         files.limit(page_size)
         ret = list(files)
         for x in ret:
-            x["UrlOfServerPath"] = f"{app_config.full_url_app}/{self.endpoint}/{app_name}/directory/{x['FullFileName']}"
+            x["UrlOfServerPath"] = f"{app_config.api_url}/{self.endpoint}/{app_name}/directory/{x['FullFileName']}"
+            if x.get(files.ThumbFileId.__name__, None) is not None:
+                if x.get(files.HasThumb.__name__, None) is None:
+                    files.update_one(
+                        files._id == x["_id"],
+                        files.set(
+                            files.HasThumb == True
+                        )
+                    )
+                x["ThumbUrl"] = f"{app_config.api_url}/{self.endpoint}/{app_name}/thumb/{x[files._id.__name__]}.png"
 
         return ret
 
-quicky.api_add_resource(Files,'/files/<app_name>/list')
 
+quicky.api_add_resource(Files, '/files/<app_name>/list')

@@ -1,8 +1,9 @@
-from flask import Response,request
+from flask import Response, request
 import db_connection
 import mimetypes
-import api_models.Model_Files # model file upload
+import api_models.Model_Files  # model file upload
 import quicky
+
 cnn = db_connection.connection
 
 
@@ -53,4 +54,6 @@ def source(app_name, directory):
             streaming_buffering_in_KB=app_config.media.streaming_buffering_in_KB
 
         )
-quicky.add_handler('/files/<app_name>/<path:directory>',endpoint='file-content', handler=source)
+
+
+quicky.add_api_handler('/files/<app_name>/<path:directory>', endpoint='file-content', handler=source)

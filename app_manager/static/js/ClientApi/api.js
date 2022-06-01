@@ -14,6 +14,7 @@ class api {
 
     }
     static async post(apiPath, data) {
+        debugger
         var url = this.serverApIHostUrl + "/" + apiPath;
         function checkHasFile() {
             var retData = {}
