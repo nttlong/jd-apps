@@ -83,7 +83,9 @@ def source(app_name,directory):
         return flask_streaming.grid_fs_stream.streaming_content(
             mime_type=mime_type,
             request=request,
-            fs=fs
+            fs=fs,
+            streaming_segment_size_in_KB= app_config.media.streaming_segment_size_in_KB,
+            streaming_buffering_in_KB= app_config.media.streaming_buffering_in_KB
 
         )
 

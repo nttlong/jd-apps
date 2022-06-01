@@ -15,7 +15,7 @@ if __name__ == '__main__':
     app_config.logger.info(dict(debug=app_config.debug, host=app_config.host, port=app_config.port))
     app_config.logger.info("------------------------------------------------------")
     app.run(
-          debug=False,
+          debug=True,
           host= app_config.host,
           port=app_config.port,
           threaded=True

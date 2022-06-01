@@ -5,14 +5,16 @@ from .. import logs
 from .. import yaml_reader
 from .. import logs
 import yaml
-class MediaConfig:
-    def __int__(self):
-        self.streaming_buffering_in_KB=32
+
+
+class MediaConfig(object):
+    def __init__(self):
+        self.streaming_buffering_in_KB = 32
         """
         Khi streaming video để bảo đảm tốc độ cho ngưởi xem cần một bộ đệm RAM với dung lương là 
         8 bit * chất lương hỗ trợ ví dụ 4K thì 8*4=32KB 
         """
-        self.streaming_segment_size_in_KB=0
+        self.streaming_segment_size_in_KB = 0
         """
         Streaming Segment Size: Chiều dài cho mỗi phân đoạn streaming
         Khi trình duyệt request 1 file video hoặc 1 file audio server sẽ hồi đáp lại
@@ -31,8 +33,14 @@ class MediaConfig:
             Thẻ fastCgi bổ sung thêm activityTimeout="60000" requestTimeout="60000" instanceMaxRequests="1000000"
               
         """
+
+
 class Config:
-    def __init__(self,app_file_or_folder):
+    def __init__(self, app_file_or_folder):
+        self.media = MediaConfig()
+        """
+        Phần cấu hình cho media
+        """
         app_file = app_file_or_folder
         if not os.path.isfile(app_file):
             if not os.path.isdir(app_file):
@@ -43,24 +51,19 @@ class Config:
         Create config form app_dir
         :param app_dir:
         """
-        self.name ="Noname"
+        self.name = "Noname"
         self.description = "Create congfig.yaml and mappall quicky.config.Congfig attr to congfig.yaml"
-        self.host_dir='/'
+        self.host_dir = '/'
         self.debug = True
         """
                 Debug or release.It will  be overwrite by congfig.yalm
         """
         self.host = "127.0.0.1"
-        self.binding ="0.0.0.0"
-        self.port =None
-        self.https=False
-        self.api_dir="api"
-        self.api_url = "http://"+self.host + "/api"
-        self.media = MediaConfig()
-        """
-        Phần cấu hình cho media
-        """
-
+        self.binding = "0.0.0.0"
+        self.port = None
+        self.https = False
+        self.api_dir = "api"
+        self.api_url = "http://" + self.host + "/api"
 
         self.app_dir = str(pathlib.Path(app_file))
         """
@@ -81,13 +84,13 @@ class Config:
         Đường dẫn đến file cấu hình của tàn bộ app
         """
         if not os.path.isfile(self.app_config_file):
-            data  = {}
-            for k,v in self.__dict__.items():
-                if not k in ["app_dir","app_logs_dir","app_config_file"]:
-                    if not (k.__len__()>4 and k[0:2]=="__" and k[-2:]=="__"):
-                        if hasattr(self,k):
+            data = {}
+            for k, v in self.__dict__.items():
+                if not k in ["app_dir", "app_logs_dir", "app_config_file"]:
+                    if not (k.__len__() > 4 and k[0:2] == "__" and k[-2:] == "__"):
+                        if hasattr(self, k):
                             data[k] = v
-            with open(self.app_config_file, 'w',encoding='utf-8') as outfile:
+            with open(self.app_config_file, 'w', encoding='utf-8') as outfile:
                 yaml.dump(data, outfile, default_flow_style=False)
             # raise FileNotFoundError(f"{self.app_config_file} was not found")
         self.static_dir = "static"
@@ -112,30 +115,31 @@ class Config:
         self.load_yaml_config()
         self.full_url_root = f"http://{self.host}"
 
-        self.full_url_static = self.full_url_root+self.static_url
+        self.full_url_static = self.full_url_root + self.static_url
         """
         Url gốc của host
         """
         if self.https:
             self.full_url_root = f"https://{self.host}"
         else:
-            if isinstance(self.port,int):
+            if isinstance(self.port, int):
                 self.full_url_root = f"http://{self.host}:{self.port}"
             else:
                 self.full_url_root = f"http://{self.host}"
         self.full_url_app = self.full_url_root
-        if self.host_dir is not None and self.host_dir!='/':
-            self.full_url_app = self.full_url_root+self.host_dir
+        if self.host_dir is not None and self.host_dir != '/':
+            self.full_url_app = self.full_url_root + self.host_dir
 
-
-    def get_loger(self,name)->logging.Logger:
+    def get_loger(self, name) -> logging.Logger:
         logs.set_root_app_dir(self.app_dir)  # Cài đặt thư mục app cho log
         logs.set_root_dir(self.app_logs_dir)
         logger = logs.get_logger(name, self.app_dir)
         return logger
-    def create_folder_if_not_exist(self,folder_path):
+
+    def create_folder_if_not_exist(self, folder_path):
         if not os.path.isdir(folder_path):
             os.makedirs(folder_path)
+
     def check_all_folder(self):
         """
         Kiểm tra các thư mục cần thiết. nếu thiếu thì tạo
@@ -144,25 +148,28 @@ class Config:
         self.create_folder_if_not_exist(self.full_template_path)
         self.create_folder_if_not_exist(self.app_logs_dir)
         self.create_folder_if_not_exist(self.static_dir)
+
     def load_yaml_config(self):
         """
         Lấy thông tin từ file yaml và cài đặt lại các tham số
         :return:
         """
+        exception_msg = ""
         try:
             self.meta = yaml_reader.from_file(self.app_config_file)
-            for k,v in self.meta.items():
-                if k=="media":
-                    if isinstance(v,dict):
+            for k, v in self.meta.items():
+                if k == "media":
+                    if isinstance(v, dict):
                         self.media.streaming_buffering_in_KB = v.get(
                             "streaming_buffering_in_KB",
                             self.media.streaming_buffering_in_KB
                         )
                         self.media.streaming_segment_size_in_KB = v.get(
-                            "streaming_buffering_in_KB",
+                            "streaming_segment_size_in_KB",
                             self.media.streaming_segment_size_in_KB
                         )
-                if k == "static":
+                        continue
+                elif k == "static":
                     if os.path.isabs(v):
                         if not os.path.isdir(v):
                             exception_msg = f"'{v}' was not found " \
@@ -174,11 +181,11 @@ class Config:
                         self.full_static_dir = os.path.join(self.app_dir, v)
                         if not os.path.isdir(self.full_static_dir):
                             os.makedirs(self.full_static_dir)
-                if k == "template_folder":
+                elif k == "template_folder":
                     if os.path.isabs(v):
                         if not os.path.isdir(v):
                             exception_msg = f"'{v}' was not found " \
-                                            f"Thy should check template_folder in '{ self.app_config_file}'"
+                                            f"Thy should check template_folder in '{self.app_config_file}'"
 
                             raise Exception(exception_msg)
                         self.full_template_path = v
@@ -186,13 +193,14 @@ class Config:
                         self.full_template_path = os.path.join(self.app_dir, v)
                         if not os.path.isdir(self.full_template_path):
                             os.makedirs(self.full_template_path)
-                if k=="host_dir":
+                elif k == "host_dir":
                     print(k)
-                if hasattr(self,k):
-                    setattr(self,k,v)
+                elif hasattr(self, k):
+                    setattr(self, k, v)
         except Exception as e:
             self.logger.info(exception_msg)
             raise e
+
     def get_route_path(self, r_path):
 
         if self.host_dir != '/' and self.host_dir.__len__() > 1:
@@ -201,12 +209,3 @@ class Config:
             return self.host_dir + r_path
         else:
             return r_path
-
-
-
-
-
-
-
-
-

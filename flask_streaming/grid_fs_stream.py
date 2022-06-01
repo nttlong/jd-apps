@@ -2,16 +2,25 @@ import gridfs
 from flask import Response, stream_with_context
 import os
 
-def streaming_content(fs:gridfs.GridOut,mime_type:str,request,chunk_size=1024*32):
+
+def streaming_content(
+        fs,
+        mime_type: str,
+        request,
+        streaming_buffering_in_KB,
+        streaming_segment_size_in_KB
+):
     """
-    Streaming nội dung
-    :param fs: Có thể là một file vật lý, hoặc 1 file trong mongodb, vân vân và mây mây
-    Miễn sao có hỗ reo75 dạng seekable là ok
+    Streaming nôi dung
+    :param fs: Bất kể là gì miễn là sream dạng seekable
     :param mime_type:
     :param request:
+    :param streaming_buffering_in_KB: kích thước bộ đệm tính bằng KB streaming
+    :param streaming_segment_in_KB: Kích thước phân đoạn tính bằng Kb  0- Không giới hạn, >0 có giới hạn
     :return:
     """
-
+    chunk_size = streaming_buffering_in_KB * 1024
+    segment_size = streaming_segment_size_in_KB * 1024
 
     def generate():
         """
@@ -26,7 +35,6 @@ def streaming_content(fs:gridfs.GridOut,mime_type:str,request,chunk_size=1024*32
             data = fs.read(chunk)
             yield data
 
-
     def read_from_to(start, end):
         """
         Đọc từng đoạn theo yêu cầu
@@ -34,25 +42,25 @@ def streaming_content(fs:gridfs.GridOut,mime_type:str,request,chunk_size=1024*32
         :param end:
         :return:
         """
+
         def yeild_list():
-            yeild_size =1024*32
+            yeild_size = chunk_size
             fs.seek(start, os.SEEK_SET)
-            leng_of_bytes= end-start
-            n = int(leng_of_bytes/yeild_size)
-            if leng_of_bytes % yeild_size>0:
-                n+=1
+            leng_of_bytes = end - start
+            n = int(leng_of_bytes / yeild_size)
+            if leng_of_bytes % yeild_size > 0:
+                n += 1
 
             remain = leng_of_bytes
-            r_size = min(yeild_size,remain)
-            for i in range(0,n):
+            r_size = min(yeild_size, remain)
+            for i in range(0, n):
                 y_data = fs.read(r_size)
-                remain-= y_data.__len__()
+                remain -= y_data.__len__()
                 r_size = min(yeild_size, remain)
                 if y_data is None:
                     yield b''
                 else:
                     yield y_data
-
 
         return yeild_list()
 
@@ -81,7 +89,6 @@ def streaming_content(fs:gridfs.GridOut,mime_type:str,request,chunk_size=1024*32
         fs.close()
         return res
     if request.range and request.range.ranges[0][1] is None and request.range.ranges[0][0] == 0:
-
         res = Response(stream_with_context(generate()), status=206, mimetype=mime_type)
 
         res.headers.add("Content-Length", f"{fs.length}")
@@ -100,14 +107,20 @@ def streaming_content(fs:gridfs.GridOut,mime_type:str,request,chunk_size=1024*32
         """
         start = request.range.ranges[0][0]
         end = fs.length
-        # limit_size =300*1024*1024
-        # if end-start >limit_size :
-        #     end = limit_size +start
-
-
-        res = Response(stream_with_context(read_from_to(start, end)), status=206, mimetype=mime_type,direct_passthrough=True)
+        is_fecth_full = True
+        if segment_size > 0:
+            if end - start > segment_size:
+                end = segment_size + start
+                is_fecth_full=False
+        # if is_fecth_full:
+        res = Response(stream_with_context(read_from_to(start, end)), status=206, mimetype=mime_type,
+                       direct_passthrough=True)
         res.headers.add("Content-Length", f"{end - start}")
         res.headers.add("Content-Range", f"bytes {start}-{end - 1}/{fs.length}")
+        # else:
+        # res = Response(stream_with_context(read_from_to(start, end)), status=206, mimetype=mime_type)
+        # res.headers.add("Content-Length", f"{fs.length}")
+        # res.headers.add("Content-Range", f"bytes {start}-{end - 1}/{fs.length}")
         fs.close()
         return res
     else:
