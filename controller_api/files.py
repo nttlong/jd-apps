@@ -3,17 +3,14 @@ from flask_restful import Resource
 import api_models.Model_Files
 import api_models.ModelApps
 import re
-
-import db_connection
-
-cnn = db_connection.connection
+from  . import base_api
 
 from flask import request
 
 import quicky
 
-
-class Files(Resource):
+@quicky.safe_logger()
+class Files(base_api.BaseApi):
     """
     Controller lấy danh sách các file
     """
@@ -24,7 +21,7 @@ class Files(Resource):
         page_size = json_data.get("PageSize", 20)
         field_search = json_data.get("FieldSearch", None)
         value_search = json_data.get("ValueSearch", None)
-        files = api_models.Model_Files.DocUploadRegister(cnn, app_name)
+        files = api_models.Model_Files.DocUploadRegister(self.connection, app_name)
         if field_search is not None and value_search is not None:
             files.filter(
                 getattr(files, field_search) == re.compile(value_search)

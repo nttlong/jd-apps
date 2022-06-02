@@ -1,6 +1,6 @@
 
 import quicky
-from __future__ import print_function
+
 import mimetypes
 from flask import Flask
 from quicky.config import Config
@@ -38,3 +38,4 @@ if __name__ == '__main__':
     )
 
 
+#C:\dj-apps-2022-05-25\jd-apps\venv\Scripts\python.exe C:\dj-apps-2022-05-25\jd-apps\app.py

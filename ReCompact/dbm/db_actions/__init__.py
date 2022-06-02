@@ -1,3 +1,4 @@
+import bson
 import pymongo.database
 from enum import Enum
 import json
@@ -247,13 +248,17 @@ def delete_one(*args, **kwargs):
 def find_one(*args, **kwargs):
     db, instance, coll, filter = __get_all_args_for_find_one__(*args, **kwargs)
     assert isinstance(coll,pymongo.collection.Collection)
-    return coll.find_one(filter)
+    ret= coll.find_one(filter)
+
+    return __parse__(ret)
 
 
 def find(*args, **kwargs):
     db, instance, coll, filter = __get_all_args_for_find_one__(*args, **kwargs)
     assert isinstance(coll,pymongo.database.Collection)
-    return coll.find(filter)
+    ret = coll.find(filter)
+    for x in ret:
+        yield __parse__(x)
 
 
 
@@ -268,10 +273,10 @@ def __ob_iter__(*args, **kwargs):
         instance.__pipeline__ =[]
         curor = coll.aggregate(pipeline)
         for x in curor:
-            yield x
+            yield __parse__(x)
     else:
         for x in coll.find({}):
-            yield x
+            yield __parse__(x)
 
 
 def __obj_lshift__(*args, **kwargs):
@@ -294,3 +299,12 @@ def  __obj_set__(*args,**kwargs):
             setter = {**setter, **x}
     return {"$set":setter}
 
+def __parse__(x):
+    ret={}
+    for k,v in x.items():
+        if isinstance(v,dict):
+            v= __parse__(v)
+        if isinstance(v,bson.Int64):
+            v= int(v)
+        ret[k] =v
+    return ret

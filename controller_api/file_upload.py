@@ -10,73 +10,11 @@ import quicky
 import uuid
 import mimetypes
 import os
+from .base_upload_progress import FileProgressInfo
 api_models.Model_Files.DocUploadRegister.NumOfChunksCompleted
 cnn = db_connection.connection
 app_config = quicky.get_app().app_config
-"""
-Cấu hình app đang chạy
-"""
 
-@quicky.object_contraints.contraints()
-class FileProgressInfo:
-    """
-    Thông tin xử lý
-    Mục đích của bản ghi này là ghi nhận quá trình upload,
-    Và sẽ được sử dụng lại khi user muốn resume upload
-    """
-    UploadId =(str,True)
-    """
-    Quan trọng đây là Id upload số Guid tự động phát sinh
-    """
-
-    FileName = (str, True)
-    SizeInHumanReadable = (str, True)
-    """
-    Kích thước file quy ra chuỗi cho dễ đọc
-    """
-    NumOfChunks = (int, True)
-
-    ChunkSizeInBytes = (int, True)
-    """
-    Kích thước phân đoạn tính bằng byte
-    """
-    NumOfChunksCompleted = (int, True)
-    """
-    Số chunk đã upload thành công
-    """
-    Percent=(float,True)
-    """
-    Tỉ lệ upload
-    """
-    SizeUploadedInHumanReadable=(str,True)
-    """
-    Kích thước đã upload xong quy ra chuỗi
-    """
-
-    SizeUploaded = (float,True)
-    """
-    Kích thước đã upload xong
-    """
-    FileExt = (str,True)
-    """
-    Phần mở rộng file
-    """
-    ServerFileName = (str,True)
-    """
-    Tên file sẽ lưu ở server
-    """
-    MimeType =(str,True)
-    FullFileName =(str,True)
-    Status=(int,True)
-    RegisterOn =(datetime.datetime,True)
-    RegisterBy = (str, True)
-    FileSize = (int, True)
-    ChunkSizeInKB= (int, True)
-    IsPublic=(bool,True)
-    ChunkIndex=(int,True)
-    """
-    Rất quan trọng nếu lỗi dùng để resume upload
-    """
 
 
 @quicky.object_contraints.contraints()
@@ -102,7 +40,7 @@ class FileRegisterInfo:
     """
     Description = (str)
 
-
+@quicky.safe_logger()
 class FileRegister(Resource):
     """
     Upload controller
@@ -157,7 +95,7 @@ class FileRegister(Resource):
             FileProgressInfo.MimeType: mime_type,
             FileProgressInfo.FileExt: file_extension,
             FileProgressInfo.SizeInHumanReadable:size_in_human_readalbe,
-            FileProgressInfo.ServerFileName : f"{upload_id}.{file_extension}",
+            FileProgressInfo.ServerFileName : f"{upload_id}{file_extension}",
             FileProgressInfo.FullFileName : f"{upload_id}/{data.FileName.lower()}",
             FileProgressInfo.Status:0,
             FileProgressInfo.RegisterOn:datetime.datetime.now(),

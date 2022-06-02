@@ -1,3 +1,6 @@
+import json
+
+import bson
 import pymongo.collection
 
 
@@ -104,7 +107,9 @@ class Aggregate:
         coll = __get_col__(self.db, self.cls)
         assert isinstance(coll, pymongo.collection.Collection)
         ret = coll.aggregate(self.pipeline)
-        return ret
+        for x in ret:
+            yield __parse__(x)
+
 
 
 class OwnerAggregate(object):
@@ -185,3 +190,13 @@ class LimitAggregate(OwnerAggregate):
         if isinstance(args, tuple):
             self.owner.__dict__["__pipeline__"] += [{"$limit": args[0]}]
         return self.owner
+
+def __parse__(x):
+    ret={}
+    for k,v in x.items():
+        if isinstance(v,dict):
+            v= __parse__(v)
+        if isinstance(v,bson.Int64):
+            v= int(v)
+        ret[k] =v
+    return ret

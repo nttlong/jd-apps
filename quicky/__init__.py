@@ -39,7 +39,7 @@ def api_add_resource(controller_class, url_path: str):
     """
     if not url_path.startswith('/'):
         raise Exception(f"'{url_path}' must start with '/")
-    if not isinstance(controller_class, type) and not issubclass(controller_class,Resource):
+    if not isinstance(controller_class, type) and not issubclass(controller_class, Resource):
         raise Exception(
             f"{controller_class.__module__}.{controller_class.__name__} must inherit from {Resource.__module__}.{Resource.__name__}")
     global __api_dir__
@@ -58,7 +58,7 @@ def add_api_handler(path, handler, endpoint, methods=['GET']):
     :param methods:
     :return:
     """
-    if path[0]!='/':
+    if path[0] != '/':
         raise Exception(f"'{path}' must start with /")
     if not callable(handler):
         raise Exception(
@@ -80,3 +80,7 @@ def add_handler(path, handler, endpoint, methods=['GET']):
     :return:
     """
     get_app().add_url_rule(get_app().app_config.get_route_path(path), endpoint, handler, methods)
+
+
+def safe_logger(*args, **kwargs):
+    return get_app().app_config.logger_wrapper(*args, **kwargs)

@@ -5,6 +5,7 @@ from .. import logs
 from .. import yaml_reader
 from .. import logs
 import yaml
+from flask_restful import Resource
 
 
 class MediaConfig(object):
@@ -33,6 +34,17 @@ class MediaConfig(object):
             Thẻ fastCgi bổ sung thêm activityTimeout="60000" requestTimeout="60000" instanceMaxRequests="1000000"
               
         """
+
+
+class TempDir:
+    def __init__(self):
+        self.upload = "temp/upload"
+        self.unzip = "temp/unzip"
+
+
+class __Kafka__:
+    def __init__(self):
+        self.brokers = []
 
 
 class Config:
@@ -64,6 +76,8 @@ class Config:
         self.https = False
         self.api_dir = "api"
         self.api_url = "http://" + self.host + "/api"
+        self.temp_dir = TempDir()
+        self.kafka = __Kafka__()
 
         self.app_dir = str(pathlib.Path(app_file))
         """
@@ -150,6 +164,20 @@ class Config:
         self.create_folder_if_not_exist(self.static_dir)
 
     def load_yaml_config(self):
+        yaml_data = yaml_reader.from_file(self.app_config_file)
+        if yaml_data.get("use", None) is not None:
+            yam_rel_Path = yaml_data["use"]
+            if os.path.isabs(yam_rel_Path):
+                self.app_config_file = yam_rel_Path
+                self.__load_yaml_config__()
+            else:
+                self.app_config_dir = str(pathlib.Path(self.app_config_file).parent.absolute())
+                self.app_config_file = os.path.join(self.app_config_dir, yam_rel_Path.replace('/', os.sep))
+                self.__load_yaml_config__()
+        else:
+            self.__load_yaml_config__()
+
+    def __load_yaml_config__(self):
         """
         Lấy thông tin từ file yaml và cài đặt lại các tham số
         :return:
@@ -158,6 +186,7 @@ class Config:
         try:
             self.meta = yaml_reader.from_file(self.app_config_file)
             for k, v in self.meta.items():
+
                 if k == "media":
                     if isinstance(v, dict):
                         self.media.streaming_buffering_in_KB = v.get(
@@ -169,6 +198,36 @@ class Config:
                             self.media.streaming_segment_size_in_KB
                         )
                         continue
+                elif k == "kafka":
+                    if isinstance(v, dict):
+                        if v.get("brokers", None) is None:
+                            raise Exception(f"brokers was not found at kafka in '{self.app_config_file}'")
+                        if not isinstance(v.get("brokers"), list):
+                            raise Exception(f"brokers at kafka in '{self.app_config_file}' must be a list")
+                        self.kafka.brokers = v.get("brokers")
+                elif k == "temp_dir":
+                    if isinstance(v, dict):
+                        self.temp_dir.upload = v.get("upload", self.temp_dir.upload)
+                        if os.path.isabs(self.temp_dir.upload):
+                            if not os.path.isdir(self.temp_dir.upload):
+                                raise Exception(f"directory '{self.temp_dir.upload}' was not found"
+                                                f"Thy please look at '{k}.upload in '{self.app_config_file}' ")
+                        else:
+                            self.temp_dir.upload = os.path.join(self.app_dir, self.temp_dir.upload.replace('/', os.sep))
+                            if not os.path.isdir(self.temp_dir.upload):
+                                os.makedirs(self.temp_dir.upload)
+
+                        self.temp_dir.unzip = v.get("unzip", self.temp_dir.unzip)
+
+                        if os.path.isabs(self.temp_dir.unzip):
+                            if not os.path.isdir(self.temp_dir.unzip):
+                                raise Exception(f"directory '{self.temp_dir.unzip}' was not found"
+                                                f"Thy please look at '{k}.unzip in '{self.app_config_file}' ")
+                        else:
+                            self.temp_dir.unzip = os.path.join(self.app_dir, self.temp_dir.unzip.replace('/', os.sep))
+                            if not os.path.isdir(self.temp_dir.unzip):
+                                os.makedirs(self.temp_dir.unzip)
+                    continue
                 elif k == "static":
                     if os.path.isabs(v):
                         if not os.path.isdir(v):
@@ -209,3 +268,41 @@ class Config:
             return self.host_dir + r_path
         else:
             return r_path
+
+    def logger_wrapper(self, *args, **kwargs):
+        def wraper(*x, **y):
+            cls = x[0]
+            if issubclass(cls, Resource):
+                keys = list(cls.__dict__.keys())
+                for k in keys:
+                    if k in ["post","get"]:
+                        # if not (k.__len__() > 4 and k[0:2] == "__" and k[-2:] == "__"):
+                        if hasattr(cls, k):
+                            v = getattr(cls, k)
+                            if callable(v):
+                                setattr(cls, f"__old_{k}__", v)
+
+                                def wrapper_handler(*a, **b):
+                                    instance = a[0]
+                                    print(wrapper_handler.__name__)
+                                    fn_name = wrapper_handler.__name__.split('_')[3]
+                                    try:
+                                        if hasattr(instance, f"__old_{fn_name}__"):
+                                            fn = getattr(instance, f"__old_{fn_name}__")
+                                            ret = fn.__func__(*a, **b)
+                                            return ret
+                                        else:
+                                            fn = getattr(instance,fn_name)
+                                            ret = fn.__func__(*a, **b)
+                                            return ret
+                                    except Exception as e:
+                                        self.logger.debug(e)
+                                        raise e
+
+                                wrapper_handler.__name__ = f"__wrapper_{k}__"
+                                setattr(cls, k, wrapper_handler)
+                return cls
+            elif callable(cls):
+                return cls
+
+        return wraper

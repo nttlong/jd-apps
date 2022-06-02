@@ -1,17 +1,11 @@
 import datetime
 
 from flask import request, Response
-from flask_restful import Resource
-import db_connection
 import quicky.object_contraints
-import humanize
 import api_models.Model_Files
 import quicky
-import uuid
-import mimetypes
-import os
-cnn = db_connection.connection
-class FileDelete(Resource):
+from . base_api import BaseApi
+class FileDelete(BaseApi):
     def post(self,app_name):
         data = request.get_json(force=True)
         if data.get("UploadId",None) is None:
@@ -22,7 +16,7 @@ class FileDelete(Resource):
             return dict(
                 error=err
             )
-        files = api_models.Model_Files.DocUploadRegister(cnn,app_name)
+        files = api_models.Model_Files.DocUploadRegister(self.connection,app_name)
         files.delete_one(
             files._id==data["UploadId"]
         )
