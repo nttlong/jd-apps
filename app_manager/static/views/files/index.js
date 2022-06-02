@@ -61,6 +61,11 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
         uploadZipForm.setApp(this.currentAppName);
         uploadZipForm.asWindow();
     }
+    async doDelete(item) {
+        var reg = await api.post(`files/${this.currentAppName}/delete`, {
+            UploadId: item._id
+        });
+    }
     doLoadMore(sender) {
 
         api.post(`files/${sender.scope.currentAppName}/list`, {

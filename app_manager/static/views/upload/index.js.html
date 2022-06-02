@@ -5,7 +5,13 @@
         <div>
             <input type="file" id="file" />
         </div>
-        <label>{{$res("File size")}}:</label><label>{{info.SizeUploadedInHumanReadable}}</label>
+        <label>
+            {{$res("File size")}}:
+        </label>
+        <label>
+            {{info.SizeInHumanReadable}}
+        </label>
+        <label>{{$res("Uploaded size")}}:</label><label>{{info.SizeUploadedInHumanReadable}}</label>
         <div style="grid-column:1/-1">
             <rcmpct-progressbar style="width:100%;height:24px" ng-value="{{info.Percent}}" color="#000000" />
         </div>

@@ -24,20 +24,35 @@ var uploadFileView = await View(import.meta, class UploadFileView extends BaseSc
                 ChunkSizeInKB: 1024 * 4,
                 IsPublic: false
             });
-            
-            for (var i = 0; i < reg.NumOfChunks; i ++) {
-                var start = i * reg.ChunkSizeInBytes;
-                var end = Math.min((i + 1) * reg.ChunkSizeInBytes, fileUpload.size);
-                var filePartBlog = fileUpload.slice(start, end)
-                var filePart = new File([filePartBlog], fileUpload.name);
-                var chunk = await api.post(`files/${this.appName}/upload/chunk`, {
-                    UploadId: reg._id,
-                    Index: i,
-                    FilePart: filePart
-                });
-                this.info = chunk;
-                this.$applyAsync();
+            if (reg.error) {
+                msgError(reg.error.message)
+                return
             }
+            else {
+                this.info = reg.data;
+                this.$applyAsync();
+                var regData = reg.data;
+                debugger;
+                for (var i = 0; i < regData.NumOfChunks; i++) {
+                    var start = i * regData.ChunkSizeInBytes;
+                    var end = Math.min((i + 1) * regData.ChunkSizeInBytes, fileUpload.size);
+                    var filePartBlog = fileUpload.slice(start, end)
+                    var filePart = new File([filePartBlog], fileUpload.name);
+                    var chunk = await api.post(`files/${this.appName}/upload/chunk`, {
+                        UploadId: regData.UploadId,
+                        Index: i,
+                        FilePart: filePart
+                    });
+                    if (chunk.error) {
+                        msgError(chunk.error.message)
+                        return
+                    }
+                    this.info = chunk.data;
+                    this.$applyAsync();
+                }
+            }
+            
+            
         }
         catch (ex) {
             alert(ex);

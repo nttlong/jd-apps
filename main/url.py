@@ -5,6 +5,8 @@ import controller_api.files
 import  controller_api.file_content
 import controller_api.file_upload
 import controller_api.file_thumb
+import controller_api.file_delete
+import controller_api.file_upload_chunk
 import controller_pages.single_page_application
 
 

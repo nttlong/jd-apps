@@ -79,6 +79,9 @@ def __get_all_args_for_insert__(*args, **kwargs):
         for v in args:
             if isinstance(v, ReCompact.dbm.DbObjects.Docs.Fields):
                 data={**data,**v.to_mongodb()}
+            elif isinstance(v,dict):
+                for key,val in v.items():
+                    data = {**data, **{key:val}}
             else:
                 instance=v
 

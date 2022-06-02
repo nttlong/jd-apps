@@ -125,7 +125,9 @@
                             <a ng-if="p.UrlDfOCRSource && p.UrlDfOCRSource!=null" ng-href="{{p.UrlDfOCRSource}}" target="_blank">
                                 {{$res("View")}}
                             </a>
-
+                            <div style="grid-column: 1/-1">
+                                <button class="btn btn-small" ng-click="doDelete(p).then()">{{$res('Delete')}}</button> 
+                            </div>
                         </rcmpct-grid>
                     </rcmpct-grid>
                     
