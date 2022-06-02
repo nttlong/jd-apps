@@ -5,7 +5,14 @@ class FileUplaodInfo:
     FileSize=(int,True)
 
 
-data = FileUplaodInfo(dict(x=1))
+data = FileUplaodInfo({
+    FileUplaodInfo.FileName : "123",
+    FileUplaodInfo.FileSize : None
+})
 err=data.get_error()
 if err:
     print(err.to_dict())
+else:
+    print(data.FileSize)
+    data.FileSize=None
+    print("OK")
