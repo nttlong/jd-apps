@@ -72,8 +72,8 @@ def __wrapper_to_dict__(*args, **kwargs):
     for k,v in args[0].__data__.items():
         if hasattr(args[0],k) and not(k.__len__()>4 and k[0:2]=="__" and k[-2:]=="__"):
             vv= getattr(args[0],k)
-            if isinstance(vv,type):
-                ret= {**ret,**{k:vv}}
+            # if isinstance(vv,type):
+            ret= {**ret,**{k:vv}}
         else:
             ret = {**ret, **{k, v}}
     return ret
@@ -148,6 +148,8 @@ def __wrapper_getattr__(*args, **kwargs):
         return instance.__old_getattribute__(attr_name)
     if attr_name.__len__() > 4 and attr_name[0:2] == "__" and attr_name[-2:] == "__":
         return instance.__old_getattribute__(attr_name)
+    elif instance.__dict__["__data__"].get(attr_name,None) is not None:
+        return instance.__dict__["__data__"].get(attr_name)
 
     raise Exception('__wrapper_getattr__')
 

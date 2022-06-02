@@ -41,8 +41,9 @@ class FileUploadChunk(Resource):
 
     def post(self, app_name):
 
-        data = request.form.get('data', {})
-        upload_chunk_data = FileUploadChunkInfo(json.loads(data))
+        data = request.form.get('data', '{}')
+        data=json.loads(data)
+        upload_chunk_data = FileUploadChunkInfo(data)
         err = upload_chunk_data.get_error()
         if err:
             err.message = f"upload chunk require FilePart,UploadId,Index(index of chunk). FilePart is a chunk file in which was wrap in HTML File\n" \
@@ -108,7 +109,9 @@ class FileUploadChunk(Resource):
             return dict(
                 error=err.to_dict()
             )
+
         progess_info = controller_api.file_upload.FileProgressInfo(file_data)
+
         err = progess_info.get_error()
         if err:
             return dict(
@@ -117,6 +120,8 @@ class FileUploadChunk(Resource):
         app_db = cnn.get_database(app_name)
         fs= None
         main_file_id =None
+        progess_info.ChunkIndex=upload_chunk_data.Index
+
         if progess_info.ChunkIndex==0:
             fs = ReCompact.db_context.mongodb_file_create(
                 db=app_db,
@@ -156,22 +161,32 @@ class FileUploadChunk(Resource):
             data= bff
 
         )
-        progess_info.ChunkIndex+=1
+
+
         progess_info.SizeUploaded+= bff.__len__()
         progess_info.SizeUploadedInHumanReadable = humanize.filesize.naturalsize(progess_info.SizeUploaded)
         progess_info.Percent =float(round((progess_info.SizeUploaded*100)/progess_info.FileSize,2))
         status=0
-        if progess_info.ChunkIndex==progess_info.NumOfChunks:
+        if progess_info.ChunkIndex==progess_info.NumOfChunks-1:
             status=1
         files.update_one(
             files._id == progess_info.UploadId,
             files.set(
                 files.SizeUploaded==progess_info.SizeUploaded,
-                files.Status==status
+                files.Status==status,
+                files.NumOfChunksCompleted == progess_info.ChunkIndex
             )
         )
+        ret_data =progess_info.to_dict()
+        #http://172.16.9.78:5012/api/files/long-test/directory/36855ade-650d-43da-9b49-fe4e8912e555/fscrawler.pdf
+        #"ThumbUrl": "http://172.16.9.78:5012/api/files/hps-file-test/thumb/982c7c7f-116d-445f-b29f-6a3a3f1dea19.png"
+        ret_data["RelUrlOfFile"] = f"files/{app_name}/diretory/{progess_info.UploadId}/{progess_info.FileName}"
+        ret_data["UrlOfFile"]=f"files/{ret_data['RelUrlOfFile']}"
+        ret_data["RelThumbUrl"] = f"files/{app_name}/thumb/{progess_info.UploadId}.png"
+        ret_data["ThumbUrl"] = f"{app_config.api_url}/{ret_data['RelThumbUrl']}"
+
         return dict(
-            data = progess_info.to_dict()
+            data = ret_data
         )
 
 

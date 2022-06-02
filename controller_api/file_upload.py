@@ -195,8 +195,13 @@ class FileRegister(Resource):
         """
         try:
             files.insert_one(file_progress_info.to_dict())
+            ret_data=file_progress_info.to_dict()
+            ret_data["RelUrlOfFile"] = f"files/{app_name}/diretory/{upload_id}/{data.FileName}"
+            ret_data["UrlOfFile"] = f"{app_config.api_url}/{ret_data['RelUrlOfFile']}"
+            ret_data["RelThumbUrl"] = f"files/{app_name}/thumb/{upload_id}.png"
+            ret_data["ThumbUrl"] = f"{app_config.api_url}/{ret_data['RelThumbUrl']}"
             return dict(
-                data=file_progress_info.to_dict()
+                data=ret_data
             )
         except Exception as e:
             print(e)
