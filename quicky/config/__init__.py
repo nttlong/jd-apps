@@ -6,7 +6,8 @@ from .. import yaml_reader
 from .. import logs
 import yaml
 from flask_restful import Resource
-
+import traceback
+import sys
 
 class MediaConfig(object):
     def __init__(self):
@@ -41,6 +42,9 @@ class TempDir:
         self.upload = "temp/upload"
         self.unzip = "temp/unzip"
 
+class Captcha:
+    def __init__(self):
+        self.secret_key="FSOajYn1757FYjka2RpeeG8Li0N4KuX5"
 
 class __Kafka__:
     def __init__(self):
@@ -52,6 +56,10 @@ class Config:
         self.media = MediaConfig()
         """
         Phần cấu hình cho media
+        """
+        self.captcha = Captcha()
+        """
+        Thông tin captcha
         """
         app_file = app_file_or_folder
         if not os.path.isfile(app_file):
@@ -221,7 +229,7 @@ class Config:
 
                         if os.path.isabs(self.temp_dir.unzip):
                             if not os.path.isdir(self.temp_dir.unzip):
-                                raise Exception(f"directory '{self.temp_dir.unzip}' was not found"
+                                raise Exception(f"directory '{self.temp_dir.unzip}' was not found\n"
                                                 f"Thy please look at '{k}.unzip in '{self.app_config_file}' ")
                         else:
                             self.temp_dir.unzip = os.path.join(self.app_dir, self.temp_dir.unzip.replace('/', os.sep))
@@ -252,8 +260,13 @@ class Config:
                         self.full_template_path = os.path.join(self.app_dir, v)
                         if not os.path.isdir(self.full_template_path):
                             os.makedirs(self.full_template_path)
-                elif k == "host_dir":
-                    print(k)
+                elif k == "captcha":
+                    if not isinstance(v,dict):
+                        raise Exception(f"{v} in {self.app_config_file} at {k} is invalid\n"
+                                        f"The value of {k} must be \n"
+                                        f"{k}:\n"
+                                        f"  secret_key:bla bla")
+                    self.captcha.secret_key= v.get("secret_key",self.captcha.secret_key)
                 elif hasattr(self, k):
                     setattr(self, k, v)
         except Exception as e:
@@ -286,18 +299,24 @@ class Config:
                                     instance = a[0]
                                     print(wrapper_handler.__name__)
                                     fn_name = wrapper_handler.__name__.split('_')[3]
+                                    func =None
                                     try:
                                         if hasattr(instance, f"__old_{fn_name}__"):
                                             fn = getattr(instance, f"__old_{fn_name}__")
+                                            func=fn.__func__
                                             ret = fn.__func__(*a, **b)
                                             return ret
                                         else:
                                             fn = getattr(instance,fn_name)
+                                            func = fn.__func__
                                             ret = fn.__func__(*a, **b)
                                             return ret
                                     except Exception as e:
-                                        self.logger.debug(e)
-                                        raise e
+                                        self.logger.debug("---------------------------------------------------------")
+                                        self.logger.debug(traceback.format_exc())
+                                        self.logger.debug("---------------------------------------------------------")
+                                        raise Exception(traceback.format_exc())
+
 
                                 wrapper_handler.__name__ = f"__wrapper_{k}__"
                                 setattr(cls, k, wrapper_handler)

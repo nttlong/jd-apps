@@ -7,6 +7,9 @@ import controller_api.file_upload
 import controller_api.file_thumb
 import controller_api.file_delete
 import controller_api.file_upload_chunk
+import controller_api.account
 import controller_pages.single_page_application
+import controller_api.app_register
+
 
 

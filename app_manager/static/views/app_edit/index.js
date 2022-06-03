@@ -34,7 +34,10 @@ var appEditView = await View(import.meta, class EditAppView extends BaseScope {
             ReturnUrlAfterSignIn: me.app.ReturnUrlAfterSignIn,
             Description: me.app.Description,
             Domain: me.app.Domain,
-            LogoFile: logoFile
+            LogoFile: logoFile,
+            Username: me.app.Username,
+            Password: me.app.Password,
+            Email: me.Email
         });
         if (ret.error) {
             msgError(ret.error.message)

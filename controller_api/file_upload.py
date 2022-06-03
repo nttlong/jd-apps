@@ -3,7 +3,7 @@ import datetime
 from flask import request, Response
 from flask_restful import Resource
 import db_connection
-import quicky.object_contraints
+import quicky.object_constraints
 import humanize
 import api_models.Model_Files
 import quicky
@@ -17,7 +17,7 @@ app_config = quicky.get_app().app_config
 
 
 
-@quicky.object_contraints.contraints()
+@quicky.object_constraints.constraints()
 class FileRegisterInfo:
     """
     Dùng để nhận các params gởi từ client cho file upload

@@ -1,4 +1,4 @@
-import quicky.object_contraints
+import quicky.object_constraints
 import quicky
 import os
 import ReCompact_Kafka.producer

@@ -3,14 +3,14 @@
     "",
     "\\app_manager",
     "\\app_manager\\static",
-    "\\app_manager\\static\\js",
-    "\\app_manager\\static\\js\\directives\\bs4",
     "\\app_manager\\static\\views",
+    "\\app_manager\\static\\views\\app_edit",
     "\\app_manager\\static\\views\\files",
+    "\\app_manager\\static\\views\\login",
     "\\app_manager\\static\\views\\player",
     "\\app_manager\\static\\views\\test",
     "\\app_manager\\static\\views\\upload"
   ],
-  "SelectedNode": "\\app_manager\\static\\js\\ui",
+  "SelectedNode": "\\app_manager\\static\\views\\login\\index.js",
   "PreviewInSolutionExplorer": false
 }

@@ -39,3 +39,4 @@ if __name__ == '__main__':
 
 
 #C:\dj-apps-2022-05-25\jd-apps\venv\Scripts\python.exe C:\dj-apps-2022-05-25\jd-apps\app.py
+#C:\code\python\jd-apps\venv\Scripts\python.exe C:\code\python\jd-apps\app.py

@@ -232,11 +232,11 @@ def handler_use_libre_office(consumer: ReCompact_Kafka.consumer.Consumer_obj, ms
     """
 
     import ReCompact.dbm.DbObjects # Dùng để thao tác dữ liệu ter6n mongodb
-    import re_process.mongo_db # Dùng để lấy database thao tác
+    import mongo_db # Dùng để lấy database thao tác
     import ReCompact.db_context # Dùng để tạo file trên mongodb
     import api_models.Model_Files # Sử dụng model
     import ReCompact.dbm
-    db = re_process.mongo_db.get_db(app_name)
+    db = mongo_db.get_db(app_name)
     """
     Đưa file thumb vào fs.file của  database
     """

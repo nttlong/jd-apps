@@ -1,7 +1,7 @@
 import json
 import datetime
 import threading
-
+import ReCompact.dbm.DbObjects.Docs
 __lock__ = threading.Lock()
 __is_has_fix_json__ = False
 
@@ -105,8 +105,9 @@ def table(
         meta.__fields__ = __get_all_fields__(cls)
         setattr(cls, "__setattr__", __ob_set_attr__)
         fn = getattr(cls, "__getattribute__")
-        setattr(cls, "__getattribute__", __ob_get_attr__)
-        cls.__original_getattribute__ = fn
+        if not hasattr(cls,"__original_getattribute__"):
+            setattr(cls, "__getattribute__", __ob_get_attr__)
+            cls.__original_getattribute__ = fn
         fn_init = getattr(cls, "__init__")
         cls.__ole__init__ = fn_init
         setattr(cls, "__init__", __on__init__)
@@ -179,8 +180,13 @@ def __ob_set_attr__(*args, **kwargs):
 
 def __ob_get_attr__(*args, **kwargs):
     import ReCompact.dbm
-    instance = args[0]
-    attr_name = args[1]
+    instance= None
+    attr_name=None
+    try:
+        instance = args[0]
+        attr_name = args[1]
+    except Exception as e:
+        print(e)
     if attr_name in ["select", "__select__"]:
         if instance.__dict__.get("__select__", None) is None:
             import ReCompact.dbm.aggregate
@@ -248,10 +254,25 @@ def __ob_get_attr__(*args, **kwargs):
 
     if instance.__dict__.get("__fields__", None) == None:
         instance.__dict__["__fields__"] = {}
-    return instance.__dict__["__fields__"][attr_name]
+    return instance.__dict__["__fields__"].get(attr_name,None)
 
 
 def __on__init__(*args, **kwargs):
+
+    is_init_by_field_value = True
+    if isinstance(args,tuple):
+        init_data = {}
+        for x in args[1:]:
+            if isinstance(x,ReCompact.dbm.DbObjects.Docs.Fields):
+                init_data={**init_data,**x.to_mongodb()}
+            else:
+                is_init_by_field_value =False
+                break
+        if is_init_by_field_value:
+            obj_ins =args[0]
+            obj_ins.__dict__["__fields__"]=init_data
+            return
+
     if isinstance(args, tuple) and args.__len__() == 3 and isinstance(args[1], pymongo.mongo_client.MongoClient):
         args[0].__dict__["__is_queryable__"] = True
         db = args[1].get_database(args[2])
@@ -321,3 +342,4 @@ class PUSH:
         return {
             "$push": self.mongo_set
         }
+

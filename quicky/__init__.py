@@ -1,13 +1,34 @@
 import flask
+import flask_bcrypt
 from flask_restful import Resource, Api
 from . import config
+from flask_bcrypt import Bcrypt
+from flask import Flask, session
+import db_connection
 
 __app__ = None
 __api_dir__ = '/api'
 
+class AppUser:
+    def __init__(self):
+        self.is_anonymous = True
+        """
+        Là nặc danh
+        """
+        self.Username:str= None
+        """
+        Username
+        """
+        self.Email:str =None
+        self.app_name:str= None
+        self.UserId:str= None
+        self.language:str = None
+
+
 
 class QuickyApp(flask.app.Flask):
     def __init__(self, name, app_config: config.Config):
+        from flask_simple_captcha import CAPTCHA
         super().__init__(
             name,
             static_folder=app_config.full_static_dir,
@@ -15,12 +36,59 @@ class QuickyApp(flask.app.Flask):
             template_folder=app_config.full_template_path
         )
         self.app_config = app_config
+        CAPTCHA_CONFIG = {'SECRET_CAPTCHA_KEY': app_config.captcha.secret_key}
+        CAPTCHA = CAPTCHA(config=CAPTCHA_CONFIG)
         self.api = Api(self)
+        CAPTCHA.init_app(self)
+        self.bcrypt:flask_bcrypt.Bcrypt = Bcrypt(self)
+        """
+        Encrypt text
+            Example:
+                pw_hash = bcrypt.generate_password_hash('hunter2')
+                bcrypt.check_password_hash(pw_hash, 'hunter2') # returns True
+        
+        """
+        # self.config["SESSION_PERMANENT"] = False
+        # self.config["SESSION_TYPE"] = "filesystem"
+        self.config["SESSION_PERMANENT"] = False
+        self.config["SESSION_TYPE"] = "mongodb"
+        self.config["SESSION_MONGODB"] = db_connection.connection
+        self.config["SESSION_MONGODB_DB"] = db_connection.default_db_name
+        self.config["SESSION_MONGODB_COLLECTION"] = 'sys_sessions'
+        self.secret_key=app_config.captcha.secret_key
+        """
+        Khóa mật ẩn
+        """
         global __app__
         __app__ = self
+    def get_user(self)->AppUser:
+        ret = AppUser()
+        if not session.get("IS_LOGIN",False):
+            return ret
+        else:
+            ret.is_anonymous =False
+            ret.Username= session.get("USER_NAME",None)
+            ret.Email = session.get("EMAIL",None)
+            ret.app_name= session.get("APP_NAME",None)
+            ret.app_name = session.get("LANGUAGE", None)
+            ret.UserId =session.get("USER_ID",None)
+            return ret
+
+    def set_user(self,user_id,username,email,app_name,language):
+        session["USER_NAME"]=username
+        session["EMAIL"]=email
+        session["APP_NAME"]=app_name
+        session["LANGUAGE"]=language
+        session["USER_ID"]=user_id
+        session["IS_LOGIN"] = True
+    def clear_user(self):
+        session.clear()
 
 
-def set_api_die(path):
+
+
+
+def set_api_dir(path):
     global __api_dir__
     __api_dir__ = path
 

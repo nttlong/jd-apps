@@ -12,7 +12,7 @@ import os
 """
 Cấu hình app đang chạy
 """
-@quicky.object_contraints.contraints()
+@quicky.object_constraints.constraints()
 class FileUploadChunkInfo:
     UploadId=(str,True)
     """
@@ -26,9 +26,10 @@ class FileUploadChunkInfo:
 Cấu hình app đang chạy
 """
 
-@quicky.object_contraints.contraints()
+@quicky.object_constraints.constraints()
 class FileProgressInfo:
     """
+    Web api sẽ trả ngược về client thông tin theo cấu trúc này
     Thông tin xử lý
     Mục đích của bản ghi này là ghi nhận quá trình upload,
     Và sẽ được sử dụng lại khi user muốn resume upload
@@ -88,15 +89,30 @@ class FileProgressInfo:
     """
 
 class BaseUploadProgress(BaseApi):
+    """
+    Lớp xử lý cơ sở cho thao tác upload
+    Việc Upload môt file lớn đòi hỏi phải co1 proress bar để upload
+    """
     def  __init__(self):
         super().__init__()
         self.progess_info:FileProgressInfo = None
-        self.bufer_data=None
-        self.app_name= None
-
-
-
+        """
+        Thông tin tiến trình
+        """
+        self.bufer_data: bytes =None
+        """
+        Dữ liệu bộ đệm
+        """
+        self.app_name: str= None
+        """
+        Tên của App đang chạy
+        """
     def post(self, app_name):
+        """
+        Hàm post upload
+        :param app_name:
+        :return:
+        """
         app_config = quicky.get_app().app_config
         data = request.form.get('data', '{}')
         data = json.loads(data)

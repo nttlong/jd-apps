@@ -1,7 +1,7 @@
 import datetime
 
 from flask import request, Response
-import quicky.object_contraints
+import quicky.object_constraints
 import api_models.Model_Files
 import quicky
 from . base_api import BaseApi

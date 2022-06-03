@@ -1,5 +1,5 @@
-import quicky.object_contraints
-@quicky.object_contraints.contraints()
+import quicky.object_constraints
+@quicky.object_constraints.constraints()
 class FileUplaodInfo:
     FileName=(str,True)
     FileSize=(int,True)

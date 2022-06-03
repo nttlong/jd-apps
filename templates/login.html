@@ -38,12 +38,10 @@
 <script type="module" defer>
 
     import appModule from "./static/js/app.js"
-    import homeView from "./static/views/home.js"
-    var hs =await homeView();
-    await hs.render(document.getElementById("view"));
-    await hs.getListOfApps();
+    import loginView from "./static/views/login/index.js"
+    var login =await loginView();
+    await login.render(document.getElementById("view"));
 
-    await hs.start()
 
 
 
