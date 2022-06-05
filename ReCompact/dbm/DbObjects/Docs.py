@@ -637,6 +637,16 @@ class Fields(BaseFields):
             import json
             return json.dumps(ret, default=json_util.default)
 
+    def at(self,number:int):
+        self.__index__=number
+        if self.__tree__ is None:
+            self.__name__=f"{self.__name__}.{number}"
+            # self.__tree__=f"{self.__name__}[{number}]"
+            return self
+        return self
+
+
+
 
 filters = Fields(None, True)
 document = Fields()

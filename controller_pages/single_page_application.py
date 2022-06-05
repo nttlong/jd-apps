@@ -2,12 +2,19 @@ import datetime
 import uuid
 
 import api_models.Model_Users
-from flask import render_template,redirect
+from flask import render_template,redirect, request, session
 import quicky
 from db_connection import connection,default_db_name
 from manager import app_mamager, user_manager
 
 app =quicky.get_app()
+@app.route(app.app_config.get_route_path('/signout'))
+def do_sign_out():
+    url = request.url
+    session.clear()
+    return redirect("./")
+
+
 
 @app.route(app.app_config.get_route_path('/login'))
 def single_page_login():

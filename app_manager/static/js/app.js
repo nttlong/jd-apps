@@ -6,12 +6,23 @@ import bs4Module from "./directives/bs4/module.js";
 import { } from "./directives/bs4/select.js";
 import api from "./ClientApi/api.js"
 import { rcmpactModule } from "./directives/rpct/grid.js";
+
 //
 //import qNgView from "./directives/ngView.js";
 //setServerApiHostUrl("http://192.168.18.36:5010/api/default");
 
 api.setUrl(window.api_url)
-
+api.onBeforeCall(async () => {
+    var mask = $("<div class='mask'></div>");
+    mask.appendTo('body');
+    return mask;
+});
+api.onAfterCall(async (mask) => {
+    mask.remove();
+});
+api.onError(async (err) => {
+    console.error(err);
+});
 var appModule = angular.module("app", [module_name,
     rcmpctModule.name,
     bs4Module.name

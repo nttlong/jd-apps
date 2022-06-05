@@ -117,7 +117,7 @@
                                 {{$res("Created on")}}
                             </label>
                             <label>
-                                {{p.RegisterOn|date:'dd-MM-yyyy'}}
+                                {{p.RegisterOn|date:'dd-MM-yyyy hh:mm:ss'}}
                             </label>
                             <label ng-if="p.UrlDfOCRSource && p.UrlDfOCRSource!=null">
                                 {{$res("OCR content")}}
@@ -126,7 +126,13 @@
                                 {{$res("View")}}
                             </a>
                             <div style="grid-column: 1/-1">
-                                <button class="btn btn-small" ng-click="doDelete(p).then()">{{$res('Delete')}}</button> 
+                                <div class="layout-rows">
+                                    <div class="dock full"></div>
+                                    <div>
+                                        <button class="btn btn-primary btn-sm" ng-click="doDelete(p).then()">{{$res('Delete')}}</button>
+                                    </div>
+                                </div>
+                                
                             </div>
                         </rcmpct-grid>
                     </rcmpct-grid>

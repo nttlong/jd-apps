@@ -55,6 +55,13 @@ person_docs = Employees(db)
 #     {'Department.Emps.Code': 'AAA', 'Code': 'NV001', 'Department.Code': 'BP001'}
 # )
 # try:
+person_docs.update_one(
+    person_docs.Code=="NV002",
+    person_docs.set(
+        person_docs.Department.Code =="BP002",
+        person_docs.Manager.at(0).Gender=="dsadad"
+    )
+)
 person_docs.insert_one(
     person_docs.Code=="E001",
     person_docs.FirstName=="E001",

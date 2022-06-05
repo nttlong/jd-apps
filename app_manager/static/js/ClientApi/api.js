@@ -1,9 +1,22 @@
-
-
-class api {
-    static serverApIHostUrl=""
+﻿class api {
+    static serverApIHostUrl = ""
+    static _onBeforeCall = undefined
+    static _onAfterCall = undefined
+    static _onError = undefined
     static setUrl(url) {
         this.serverApIHostUrl=url
+    }
+    static onBeforeCall(callback) {
+        api._onBeforeCall = callback;
+        return api;
+    }
+    static onAfterCall(callback) {
+        api._onAfterCall = callback;
+        return api;
+    }
+    static onError(callback) {
+        api._onError = callback;
+        return api;
     }
     static async get(apiPath) {
         var url = this.serverApIHostUrl + "/" + apiPath;
@@ -13,7 +26,28 @@ class api {
             });
 
     }
-    static async post(apiPath, data) {
+    static async post(apiPath, data,noMask) {
+        var sender = undefined;
+        if (!noMask && api._onBeforeCall) {
+            sender = await api._onBeforeCall();
+        }
+        try {
+            var ret = api.__post__(apiPath, data);
+            if (!noMask && api._onAfterCall) {
+                await api._onAfterCall(sender)
+            }
+            return ret;
+        }
+        catch (e) {
+            if (!noMask && api._onAfterCall) {
+                await api._onAfterCall(sender)
+            }
+            if (api._onError) {
+                await api._onError(e)
+            }
+        }
+    }
+    static async __post__(apiPath, data) {
         debugger
         var url = this.serverApIHostUrl + "/" + apiPath;
         function checkHasFile() {
