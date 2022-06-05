@@ -40,24 +40,35 @@ class Employees(Person):
 
 person_docs = Employees(db)
 # ff= test=__real_dict_2__(
-#     # person_docs.Department.Emps.Code=="AAA",
-#     person_docs.Code =="NV001",
-#     person_docs.Department.Code=="BP001",
-#     person_docs.Department==(
-#         person_docs.Department.Name=="AA"
+#     # person_docs.Department.Emps.Code == float(0.1),
+#     # person_docs.Code == "NV002",
+#     # person_docs.Department.Code == "BP001",
+#     # person_docs.Manager.IDCard == "ST001",
+#     person_docs.Manager == (
+#         person_docs.Manager.FirstName == "XXX",
+#         person_docs.Manager.LastName == "XXX"
+#
 #     )
 # )
-ff= test=__real_dict_2__(
-    {'Department.Emps.Code': 'AAA', 'Code': 'NV001', 'Department.Code': 'BP001'}
-)
+# ff2= __real_dict_2__(ff)
+# ff= test=__real_dict_2__(
+#     {'Department.Emps.Code': 'AAA', 'Code': 'NV001', 'Department.Code': 'BP001'}
+# )
 # try:
 person_docs.insert_one(
-    # person_docs.Code=="E001",
-    # person_docs.FirstName=="E001",
-    # person_docs.IDCard =="00001",
+    person_docs.Code=="E001",
+    person_docs.FirstName=="E001",
+    person_docs.IDCard =="00001",
     person_docs.Department.Emps.Code=="AAA",
-    person_docs.Code =="NV001",
-    person_docs.Department.Code=="BP001"
+    person_docs.Code =="NV002",
+    person_docs.Department.Code=="BP001",
+    person_docs.Manager.IDCard =="ST001",
+    person_docs.Manager==[(
+        person_docs.Manager.FirstName=="XXX",
+        person_docs.Manager.LastName=="XXX",
+        person_docs.Manager.Gender==True
+
+    )]
 
 )
 

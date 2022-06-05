@@ -259,6 +259,34 @@ class Fields(BaseFields):
         return __apply__("$mod", self, other)
 
     def __eq__(self, other):
+        if isinstance(other, list):
+            is_all_tuple= True
+            r_lst =[]
+            for item in other:
+                if not isinstance(item,tuple):
+                    is_all_tuple= False
+                    break
+                else:
+                    f_r = {}
+                    for x in item:
+                        r= __real_dict__(x.to_mongodb())
+                        f_r=__merge__(r,f_r)
+                    r_lst+=[f_r]
+            if is_all_tuple:
+                self.__tree__ = {
+                    self.__name__: r_lst
+                }
+                return self
+
+        if isinstance(other,tuple):
+            f_r={}
+            for x in other:
+                r= __real_dict__(x.to_mongodb())
+                f_r=__merge__(r,f_r)
+            self.__tree__ = {
+                self.__name__: f_r
+            }
+            return self
         if self.__tree__ is None: #Còn nguyên thủy chưa xử lý
             self.__tree__ = {
                 self.__name__: other
@@ -617,3 +645,102 @@ document = Fields()
 def fields():
     # type: () -> object
     return Fields()
+#-----------------------------------------------
+def __merge__(source, destination):
+    """
+    run me with nosetests --with-doctest file.py
+
+    >>> a = { 'first' : { 'all_rows' : { 'pass' : 'dog', 'number' : '1' } } }
+    >>> b = { 'first' : { 'all_rows' : { 'fail' : 'cat', 'number' : '5' } } }
+    >>> merge(b, a) == { 'first' : { 'all_rows' : { 'pass' : 'dog', 'fail' : 'cat', 'number' : '5' } } }
+    True
+    """
+    for key, value in source.items():
+        if isinstance(value, dict):
+            # get node or create one
+            node = destination.setdefault(key, {})
+            __merge__(value, node)
+        else:
+            destination[key] = value
+        return destination
+
+def __real_dict_2__(*args,**kwargs):
+    ret ={}
+    if isinstance(args,tuple) and args.__len__()==1  and isinstance(args[0],dict):
+        args=tuple(args[0].items())
+    for x in args:
+        if isinstance(x,Fields):
+            m_data=x.to_mongodb()
+            item =m_data[ list(m_data.keys())[0]]
+            y= __real_dict_2__(m_data)
+            if isinstance(item,Fields):
+                y = __real_dict__(m_data)
+            ret =__merge__(y,ret)
+            t=ret
+        elif isinstance(x,dict):
+            k=list(x.keys())[0]
+            y = __real_dict__(k,x[k])
+            ret =__merge__(y,ret)
+        elif isinstance(x,tuple):
+            y = __real_dict__(x[0], x[1])
+            ret = __merge__(y, ret)
+
+
+        else:
+            raise NotImplemented
+
+    return ret
+def __real_dict__(data,val=None):
+
+
+
+
+    if isinstance(data,list):
+        if data.__len__()==1:
+            return {data[0]: val}
+        else:
+            return {data[0]: __real_dict__(data[1:], val)}
+    if isinstance(data,str):
+        return __real_dict__(data.split('.'),val)
+
+
+    elif isinstance(data,dict):
+        ret = {}
+        next = {}
+        for k,v in data.items():
+            assert isinstance(k,str)
+            items = k.split('.')
+            if items.__len__()==1:
+                n_v = v
+                if isinstance(v, dict):
+                    n_v = __real_dict__(v)
+                elif isinstance(v,Fields):
+                    n_v = __real_dict__(v.to_mongodb())
+                elif isinstance(v,tuple):
+                    n_v = {}
+                    for x in v:
+                        if isinstance(x,Fields):
+                            n_v=__merge__(__real_dict__(x.to_mongodb()),n_v)
+                ret = __merge__({k:n_v},ret)
+
+            else:
+                r_k= ".".join(items[1:])
+                n_v=v
+                if isinstance(v,dict):
+                    n_v = __real_dict__(v)
+                elif isinstance(v,Fields):
+                    m_data = v.to_mongodb()
+                    # n_value =m_data[m_data.keys()[0]]
+                    m_key =  list(m_data.keys())[0]
+                    n_value = m_data[m_key]
+                    if isinstance(n_value,dict):
+                        n_value= __real_dict__(n_value)
+
+                    n_v = {m_key.split('.')[-1:][0]:n_value}
+                r= __real_dict__(items[1:],n_v)
+
+                ret = __merge__( r,ret)
+
+
+
+    return ret

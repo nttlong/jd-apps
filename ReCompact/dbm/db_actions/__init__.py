@@ -20,7 +20,7 @@ def __merge__(source, destination):
             __merge__(value, node)
         else:
             destination[key] = value
-        return destination
+    return destination
 
 def __real_dict_2__(*args,**kwargs):
     ret ={}
@@ -40,12 +40,13 @@ def __real_dict_2__(*args,**kwargs):
             y = __real_dict__(k,x[k])
             ret =__merge__(y,ret)
         elif isinstance(x,tuple):
-            y = __real_dict__(x[0], x[1])
-            ret = __merge__(y, ret)
+            vv = __real_dict__(x[0], x[1])
+            ret = __merge__(vv, ret)
 
 
         else:
             raise NotImplemented
+
     return ret
 def __real_dict__(data,val=None):
 
@@ -196,13 +197,14 @@ def __get_all_args_for_insert__(*args, **kwargs):
     if isinstance(args,tuple):
         for v in args:
             if isinstance(v, ReCompact.dbm.DbObjects.Docs.Fields):
-                data={**data,**v.to_mongodb()}
+                data = __merge__(__real_dict_2__(v.to_mongodb()),data)
+                if  isinstance(data.get("Manager",None),tuple):
+                    fx=1
+
             elif isinstance(v,dict):
-                for key,val in v.items():
-                    data = {**data, **{key:val}}
+                data = __merge__(__real_dict_2__(v), data)
             elif isinstance(v,tuple):
-                for item in v:
-                    data = {**data, **{key:val}}
+                data = __merge__(__real_dict_2__(v), data)
             else:
                 instance=v
 
@@ -211,7 +213,7 @@ def __get_all_args_for_insert__(*args, **kwargs):
                         f"Thy must call call variable<<db")
     db = getattr(instance, "__db__")
     coll = __get_col__(db, type(instance))
-    return db, instance, coll,__real_dict_2__(data),
+    return db, instance, coll,data,
 def __get_all_args_for_find_one__(*args, **kwargs):
     import ReCompact.dbm.DbObjects.Docs
     instance = args[0]
