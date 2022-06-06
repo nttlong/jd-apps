@@ -25,7 +25,7 @@ api.onError(async (err) => {
 });
 var appModule = angular.module("app", [module_name,
     rcmpctModule.name,
-    bs4Module.name
+    bs4Module.name,"ngSanitize"
 ]);
 var appConotroller = appModule.controller("app", ["$scope", function ($scope) {
 

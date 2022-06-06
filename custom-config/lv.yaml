@@ -39,5 +39,9 @@ kafka:
   brokers: [
              192.168.18.36:9092
   ]
-
+elastic_search:
+  url: [
+         http://192.168.18.36:9200
+  ]
+  index: lv-files-server
 #C:\code\python\jd-apps\venv\Scripts\python.exe C:\code\python\jd-apps\main\app.py

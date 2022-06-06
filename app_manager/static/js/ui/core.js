@@ -48,7 +48,7 @@ var old_time_out = -1
 async function urlWatching(base, onchange) {
     if (old_time_out != -1)
         clearTimeout(old_time_out)
-    var old_base = base;
+    var old_base = "";
     async function  start() {
         if (window.location.href != old_base) {
            await onchange(window.location.pathname.split('/'))
@@ -71,23 +71,21 @@ function getModule(path) {
 function combine(A, BClass) {
     
     var keys = getAllKeyOfProtoType(A.__proto__).concat(Object.keys(A));
-    keys.forEach(function (k) {
-        if (!(BClass.prototype[k] && BClass.prototype[k] != null)) {
-            BClass.prototype[k] = A[k];
+    //keys.forEach(function (k) {
+    //    if (!(BClass.prototype[k] && BClass.prototype[k] != null)) {
+    //        BClass.prototype[k] = A[k];
            
-        }
-    });
+    //    }
+    //});
     BClass.prototype.$scope = A;
     var B = new BClass();
     var keys = getAllKeyOfProtoType(B.__proto__);
     
     keys.forEach(function (k) {
-        
-        if (!(A.__proto__[k] && A.__proto__[k] != null)) {
-            A.__proto__[k] = B[k];
-
-            
-        }
+        //if (k[0] != "$" && k!="constructor") {
+        //    A.__proto__[k] = B[k];
+        //}
+        A.__proto__[k] = B[k];
     });
     
     A.__init__(A);
@@ -321,7 +319,8 @@ function View(url, classView) {
      async function applyResolve(scope) {
         scope = scope || angular.element(document.body).scope().$root;
 
-        var subScope = scope.$new(true);
+         var subScope = scope.$new(true);
+         debugger
         subScope = combine(subScope, classView)
         await subScope.setUrl(url);
         return subScope;

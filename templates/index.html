@@ -41,9 +41,8 @@
     import homeView from "./static/views/home.js"
     var hs =await homeView();
     await hs.render(document.getElementById("view"));
-    await hs.getListOfApps();
-
-    await hs.start()
+    import { startRoute } from "./static/js/start.js"
+    await startRoute(hs);
 
 
 

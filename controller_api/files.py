@@ -8,6 +8,7 @@ from  . import base_api
 from flask import request
 
 import quicky
+import manager.files_manager
 
 @quicky.safe_logger()
 class Files(base_api.BaseApi):
@@ -30,7 +31,7 @@ class Files(base_api.BaseApi):
         files.limit(page_size)
         ret = list(files)
         for x in ret:
-            x["UrlOfServerPath"] = f"{app_config.api_url}/{self.endpoint}/{app_name}/directory/{x['FullFileName']}"
+            x["UrlOfServerPath"] = f"{app_config.api_url}/files/{app_name}/directory/{x['FullFileName']}"
             if x.get(files.ThumbFileId.__name__, None) is not None:
                 if x.get(files.HasThumb.__name__, None) is None:
                     files.update_one(
@@ -39,9 +40,42 @@ class Files(base_api.BaseApi):
                             files.HasThumb == True
                         )
                     )
-                x["ThumbUrl"] = f"{app_config.api_url}/{self.endpoint}/{app_name}/thumb/{x[files._id.__name__]}.png"
+                x["ThumbUrl"] = f"{app_config.api_url}/files/{app_name}/thumb/{x[files._id.__name__]}.png"
 
+        return ret
+@quicky.safe_logger()
+class FilesFullTextSearch(base_api.BaseApi):
+    def post(self,app_name):
+        app_config = quicky.get_app().app_config
+        data = request.get_json(force=True)
+        content = data.get('content','')
+        ret = manager.files_manager.search_content_of_file_and_map_upload(app_name,content)
+        items =[]
+        for x in ret["items"]:
+            doc_item = x["doc_item"]
+            search_item = x["search_item"]
+            ThumbUrl=None
+            if doc_item.get("ThumbFileId", None) is not None:
+                ThumbUrl = f"{app_config.api_url}/files/{app_name}/thumb/{doc_item['_id']}.png"
+
+            UrlOfServerPath = f"{app_config.api_url}/files/{app_name}/directory/{doc_item['FullFileName']}"
+            item = dict(
+                UploadId= x["doc_item"]["_id"],
+                FileName = x["doc_item"]["FileName"],
+                UrlOfServerPath=UrlOfServerPath,
+                ThumbUrl=ThumbUrl,
+                HasThumb = ThumbUrl is not None,
+                IsPublic =doc_item.get('IsPublic',False),
+                Highlight = search_item["highlight"],
+                Content = search_item["content"],
+                SizeInHumanReadable= doc_item.get('SizeInHumanReadable',None),
+                Status =doc_item.get('Status',False),
+                RegisterOn = doc_item.get('RegisterOn')
+            )
+            items+=[item]
+        ret["items"] = items
         return ret
 
 
 quicky.api_add_resource(Files, '/files/<app_name>/list')
+quicky.api_add_resource(FilesFullTextSearch, '/files/<app_name>/content/search')

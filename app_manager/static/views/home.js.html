@@ -2,8 +2,9 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand" href="./">Files explorer</a>
-                <a class="navbar-brand" href="javascript:void(0);" ng-click="browserAllFiles().then()">All files </a>
+                <a class="navbar-brand" href="./">{{$res("Apps")}}</a>
+                <a class="navbar-brand" href="javascript:void(0);" ng-click="browserAllFiles().then()">{{$res("Files")}} </a>
+                <a class="navbar-brand" href="javascript:void(0);" ng-click="loadFullTextSearch().then()">{{$res("Search")}} </a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -16,7 +17,10 @@
             </div>
         </nav>
     </header>
-    <div id="home_view" class="dock full"  style="display:none">
+    <div id="body" class="dock full layout-columns">
+
+    </div>
+    <!--<div id="home_view" class="dock full"  style="display:none">
 
     </div>
     <div  id="home-page">
@@ -42,7 +46,7 @@
             </div>
 
         </main>
-    </div>
+    </div>-->
 </div>
 <script>
     $(document).ready(function () {

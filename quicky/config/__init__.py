@@ -36,7 +36,16 @@ class MediaConfig(object):
               
         """
 
-
+class ElasticSearch(object):
+    def __init__(self):
+        self.url =""
+        """
+        Url của elastic search server
+        """
+        self.index =""
+        """
+        index của Elastic Search
+        """
 class TempDir:
     def __init__(self):
         self.upload = "temp/upload"
@@ -53,6 +62,10 @@ class __Kafka__:
 
 class Config:
     def __init__(self, app_file_or_folder):
+        self.elastic_search =ElasticSearch()
+        """
+        Cấu hình elastic search
+        """
         self.media = MediaConfig()
         """
         Phần cấu hình cho media
@@ -194,7 +207,10 @@ class Config:
         try:
             self.meta = yaml_reader.from_file(self.app_config_file)
             for k, v in self.meta.items():
-
+                if k=="elastic_search":
+                    if isinstance(v,dict):
+                        self.elastic_search.url = v.get("url",None)
+                        self.elastic_search.index = v.get("index",None)
                 if k == "media":
                     if isinstance(v, dict):
                         self.media.streaming_buffering_in_KB = v.get(
