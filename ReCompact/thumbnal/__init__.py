@@ -17,6 +17,10 @@ def video_create_thumb(in_put,scale_witdh,scale_height,second=5)->io.BytesIO:
     clip= VideoFileClip(
         in_put
     )
+    second,_ = divmod(clip, 2)
+    """
+    Lấy khung giữa
+    """
     clip = clip.subclip(0, second)
     frame = clip.get_frame(0)
     height,width,_ = frame.shape
@@ -24,9 +28,11 @@ def video_create_thumb(in_put,scale_witdh,scale_height,second=5)->io.BytesIO:
     if height>width: # Nhung vi anh co chieu cao lon hon chieu rong
         rate = scale_height/height # Nen quye dinh la bop theo chieu chie doc
     new_witdth,new_height= int(width*rate),int(height*rate)
-    res = cv2.resize(frame, dsize=(new_witdth,new_height)) #, interpolation=cv2.INTER_CUBIC)
-    img = Image.fromarray(res, 'RGB')
+    # res = cv2.resize(frame, dsize=(new_witdth,new_height)) #, interpolation=cv2.INTER_CUBIC)
+    # img = Image.fromarray(res, 'RGB')
     # img.save('my.png')
+    img = Image.fromarray(frame, 'RGB')
+    img.resize(size =(new_witdth, new_height))
     img_byte_arr = io.BytesIO()
     img.save(img_byte_arr, format='PNG')
     img_byte_arr = img_byte_arr.getvalue()

@@ -20,6 +20,8 @@ def handler(consumer: ReCompact_Kafka.consumer.Consumer_obj, msg, logger: loggin
     data = consumer.get_json(msg)
 
     file_path = data["FilePath"]  # Đường dẫn đến file vật lý
+    logger.info(f"Create PDF Thumb file {file_path}")
+    logger.info(data)
     import ntpath
     file_name = ntpath.basename(file_path)
     file_name_on_ly, file_ext = os.path.splitext(file_name)
@@ -110,6 +112,8 @@ def handler(consumer: ReCompact_Kafka.consumer.Consumer_obj, msg, logger: loggin
     consumer.commit(msg)
 
     logger.info(f"Thumb of {upload_info['_id']} with {upload_info['FileName']} has been created")
+    logger.info(f"Create PDF Thumb file {file_path} is finish")
+    logger.info(data)
 
 def error(err,msg,logger:logging.Logger):
     logger.debug(err)

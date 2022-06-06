@@ -115,6 +115,8 @@ def handler_use_aspose(consumer: ReCompact_Kafka.consumer.Consumer_obj, msg, log
     data = consumer.get_json(msg)
 
     file_path = data["FilePath"]  # Đường dẫn đến file vật lý
+    logger.info(f"Create Office Thumb file {file_path}")
+    logger.info(data)
     upload_info = data["UploadInfo"]  # Thông tin lúc upload
     if upload_info["FileExt"] == "pdf":
         consumer.commit(msg)
@@ -166,7 +168,8 @@ def handler_use_libre_office(consumer: ReCompact_Kafka.consumer.Consumer_obj, ms
         """
         consumer.commit(msg)
         return
-
+    logger.info(f"Create Office Thumb file {file_path}")
+    logger.info(data)
     app_name = data["AppName"]
     upload_info = data["UploadInfo"]  # Thông tin lúc upload
     upload_id = upload_info["_id"]
@@ -261,6 +264,8 @@ def handler_use_libre_office(consumer: ReCompact_Kafka.consumer.Consumer_obj, ms
     logger.info(f"update thumb id of {upload_id} with value  {thumb_file_path}")
     print(f"update thumb id of {file_name} with value  {thumb_file_path}")
     consumer.commit(msg)
+    logger.info(f"Create Office Thumb file {file_path} is Finish")
+    logger.info(data)
 
 def error(err,msg,logger:logging.Logger):
     logger.debug(err)

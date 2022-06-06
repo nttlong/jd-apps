@@ -54,9 +54,7 @@ class ui_pdf_desk extends ui_container {
             width: R.width + "px"
         });
     }
-    onSelectRegion(cb) {
-        this.editor.onSelectPicker(cb);
-    }
+    
     getData() {
         return this.editor.getData();
     }
@@ -73,6 +71,7 @@ class ui_pdf_desk extends ui_container {
         return this.editor.getFile();
     }
     loadFile(file, cb) {
+        debugger;
         this.editor.loadFromFile(file, cb);
     }
     clear() {
@@ -308,7 +307,12 @@ class ui_pdf_desk extends ui_container {
             });
         }
     }
-
+    /**
+     * Bắt trình duyệt mở 1 file
+     * */
+    async doBrowseFileAtClient() {
+        return await this.editor.doBrowserFile();
+    }
     setShowThumbPage(value) {
         this._showThumPage = value;
         if (this._showThumPage) {
@@ -325,6 +329,7 @@ class ui_pdf_desk extends ui_container {
 
     }
     _onCommad(command) {
+        debugger;
         if (command == "open-file") {
             this._pageSelector.getInput().setAttribute("value", "1");
             var pageIndex = Number(this._pageSelector.getInput().getAttribute("value"));
@@ -389,12 +394,25 @@ class ui_pdf_desk extends ui_container {
     onLoadComplete(cb) {
         this.editor.onLoadComplete(cb);
     }
-    openFileFromClient(cb) {
-        this.editor.openFileFromClient(cb);
+    
+    async doZoom(percenrRate) {
+        await this.editor.doZoom(percenrRate);
     }
-    doZoom(percenrRate) {
-        this.editor.doZoom(percenrRate);
-    }
+    /**
+     * Tạo context menu cho vùng đang edit
+     * dựa vào một DOM
+     * context Menu cho vùng đang edit là gì?
+     * Trong quá trình biên tập Region trên file PDF hoặc file Image
+     * Người dùng có thể tạo ra nhiều Region và ở 1 thời điểm nhất định 
+     * chỉ có 1 region đang được edit gọi là Editing Region.
+     * Khi người dùng kích phím phải của Mouse ngay tại Editing Region thẻ DIV trong tham số sẽ hiển thị đúng
+     * vị trí của Mouse
+     * Context Menu này sẽ áp dụng ngay trên trên Editing Region
+     * Điều này có nghĩa là bạn phải tạo một thể DIV trong layout
+     * Rồi dùng Jquery hoặc document.getElement để trut cập đến DOM của DIV
+     * Rồi gọi hàm setContextMenuOfSelectRegion với tham số là DOM element 
+     * @param {any} eleMenu
+     */
     setContextMenuOfSelectRegion(eleMenu) {
         this.editor.setContextMenuOfSelectRegion(eleMenu);
     }
@@ -417,6 +435,20 @@ class ui_pdf_desk extends ui_container {
     loadData(dataArray) {
         this.editor.loadData(dataArray);
     }
-
+    /**
+     * Sự kiện on select Region để Edit
+     * asyncCallback phải là async function
+     * @param {any} asyncCallback
+     */
+    onSelectPicker(asyncCallback) {
+        this.editor.onSelectPicker(asyncCallback);
+    }
+    /**
+     * Khi người dùng nhấn ctrl và select
+     * @param {any} asynCallback
+     */
+    onCtrlSelect(asynCallback) {
+        this.editor.onCtrlSelect(asynCallback);
+    }
 }
 export { ui_pdf_desk}

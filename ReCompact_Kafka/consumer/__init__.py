@@ -57,7 +57,7 @@ class Consumer_obj(Consumer):
     def __watch_topic__(self, topic_key, handler, on_error) -> threading.Thread:
         def __run__(o, tk, h, e):
             import os
-            logger = Recompact_Logs.get_logger(os.path.join(h.__module__,h.__name__))
+            logger = Recompact_Logs.get_logger(f"{self.topic}.txt")
             logger.info(f"start {h.__module__}.{h.__name__}")
             try:
                 o.subscribe([tk])
@@ -112,7 +112,7 @@ class Consumer_obj(Consumer):
         tk= self.topic
         o=self
         e=self.on_consum_error
-        logger = Recompact_Logs.get_logger(os.path.join(h.__module__, h.__name__))
+        logger = Recompact_Logs.get_logger(f"{self.topic.replace('.','_')}")
         logger.info(f"start {h.__module__}.{h.__name__}")
         try:
             o.subscribe([tk])

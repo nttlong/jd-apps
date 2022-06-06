@@ -3,7 +3,7 @@ import { ui_graph2d } from "./ui_graph2d.js";
 import { ui_desk } from "./ui_desk.js"
 import { ui_events } from "./ui_events.js"
 import { ui_rect_picker } from "./ui_rect_picker.js";
-
+import { ui_linear } from "./ui_linear.js";
 class ui_pdf_rect_picker {
 
     _accept = "image/*,application/pdf";
@@ -94,9 +94,13 @@ class ui_pdf_rect_picker {
     _originFile;
 
 
-
-    onSelectPicker(cb) {
-        this._onSelectPicker = cb;
+    /**
+     * Sự kiện on select Region để Edit
+     * asyncCallback phải là async function
+     * @param {any} asyncCallback
+     */
+    onSelectPicker(asyncCallback) {
+        this._onSelectPicker = asyncCallback;
     }
     _File;
     async getThumbAsFile() {
@@ -188,6 +192,7 @@ class ui_pdf_rect_picker {
         me._layers = new ui_desk.desk_layers(me, ele);
         me._layers.drawLayer.disable();
         me._layers.dragLayer.disable();
+        console.log(me._layers.dragLayer);
         me._layers.resizeLayer.disable();
         me._layers.zoomLayer.disable();
         me._layers.drawLayer.onStart(() => {
@@ -206,6 +211,7 @@ class ui_pdf_rect_picker {
             this._layers.layerBkgEle.appendChild(picker.canvas);
 
             this.addPicker(picker);
+            this._oldCurrentPicker = this.currentPicker;
             this.currentPicker = picker;
 
             this.select(picker);
@@ -216,13 +222,15 @@ class ui_pdf_rect_picker {
             this.currentPicker.x = R.x * (100 / this.zoom);
             this.currentPicker.y = R.y * (100 / this.zoom);
             this.currentPicker.drawWithHandle();
-            this._raiseOnSelectePicker();
+            
+            this._raiseOnSelectePicker().then();
         });
 
         this.windKeyEvent = new ui_events.handler(window);
 
-
+        
         this._layers.resizeLayer.onStart(() => {
+            this.hideContextMenuOfSelecetRegion();
             this._layers.drawLayer.disable();
             this._layers.zoomLayer.disable();
         });
@@ -245,37 +253,17 @@ class ui_pdf_rect_picker {
             this.currentPicker.drawWithHandle();
             //this._layers.drawLayer.enable();
             //this._layers.zoomLayer.enable();
+            console.log("this._layers.resizeLayer.onEnd");
             this._raiseOnSelectePicker();
         });
         this._layers.zoomLayer.setConstraint(evt => {
             return evt.ctrlKey;
         });
         this._layers.zoomLayer.onEnd((R, ele) => {
-            //R = this._layers.zoomLayer.convertToDeskCoordinate(R);
-            var currentRate = 100 / this.zoom;
-            R = q.linear.scaleDOMRect(R, currentRate);
-            var r = this._layers.layerBkgEle.getBoundingClientRect();
-
-            var rate = r.width / R.width;
-            if (this._layers.zoomLayer.offset.x > 0 && this._layers.zoomLayer.offset.y > 0)
-                rate = (this.zoom + 20) / 100;
-            else
-                rate = (this.zoom - 20) / 100;
-            var root = new q.linear.vector(R.x, R.y);
-
-            var d = Math.max(Math.abs(this._layers.zoomLayer.offset.x), Math.abs(this._layers.zoomLayer.offset.y));
-
-
-            this.doZoom(rate * 100);
-
-            var newEle = $(ele).clone()[0];
-
-            setTimeout(() => {
-                var sx = this._layers.layerBkgEle.scrollWidth;
-                var sy = this._layers.layerBkgEle.clientHeight - this._layers.layerBkgEle.scrollHeight;
-                this._layers.layerBkgEle.scroll((root.x + R.width / 2) * rate + sx / 2, (root.y + R.height / 2) * rate + sy / 2)
-
-            }, 400);
+            if (this._asyncOnCtrlSelect) {
+                this._asyncOnCtrlSelect(R, ele, this).then();
+            }
+            
 
         });
         this.detectOnResizePickerEvent = new ui_events.handler(this._layers.layerBkgEle);
@@ -340,6 +328,7 @@ class ui_pdf_rect_picker {
                         this.currentPicker.drawWithHandle();
                         me.select(this.currentPicker);
                         me._layers.drawLayer.disable();
+                        me.hideContextMenuOfSelecetRegion();
                         me._layers.dragLayer.startDrag(evt, this.currentPicker.canvas);
                     }
                     else {
@@ -374,15 +363,27 @@ class ui_pdf_rect_picker {
         });
 
     }
-    _raiseOnSelectePicker() {
+    /**
+     * Khi người dùng nhấn ctrl và select
+     * @param {any} asynCallback
+     */
+    onCtrlSelect(asynCallback) {
+        this._asyncOnCtrlSelect = asynCallback;
+    }
+    async _raiseOnSelectePicker() {
+        if (this.__oldCurrentPicker != this.currentPicker) {
+            this.hideContextMenuOfSelecetRegion();
+            this.__oldCurrentPicker = this.currentPicker;
+        }
         if (this._onSelectPicker) {
-            this._onSelectPicker(this.currentPicker);
+            await this._onSelectPicker(this.currentPicker);
         }
     }
     applyHookKey() {
         this.windKeyEvent.set({
             onkeydown: evt => {
                 if (evt.keyCode == 46) {
+                    
                     if (this.currentPicker) {
                         this.delete(this.currentPicker);
                     }
@@ -486,6 +487,7 @@ class ui_pdf_rect_picker {
         }
     }
     async openFileFromClient() {
+        debugger;
         var me = this;
         me.reset();
         await me.browseFile();
@@ -498,7 +500,7 @@ class ui_pdf_rect_picker {
         }
     }
     async doLoadImage() {
-
+        
         if (!this._orginalImageCanvas) {
             this._orginalImageCanvas = ui_html.createEle("canvas");
         }
@@ -585,7 +587,8 @@ class ui_pdf_rect_picker {
                     this.currentPicker = picker;
                     this.drawAllPickerWithoutHandle();
                     this.currentPicker.drawWithHandle();
-                    var pos = new q.linear.vector(evt.clientX, evt.clientY);
+                    
+                    var pos = new ui_linear.vector(evt.clientX, evt.clientY);
                     this.showContextMenuOfSelecetRegion(pos);
 
                 }
@@ -617,6 +620,13 @@ class ui_pdf_rect_picker {
                     display: "block"
                 });
             }
+        });
+    }
+    hideContextMenuOfSelecetRegion() {
+        ui_html.setStyle(this.contextMenuPickerEle, {
+            
+            display: "none"
+           
         });
     }
     showContextMenuOfSelecetRegion(pos) {
@@ -670,44 +680,54 @@ class ui_pdf_rect_picker {
         me.history.push(newLis);
     }
     delete(picker) {
-        this.addToHistory(this.listOfPickers);
-        var newList = [];
-        var currentIndex = i;
-        for (var i = 0; i < this.listOfPickers.length; i++) {
-            if (this.listOfPickers[i] != picker) {
-                newList.push(this.listOfPickers[i]);
+        console.log(picker);
+        //this.addToHistory(this.listOfPickers);
+        //var newList = [];
+        //var currentIndex = i;
+        //for (var i = 0; i < this.listOfPickers.length; i++) {
+        //    if (this.listOfPickers[i] != picker) {
+        //        newList.push(this.listOfPickers[i]);
 
-            }
-            else {
-                currentIndex = i;
-            }
-        }
-        this.trashContainer.appendChild(picker.canvas);
-        this.listOfPickers = newList;
-        if (currentIndex < this.listOfPickers.length) {
-            this.currentPicker = this.listOfPickers[currentIndex];
-            this.currentPicker.drawWithHandle();
-        }
-        else if (currentIndex - 1 < this.listOfPickers.length &&
-            currentIndex - 1 >= 0) {
-            currentIndex = currentIndex - 1;
-            this.currentPicker = this.listOfPickers[currentIndex];
-            this.currentPicker.drawWithHandle();
-        }
-        var currentPageOfPicker = this.getCurrentPageOfPicker();
-        if (!currentPageOfPicker) {
-            currentPageOfPicker = new pageOfPicker();
-            currentPageOfPicker.pageIndex = this.currentPage;
+        //    }
+        //    else {
+        //        currentIndex = i;
+        //    }
+        //}
+        //this.trashContainer.appendChild(picker.canvas);
+        //this.listOfPickers = newList;
+        //if (currentIndex < this.listOfPickers.length) {
+        //    this.currentPicker = this.listOfPickers[currentIndex];
+        //    this.currentPicker.drawWithHandle();
+        //}
+        //else if (currentIndex - 1 < this.listOfPickers.length &&
+        //    currentIndex - 1 >= 0) {
+        //    currentIndex = currentIndex - 1;
+        //    this.currentPicker = this.listOfPickers[currentIndex];
+        //    this.currentPicker.drawWithHandle();
+        //}
+        //var currentPageOfPicker = this.getCurrentPageOfPicker();
+        //if (!currentPageOfPicker) {
+        //    currentPageOfPicker = new pageOfPicker();
+        //    currentPageOfPicker.pageIndex = this.currentPage;
 
+        //}
+        //currentPageOfPicker.pickers = this.listOfPickers;
+        if (this._layers.drawLayer._ele.childNodes.length == 1) {
+            ui_html.setStyle(this._layers.drawLayer._ele.childNodes[0], {
+                display: "none"
+            });
         }
-        currentPageOfPicker.pickers = this.listOfPickers;
     }
-    select(picker) {
+    async select(picker) {
+        if (this.__oldCurrentPicker != this.currentPicker) {
+            this.hideContextMenuOfSelecetRegion();
+            this.__oldCurrentPicker = this.currentPicker;
+        }
         this.drawAllPickerWithoutHandle();
         this.currentPicker = picker;
         this.currentPicker.drawWithHandle();
         if (this._onSelectPicker) {
-            this._onSelectPicker(picker);
+            await this._onSelectPicker(picker);
         }
     }
     setNumOfPageRollUp(num) {
@@ -809,10 +829,20 @@ class ui_pdf_rect_picker {
                     me.urlOfFile = URL.createObjectURL(f);
                     me.fileType = "image/png";
                     await me.doLoadImage();
+                    return {
+                        fileName: me._originFile,
+                        numPages:1,
+                        isPdf: false
+                    }
                 }
                 else {
 
                     await me.doLoadImage();
+                    return {
+                        fileName: urlOfFile,
+                        numPages: 1,
+                        isPdf: false
+                    }
                 }
 
             }
@@ -828,6 +858,11 @@ class ui_pdf_rect_picker {
                     me._fixSizeOfEditor();
                     me.clearAllDisplayPickers();
                     me.reset();
+                    return {
+                        fileName: me.urlOfFile,
+                        numPages: me.numPages,
+                        isPdf: true
+                    }
 
                 } catch (ex) {
                     if (me._onError) {
@@ -854,9 +889,10 @@ class ui_pdf_rect_picker {
     createBufferCanvas(pageIndex) {
         return this.bufferCanvas[pageIndex] = ui_html.createEle("canvas");
     }
-    browseFile() {
-        
-        var me = this;
+    /***
+     * Thực hiện browser file trên trình duyệt
+     * */
+    doBrowserFile() {
         return new Promise(function (resolve, reject) {
 
             var f = ui_html.createInput("file", {
@@ -866,21 +902,18 @@ class ui_pdf_rect_picker {
 
             f.setAttribute("accept", "application/pdf,image/*");
             f.onchange = function (evt) {
-
-                me._originFile = f.files[0];
-                me.loadFromFile(f.files[0]).then(function () {
-                    resolve(this);
-                }).catch(function (err) {
-
-                    reject(err);
-
-                });
-
-
+                resolve(f.files[0])
             }
             f.click();
 
         });
+    }
+    async browseFile() {
+        
+        var me = this;
+        var file = await this.doBrowserFile();
+        debugger;
+        var retInfo = await this.loadFromFile(file);
     }
     _doLoadAllPage(pageIndex) {
         pageIndex = pageIndex || 1;

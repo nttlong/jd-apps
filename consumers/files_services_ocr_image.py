@@ -3,19 +3,20 @@ Lưu ý:
  Với các file đã đươc OCR có thể bị lỗi
 
 """
-import config
-import bson
+
 import logging
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
-import mongo_db
-import ReCompact_Kafka.consumer
 
-import api_models.Model_Files
+import ReCompact_Kafka.consumer
+import config
+import mongo_db
+topic = "files.services.upload.ocr.image"
 import ReCompact.dbm.DbObjects
 import ReCompact.db_context
+import ReCompact
+import api_models.Model_Files
 import datetime
-topic ="files.services.upload.ocr.pdf"
 def handler(
         consumer: ReCompact_Kafka.consumer.Consumer_obj,
         msg,
@@ -26,12 +27,35 @@ def handler(
     upload_info = data["UploadInfo"]
     app_name = data["AppName"]
     upload_id =upload_info["_id"]
+    mime_type = upload_info["MimeType"]
+    if not "image/" in mime_type:
+        consumer.commit(msg)
+        return
+    import bson
 
 
     import logging
     import os
     import subprocess
     import sys
+    temp_dir_pdf = os.path.join(config.tmp_dir_ocr,"image_to_pfd")
+    if not os.path.isdir(temp_dir_pdf):
+        os.makedirs(temp_dir_pdf)
+    temp_pdf_file = os.path.join(temp_dir_pdf,upload_id+".pdf")
+    if not os.path.isfile(temp_pdf_file):
+        """
+        Chuyen file anh sang pdf
+        """
+        import img2pdf
+        from PIL import Image
+        import os
+        image = Image.open(file_path)
+        pdf_bytes = img2pdf.convert(image.filename)
+        file = open(temp_pdf_file, "wb")
+        file.write(pdf_bytes)
+        image.close()
+        file.close()
+
     out_put_dir = os.path.join(config.tmp_dir_ocr, app_name)
     if not os.path.isdir(out_put_dir):
         os.makedirs(out_put_dir)
@@ -46,8 +70,8 @@ def handler(
     # file_path = input = r"\\192.168.18.36\Share\00002.pdf"
 
     try:
-        cmd = ["ocrmypdf", "--deskew", file_path, out_put_file_path]
-        logger.info(f"OCR file {file_path} to {out_put_file_path}")
+        cmd = ["ocrmypdf", "--deskew", temp_pdf_file, out_put_file_path]
+        logger.info(f"OCR file {temp_pdf_file} to {out_put_file_path}")
         logging.info(cmd)
         proc = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -59,46 +83,41 @@ def handler(
         if os.path.isfile(out_put_file_path):
                 import shutil
                 shutil.copy(out_put_file_path,fs_craller_path)
-                db = re_process.mongo_db(app_name)
+                db = mongo_db.get_db(app_name)
                 upload_data_item = ReCompact.dbm.DbObjects.find_one_to_dict(
-                    db = db,
-                    data_item_type= api_models.Model_Files.DocUploadRegister,
-                    filter= ReCompact.dbm.FILTER._id == upload_id
+                    db=db,
+                    data_item_type=api_models.Model_Files.DocUploadRegister,
+                    filter=ReCompact.dbm.FILTER._id == upload_id
                 )
                 process_history = upload_info.get("ProcessHistories", [])
                 process_history += [
                     api_models.Model_Files.DocUploadRegister.ProcessHistory(
-                        _id= bson.ObjectId(),
+                        _id=bson.ObjectId(),
                         ProcessOn=datetime.datetime.now(),
                         ProcessAction=topic,
                         UploadId=upload_id
-                    )
+                    ).DICT
                 ]
 
                 fs = ReCompact.db_context.create_mongodb_fs_from_file(
-                    db =db,
-                    full_path_to_file= out_put_file_path
+                    db=db,
+                    full_path_to_file=out_put_file_path
 
                 )
                 ReCompact.dbm.DbObjects.update(
                     db,
                     data_item_type=api_models.Model_Files.DocUploadRegister,
-                    filter=   ReCompact.dbm.FILTER._id == upload_id,
-                    updator= ReCompact.dbm.SET(
+                    filter=ReCompact.dbm.FILTER._id == upload_id,
+                    updator=ReCompact.dbm.SET(
 
-                        ReCompact.dbm.FIELDS.MainFileId == fs._id,
+                        ReCompact.dbm.FIELDS.OCRFileId == fs._id,
                         ReCompact.dbm.FIELDS.OriginalFileId == upload_data_item.get("OriginalFileId"),
                         ReCompact.dbm.FIELDS.LastModifiedOn == datetime.datetime.now(),
-                        ReCompact.dbm.FIELDS.DocUploadRegister.ProcessHistory ==process_history
-
+                        ReCompact.dbm.FIELDS.DocUploadRegister.ProcessHistory == process_history
 
                     )
                 )
-
-                if upload_data_item is None:
-                    consumer.commit(msg)
-                    return
-
+                consumer.commit(msg)
         else:
             import shutil
             shutil.copy(file_path, fs_craller_path)
@@ -120,4 +139,3 @@ consumer = ReCompact_Kafka.consumer.create(
 )
 if __name__ == "__main__":
     consumer.run()
-#C:\dj-apps-2022-05-25\jd-apps\venv\Scripts\python.exe C:\dj-apps-2022-05-25\jd-apps\consumers\files_services_upload_ocr_pdf.py

@@ -1,9 +1,9 @@
 ﻿import { redirect, urlWatching, getModule } from "../js/ui/core.js"
 
 async function startRoute(me) {
-    debugger;
+   
     await urlWatching($("head base").attr("href"), async (path) => {
-        debugger;
+        
         var bodyContainer = $("#body")[0]
         var loadPath = "./apps/index.js" //Mặc định lấy trang chủ
         if (path.length > 1) {

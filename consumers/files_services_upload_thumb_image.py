@@ -8,7 +8,7 @@ from PIL import Image
 import ReCompact_Kafka.consumer
 import ReCompact.thumbnal
 import api_models.Model_Files
-import re_process.mongo_db
+import mongo_db
 import ReCompact.db_context
 import ReCompact.dbm.DbObjects
 from moviepy.editor import *
@@ -40,7 +40,8 @@ def handler(
     if not os.path.isfile(file_path):
         consumer.commit(msg)
         return
-
+    logger.info(f"Create image Thumb file {file_path}")
+    logger.info(data)
     image = Image.open(file_path)
     h,w = image.size
     thumb_dir = os.path.join(config.temp_thumbs, app_name)
@@ -96,7 +97,8 @@ def handler(
     finally:
         consumer.commit(msg)
 
-
+    logger.info(f"Create image Thumb file {file_path} is finish")
+    logger.info(data)
 
 
 

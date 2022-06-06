@@ -54,6 +54,7 @@ class FileUploadChunk(BaseUploadProgress):
             if not os.path.isdir(full_dir_of_app):
                 os.makedirs(full_dir_of_app)
             self.full_dir_of_temp_file = os.path.join(full_dir_of_app, self.progess_info.ServerFileName)
+            self.full_dir_of_temp_file=self.full_dir_of_temp_file.replace('/',os.sep)
             if not os.path.isfile(self.full_dir_of_temp_file):
                 with open(self.full_dir_of_temp_file, "wb") as file:
                     file.write(self.bufer_data)

@@ -8,10 +8,19 @@ import { redirect, urlWatching, getModule } from "./../../js/ui/core.js"
 var pdfEditor = await View(import.meta, class PdfEditor extends BaseScope {
     list = []
     async init() {
-        debugger;
+        
         var ele = await this.$findEle("#edior");
-        console.log(ele);
-        new ui_pdf_desk(ele[0])
+        var regionMenu = await this.$findEle("#region-menu");
+        this.editor = new ui_pdf_desk(ele[0]);
+        this.editor.setContextMenuOfSelectRegion(regionMenu[0])
+        this.editor.onSelectPicker(async (region) => {
+            debugger;
+
+        });
+        this.editor.onCtrlSelect(async (rect, ele, layer) => {
+            debugger;
+        });
+        //console.log(this.editor.editor);
         
     }
 });

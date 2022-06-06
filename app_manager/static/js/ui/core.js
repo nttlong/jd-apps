@@ -326,7 +326,7 @@ function View(url, classView) {
         scope = scope || angular.element(document.body).scope().$root;
 
          var subScope = scope.$new(true);
-         debugger
+         
         subScope = combine(subScope, classView)
         await subScope.setUrl(url);
         return subScope;

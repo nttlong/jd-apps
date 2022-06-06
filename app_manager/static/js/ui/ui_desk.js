@@ -72,7 +72,7 @@ class ui_desk_desk_layers {
     drawLayer;
     dragLayer;
     resizeLayer;
-    zoomLayer;
+    groupLayer;
     constructor(desk, ele) {
 
         this.desk = desk;

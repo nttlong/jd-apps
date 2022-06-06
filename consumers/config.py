@@ -3,6 +3,7 @@ working_dir = str(pathlib.Path(__file__).parent.absolute())
 import sys
 import pathlib
 sys.path.append(str(pathlib.Path(__file__).parent.parent.absolute()))
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent.absolute()))
 import os
 is_debug = True
 kafka_broker = ["192.168.18.36:9092"]

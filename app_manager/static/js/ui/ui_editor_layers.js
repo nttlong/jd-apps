@@ -137,7 +137,7 @@ class ui_editor_layers_rect extends ui_editor_layers_layer {
                 if (this._onEnd) {
                     this._onEnd(R, this._rectDiv);
                 }
-                this._deactive();
+                //this._deactive();
             }, onmouseout: evt => {
                 var R = this._owner.getBoundingClientRect();
                 var P = ui_html.getClientCoordinate(evt, this._owner);
@@ -237,6 +237,7 @@ class ui_editor_layers_dragger extends ui_editor_layers_layer {
     from;
     constructor(ele, deskLayer) {
         super(ele, deskLayer);
+        
         this._eleEvent.set({
             filter: evt => { return evt.which == 1 && this._allow; },
             forEach: {
@@ -284,7 +285,7 @@ class ui_editor_layers_dragger extends ui_editor_layers_layer {
         var R = ui_html.getRectOfEle(ele);
         ui_html.setStyle(ele, {
             left: (R.x - this._desLayer.scrollLeft) + "px",
-            top: (R.y - this._desLayer.scrollTop) + "px",
+            top: (R.y - this._desLayer.scrollTop) + "px"
 
         });
 
