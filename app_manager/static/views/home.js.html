@@ -5,6 +5,7 @@
                 <a class="navbar-brand" href="./">{{$res("Apps")}}</a>
                 <a class="navbar-brand" href="javascript:void(0);" ng-click="browserAllFiles().then()">{{$res("Files")}} </a>
                 <a class="navbar-brand" href="javascript:void(0);" ng-click="loadFullTextSearch().then()">{{$res("Search")}} </a>
+                <a class="navbar-brand" href="javascript:void(0);" ng-click="doRedirect('pdf-region-selector')">{{$res("PDF")}} </a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -20,33 +21,7 @@
     <div id="body" class="dock full layout-columns">
 
     </div>
-    <!--<div id="home_view" class="dock full"  style="display:none">
-
-    </div>
-    <div  id="home-page">
-
-        <main role="main" class="pb-3" ng-cloak>
-            <div class="row">
-                <div ng-repeat="app in list" class="col-4">
-                    <a href="javascript:void(0)" ng-click="doEdit(app.Name).then()">
-                        {{app.Name}}
-                    </a>
-
-
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-12">
-                    <div class="pull-right">
-                        <input type="button" value="{{$res('Add new')}}" class="btn btn-primary" ng-click="doNew(app.Name).then()" />
-                    </div>
-
-                </div>
-            </div>
-
-        </main>
-    </div>-->
+    
 </div>
 <script>
     $(document).ready(function () {

@@ -13,7 +13,9 @@ var homeView = await View(import.meta, class homeview extends BaseScope {
         
         
     }
-    
+    doRedirect(subPage) {
+        redirect(subPage);
+    }
     async start() {
         var me = this;
        
@@ -37,7 +39,9 @@ var homeView = await View(import.meta, class homeview extends BaseScope {
     async loadFullTextSearch() {
         redirect("search")
     }
-    
+    async init() {
+        await getListOfApps();
+    } 
 });
 
 export default homeView;

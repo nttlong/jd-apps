@@ -51,8 +51,14 @@ async function urlWatching(base, onchange) {
     var old_base = "";
     async function  start() {
         if (window.location.href != old_base) {
-           await onchange(window.location.pathname.split('/'))
-            old_base = window.location.href;
+            if (window.location.pathname.length > 1) {
+                await onchange(window.location.pathname.split('/'))
+                old_base = window.location.href;
+            }
+            else {
+                await onchange([])
+                old_base = window.location.href;
+            }
         }
         old_time_out = setTimeout(start,100)
     }
