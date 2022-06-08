@@ -79,6 +79,13 @@ class FileRegister(Resource):
         """
         num_of_chunks = int(data.FileSize / chunk_size)
         mime_type,_ = mimetypes.guess_type(data.FileName)
+        if mime_type is None or mime_type=="":
+            err= quicky.object_constraints.Error()
+            err.code= quicky.object_constraints.ErrorCode.FILE_TYPE_IS_NOT_SUPPORT
+            err.message="File Type is not support"
+            return dict(
+                error=err.to_dict()
+            )
         filename_only, file_extension = os.path.splitext(data.FileName)
         upload_id = str(uuid.uuid4())
         if data.FileSize % chunk_size > 0:

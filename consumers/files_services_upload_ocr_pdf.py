@@ -46,20 +46,32 @@ def handler(
     # file_path = input = r"\\192.168.18.36\Share\00002.pdf"
 
     try:
-        cmd = ["ocrmypdf", "--deskew", file_path, out_put_file_path]
-        logger.info(f"OCR file {file_path} to {out_put_file_path}")
-        logging.info(cmd)
-        proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        proc.communicate() #Đợi
-        logger.info(f"OCR file {file_path} to {out_put_file_path} is success")
+        if os.path.isfile(file_path):
+            fx= ocrmypdf.ocr(
+                input_file=file_path,
+                output_file=out_put_file_path,
+                progress_bar=True,
+                language="vie+eng",
+                use_threads=True,
+                skip_text=True,
+                logger=logger
+            )
+            print(fx)
+
+            # cmd = ["ocrmypdf", "--deskew", file_path, out_put_file_path]
+            # logger.info(f"OCR file {file_path} to {out_put_file_path}")
+            # logging.info(cmd)
+            # proc = subprocess.Popen(
+            #     cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            # proc.communicate() #Đợi
+            logger.info(f"OCR file {file_path} to {out_put_file_path} is success")
     except Exception as e:
         logger.debug(e)
     finally:
         if os.path.isfile(out_put_file_path):
                 import shutil
                 shutil.copy(out_put_file_path,fs_craller_path)
-                db = re_process.mongo_db(app_name)
+                db = mongo_db.get_db(app_name)
                 upload_data_item = ReCompact.dbm.DbObjects.find_one_to_dict(
                     db = db,
                     data_item_type= api_models.Model_Files.DocUploadRegister,
@@ -67,7 +79,7 @@ def handler(
                 )
                 process_history = upload_info.get("ProcessHistories", [])
                 process_history += [
-                    api_models.Model_Files.DocUploadRegister.ProcessHistory(
+                    dict(
                         _id= bson.ObjectId(),
                         ProcessOn=datetime.datetime.now(),
                         ProcessAction=topic,
@@ -87,21 +99,24 @@ def handler(
                     updator= ReCompact.dbm.SET(
 
                         ReCompact.dbm.FIELDS.MainFileId == fs._id,
-                        ReCompact.dbm.FIELDS.OriginalFileId == upload_data_item.get("OriginalFileId"),
+                        ReCompact.dbm.FIELDS.OriginalFileId == upload_data_item.get("MainFileId"),
                         ReCompact.dbm.FIELDS.LastModifiedOn == datetime.datetime.now(),
                         ReCompact.dbm.FIELDS.DocUploadRegister.ProcessHistory ==process_history
 
 
                     )
                 )
-
-                if upload_data_item is None:
-                    consumer.commit(msg)
-                    return
+                import shutil
+                if os.path.isfile(file_path):
+                    shutil.copy(file_path, fs_craller_path)
+                # if upload_data_item is None:
+                consumer.commit(msg)
+                    # return
 
         else:
             import shutil
-            shutil.copy(file_path, fs_craller_path)
+            if os.path.isfile(file_path):
+                shutil.copy(file_path, fs_craller_path)
             consumer.commit(msg)
 
 def error(err,msg,logger):

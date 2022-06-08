@@ -23,10 +23,14 @@ def handler(
     :param logger:
     :return:
     """
+
     try:
         data = consumer.get_json(msg)
 
         file_path = data["FilePath"]
+        if not os.path.isfile(file_path):
+            consumer.commit(msg)
+            return
         app_name = data["AppName"]
         upload_info = data["UploadInfo"]
         upload_id = upload_info["_id"]

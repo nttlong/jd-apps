@@ -17,11 +17,11 @@ def video_create_thumb(in_put,scale_witdh,scale_height,second=5)->io.BytesIO:
     clip= VideoFileClip(
         in_put
     )
-    second,_ = divmod(clip, 2)
+    second,_ = divmod(clip.duration, 2)
     """
     Lấy khung giữa
     """
-    clip = clip.subclip(0, second)
+    clip = clip.subclip(second, second)
     frame = clip.get_frame(0)
     height,width,_ = frame.shape
     rate = scale_witdh/width # Mac dinh la bop theo chieu rong
@@ -37,4 +37,6 @@ def video_create_thumb(in_put,scale_witdh,scale_height,second=5)->io.BytesIO:
     img.save(img_byte_arr, format='PNG')
     img_byte_arr = img_byte_arr.getvalue()
     ret = io.BytesIO(img_byte_arr)
+    img.close()
+
     return ret

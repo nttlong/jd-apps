@@ -2,7 +2,7 @@ import bson
 import pymongo.database
 from enum import Enum
 import json
-
+import pymongo
 import ReCompact.dbm.DbObjects.Docs
 def __merge__(source, destination):
     """
@@ -126,8 +126,9 @@ class Error(Exception):
         """
         Các field gây ra lỗi
         """
+__cache_index_creator__= {}
 
-def __get_col__(db, data_item_type):
+def __get_col__(db:pymongo.database.Database, data_item_type):
     """
     Get Mongodb Collection base on mongodb model
     :param db:
@@ -135,59 +136,64 @@ def __get_col__(db, data_item_type):
     :return:
     """
     assert isinstance(data_item_type, type), f"data_item_type must be a type"
-    import pymongo
+    global __cache_index_creator__
     coll_name = data_item_type.__meta__.table_name
+    key = f"{db.name}/{coll_name}".lower()
+
+
     coll = db.get_collection(coll_name)
-    try:
-        if isinstance(data_item_type.__meta__.keys, list):
-            for k in data_item_type.__meta__.keys:
-                key_name = k
-                items = k.split(',')
-                indexs = []
-                partialFilterExpression_dict = {}
-                for item in items:
-                    indexs.append(
-                        (item, pymongo.ASCENDING)
-                    )
-                    partialFilterExpression_dict = {
-                        **partialFilterExpression_dict,
-                        **{
-                            item:{
-                                "$exists":None
+    if not __cache_index_creator__.get(key, None):
+        try:
+            if isinstance(data_item_type.__meta__.keys, list):
+                for k in data_item_type.__meta__.keys:
+                    key_name = k
+                    items = k.split(',')
+                    indexs = []
+                    partialFilterExpression_dict = {}
+                    for item in items:
+                        indexs.append(
+                            (item, pymongo.ASCENDING)
+                        )
+                        partialFilterExpression_dict = {
+                            **partialFilterExpression_dict,
+                            **{
+                                item:{
+                                    "$exists":None
+                                }
                             }
+
                         }
-
-                    }
-                try:
+                    try:
 
 
-                    coll.create_index(
-                        indexs,
-                        unique=True,
-                        sparse= True,
-                        # partialFilterExpression =partialFilterExpression_dict,
-                        background = True
-                    )
-                except Exception as e:
-                    print(e)
-        if isinstance(data_item_type.__meta__.index, list):
-            for k in data_item_type.__meta__.index:
-                key_name = k
-                items = k.split(',')
-                indexs = []
-                for item in items:
-                    indexs.append(
-                        (item, pymongo.ASCENDING)
-                    )
-                try:
-                    coll.create_index(
-                        indexs,
-                        background=True
-                    )
-                except:
-                    pass
-    finally:
-        return coll
+                        coll.create_index(
+                            indexs,
+                            unique=True,
+                            sparse= True,
+                            # partialFilterExpression =partialFilterExpression_dict,
+                            background = True
+                        )
+                    except Exception as e:
+                        print(e)
+            if isinstance(data_item_type.__meta__.index, list):
+                for k in data_item_type.__meta__.index:
+                    key_name = k
+                    items = k.split(',')
+                    indexs = []
+                    for item in items:
+                        indexs.append(
+                            (item, pymongo.ASCENDING)
+                        )
+                    try:
+                        coll.create_index(
+                            indexs,
+                            background=True
+                        )
+                    except:
+                        pass
+        finally:
+            return coll
+            __cache_index_creator__[key]=key
     return coll
 
 def __get_all_args_for_insert__(*args, **kwargs):

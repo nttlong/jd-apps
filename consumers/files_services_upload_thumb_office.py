@@ -266,8 +266,9 @@ def handler_use_libre_office(consumer: ReCompact_Kafka.consumer.Consumer_obj, ms
     consumer.commit(msg)
     logger.info(f"Create Office Thumb file {file_path} is Finish")
     logger.info(data)
-
-def error(err,msg,logger:logging.Logger):
+def error(err,msg,logger):
+    logger.debug(err)
+def error1(err,msg,logger):
     logger.debug(err)
 
 import uuid

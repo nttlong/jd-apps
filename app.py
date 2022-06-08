@@ -11,6 +11,8 @@ app_config = Config(str(pathlib.Path(__file__).parent))
 
 # import routes.api_file_upload
 mimetypes.types_map[".js"]="text/javascript"
+mimetypes.types_map[".docx"]="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+mimetypes.types_map[".avif"]="image/avif"
 app = quicky.QuickyApp(
     __name__,
     app_config
@@ -31,7 +33,7 @@ if __name__ == '__main__':
     app_config.logger.info(dict(debug=app_config.debug, host=app_config.host, port=app_config.port))
     app_config.logger.info("------------------------------------------------------")
     app.run(
-          debug=True,
+          debug=app_config.debug,
           host= app_config.host,
           port=app_config.port,
           threaded=True

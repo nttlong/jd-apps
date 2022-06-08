@@ -74,12 +74,12 @@ def handler(
             )
             process_history = upload_info.get("ProcessHistories",[])
             process_history+=[
-                api_models.Model_Files.DocUploadRegister.ProcessHistory(
+                dict(
                     _id=bson.ObjectId(),
                     ProcessOn = datetime.datetime.now(),
                     ProcessAction = topic,
                     UploadId = upload_id
-                ).DICT
+                )
             ]
 
             ReCompact.dbm.DbObjects.update(

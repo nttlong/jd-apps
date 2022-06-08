@@ -22,6 +22,14 @@ class ErrorCode(Enum):
     Hổng tìm thấy
     """
     LOGIN_FAIL="LoginFail"
+    """
+    Thật đáng tiếc login không được
+    """
+    FILE_TYPE_IS_NOT_SUPPORT="FileTypeIsNotSupport"
+    """
+    Loại file này kg hỗ trợ
+    """
+
 
 class __Field__:
     def __init__(self, *args, **kwargs):

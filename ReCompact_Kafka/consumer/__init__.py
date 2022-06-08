@@ -126,7 +126,15 @@ class Consumer_obj(Consumer):
                     continue
                 if msg.error():
                     if callable(e):
-                        e(msg)
+                        if e.__code__.co_argcount!=3:
+                            logger.debug(f"Error at \n"
+                                         f"{e.__code__.__file__}\n"
+                                         f"The function '{e.__name__} must have 2 arguments:\n"
+                                         f"1-error\n"
+                                         f"2-topic message\n"
+                                         f"3- logger")
+
+                        e(msg.error(),msg,logger)
                     continue
                 if callable(h):
                     """

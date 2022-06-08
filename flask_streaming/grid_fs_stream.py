@@ -1,7 +1,7 @@
 import gridfs
 from flask import Response, stream_with_context
 import os
-
+from flask import send_file
 
 def streaming_content(
         fs,
@@ -19,12 +19,14 @@ def streaming_content(
     :param streaming_segment_in_KB: Kích thước phân đoạn tính bằng Kb  0- Không giới hạn, >0 có giới hạn
     :return:
     """
+
+
     chunk_size = streaming_buffering_in_KB * 1024
     segment_size = streaming_segment_size_in_KB * 1024
 
     def generate():
         """
-        Read content from fs, đọc hế nôi dung của file
+        Read content from fs, đọc hết nôi dung của file
         Đừng lo về độ lớn của file vì đang chạy ở chế độ yeild
 
         :return:
@@ -34,7 +36,22 @@ def streaming_content(
         while data.__len__() > 0:
             data = fs.read(chunk)
             yield data
+    def generate_full():
+        """
+        Read content from fs, đọc hết nôi dung của file
+        Đừng lo về độ lớn của file vì đang chạy ở chế độ yeild
 
+        :return:
+        """
+        chunk = 4194304
+        data = [1]
+        while data.__len__() > 0:
+            data = fs.read(chunk)
+            yield data
+    if not "video/" in mime_type and not "audio/" in mime_type:
+        res= Response(stream_with_context(generate_full()), status=200, mimetype=mime_type)
+        res.cache_control.max_age = 300
+        return res
     def read_from_to(start, end):
         """
         Đọc từng đoạn theo yêu cầu
