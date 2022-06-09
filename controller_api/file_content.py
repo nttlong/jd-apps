@@ -1,5 +1,5 @@
 import datetime
-
+from urllib.parse import unquote
 from flask import Response, request
 import db_connection
 import mimetypes
@@ -20,7 +20,13 @@ async def source(app_name, directory):
     :param directory:
     :return:
     """
-
+    app_config.logger.debug("-----------------------------")
+    app_config.logger.debug(request.path)
+    app_config.logger.debug(request.url)
+    app_config.logger.debug("-----------------------------")
+    app_config.logger.debug(directory)
+    directory = unquote(directory)
+    app_config.logger.debug(directory)
     t1=datetime.datetime.now()
     t2=None
     global __cache_url__
@@ -52,6 +58,7 @@ async def source(app_name, directory):
     files = api_models.Model_Files.DocUploadRegister(cnn, app_name)
     if directory.startswith("directory/"):
         directory = directory["directoty".__len__() + 1:]
+
     file_item = files.find_one(files.FullFileName == directory.lower())
     if file_item is None:
         return Response(status=404)

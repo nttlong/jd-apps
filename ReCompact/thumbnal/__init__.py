@@ -1,6 +1,5 @@
 from moviepy.editor import *
 from matplotlib import pyplot as plt
-import cv2
 from PIL import Image
 import io
 import matplotlib

@@ -4,6 +4,7 @@ from enum import Enum
 import json
 import pymongo
 import ReCompact.dbm.DbObjects.Docs
+import threading
 def __merge__(source, destination):
     """
     run me with nosetests --with-doctest file.py
@@ -127,7 +128,7 @@ class Error(Exception):
         Các field gây ra lỗi
         """
 __cache_index_creator__= {}
-
+__lock__ = threading.Lock()
 def __get_col__(db:pymongo.database.Database, data_item_type):
     """
     Get Mongodb Collection base on mongodb model
@@ -143,6 +144,7 @@ def __get_col__(db:pymongo.database.Database, data_item_type):
 
     coll = db.get_collection(coll_name)
     if not __cache_index_creator__.get(key, None):
+        __lock__.acquire()
         try:
             if isinstance(data_item_type.__meta__.keys, list):
                 for k in data_item_type.__meta__.keys:
@@ -173,8 +175,8 @@ def __get_col__(db:pymongo.database.Database, data_item_type):
                             # partialFilterExpression =partialFilterExpression_dict,
                             background = True
                         )
-                    except Exception as e:
-                        print(e)
+                    except:
+                        pass
             if isinstance(data_item_type.__meta__.index, list):
                 for k in data_item_type.__meta__.index:
                     key_name = k
@@ -192,8 +194,10 @@ def __get_col__(db:pymongo.database.Database, data_item_type):
                     except:
                         pass
         finally:
+            __lock__.release()
+            __cache_index_creator__[key] = key
             return coll
-            __cache_index_creator__[key]=key
+
     return coll
 
 def __get_all_args_for_insert__(*args, **kwargs):

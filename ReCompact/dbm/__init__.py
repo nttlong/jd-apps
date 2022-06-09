@@ -18,7 +18,7 @@ if not __is_has_fix_json__:
         if isinstance(args, tuple) and isinstance(args[1], bson.ObjectId):
             v = args[1]
             assert isinstance(v, bson.ObjectId)
-            return str(v)
+            return str(f'"$oid":"{v}"')
         else:
             return fn(*args, **kwargs)
 
@@ -258,6 +258,14 @@ def __ob_get_attr__(*args, **kwargs):
 
 
 def __on__init__(*args, **kwargs):
+    if len(args)==1:
+        instance =args[0]
+        instance.__dict__["__is_queryable__"]=True
+        cls =type(instance)
+        instance.__dict__["__collection_name__"] = cls.__meta__.table_name
+        instance.__dict__["__collection_keys__"] = cls.__meta__.keys
+        instance.__dict__["__collection_index__"] = cls.__meta__.index
+        return
 
     is_init_by_field_value = True
     if isinstance(args,tuple):
