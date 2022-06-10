@@ -1,5 +1,5 @@
 import datetime
-
+import json
 import bson
 import motor.motor_asyncio
 import pymongo
@@ -12,6 +12,43 @@ import quicky.yaml_reader
 import pathlib
 import os
 import pymongo.mongo_client
+# from motor import MotorGridFSBucket
+from motor.motor_asyncio import AsyncIOMotorGridFSBucket
+from bson import ObjectId
+
+
+class PyObjectId(ObjectId):
+    """ Custom Type for reading MongoDB IDs """
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v):
+        if not ObjectId.is_valid(v):
+            raise ValueError("Invalid object_id")
+        return ObjectId(v)
+
+    @classmethod
+    def __modify_schema__(cls, field_schema):
+        field_schema.update(type="string")
+
+
+import json
+from bson import ObjectId
+
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        return json.JSONEncoder.default(self, o)
+
+
+__is_has_fix_json__ = False
+
+import bson
 
 __lock__ = threading.Lock()
 __cache_index_creator__ = {}
@@ -20,7 +57,34 @@ db_config = None
 default_db_name = None
 connection_string = None
 
+if not __is_has_fix_json__:
+    __lock__.acquire()
+    fn = json.JSONEncoder.default
 
+
+    def __fix__json__(*args, **kwargs):
+        if isinstance(args, tuple) and isinstance(args[1], datetime.datetime):
+            return args[1].isoformat()
+        if isinstance(args, tuple) and isinstance(args[1], bson.ObjectId):
+            v = args[1]
+            assert isinstance(v, bson.ObjectId)
+            return str(f'"$oid":"{v}"')
+        else:
+            return fn(*args, **kwargs)
+
+
+    json.JSONEncoder.default = __fix__json__
+    __is_has_fix_json__ = True
+    __lock__.release()
+
+def set_connection_string(str_connection):
+    """
+    Khởi tạo connection string
+    :param str_connection:
+    :return:
+    """
+    global __connection__
+    __connection__ = motor.motor_asyncio.AsyncIOMotorClient(str_connection)
 def load_config(path_to_yalm_database_config):
     global default_db_name
     global db_config
@@ -102,10 +166,12 @@ def __set_connection__(db):
 
 
 def __fix_bson_object_id__(fx):
+    if fx is None:
+        return None
     ret = {}
     for k, v in fx.items():
         if isinstance(v, bson.ObjectId):
-            ret = {**ret, **{k: {"$oid": str(v)}}}
+            ret = {**ret, **{k: str(v)}}
 
         elif isinstance(v, dict):
             ret = {**ret, **{k: __fix_bson_object_id__(v)}}
@@ -264,8 +330,8 @@ async def find_async(db: motor.motor_asyncio.AsyncIOMotorDatabase,
         _filter = filter.to_mongodb()
     ret_cursor = coll.find(_filter)
     ret = await ret_cursor.skip(skip).to_list(limit)
-    lst = list(__fix_bson_object_id_in_list__(ret))
-    return lst
+    # lst = list(__fix_bson_object_id_in_list__(ret))
+    return ret
 
 
 def find(db, docs,
@@ -430,6 +496,101 @@ __mongo_db_instance__ = {}
 __lock_2__ = threading.Lock()
 
 
+class Aggregate:
+    def __init__(self, db, name, keys, indexes):
+        self.db = db
+        self.name = name
+        self.keys = keys
+        self.indexes = indexes
+        self.page_size = None
+        self.page_index = None
+
+        self.pineline = []
+
+    def project(self, *args, **kwargs):
+        pipe = {}
+        if isinstance(args, dict):
+            pipe = {**pipe, **args}
+        elif isinstance(args, ReCompact.dbm.Docs.Fields):
+            pipe = {**pipe, **args.to_mongodb()}
+        elif isinstance(args, tuple):
+            for x in args:
+                if isinstance(x, dict):
+                    pipe = {**pipe, **x}
+                elif isinstance(x, ReCompact.dbm.Docs.Fields):
+                    fn = x.to_mongodb()
+                    if isinstance(fn, str):
+                        pipe = {**pipe, **{fn: 1}}
+                    elif isinstance(fn, dict):
+                        pipe = {**pipe, **fn}
+        else:
+            raise Exception("selector must be dict or ReCompact.dbm.Docs.Fields")
+        alias = {}
+        for k, v in kwargs.items():
+            if isinstance(v, dict):
+                alias = {**alias, **{"$" + k: v}}
+            elif isinstance(v, ReCompact.dbm.Docs.Fields):
+                fx = v.to_mongodb()
+                if isinstance(fx, str):
+                    alias = {**alias, **{k: "$" + fx}}
+                else:
+                    alias = {**alias, **{k: fx}}
+            else:
+                alias = {**alias, **{k: v}}
+        pipe = {**pipe, **alias}
+        if "_id" not in list(pipe.keys()):
+            pipe["_id"] = 0
+
+        self.pineline += [{
+            "$project": pipe
+        }]
+        return self
+
+    def sort(self, *args, **kwargs):
+        pipe = {}
+        if isinstance(args, ReCompact.dbm.Docs.Fields):
+            pipe = {**pipe, **args.to_mongodb()}
+        elif isinstance(args, dict):
+            pipe = args
+        elif isinstance(args, tuple):
+            for x in args:
+                if isinstance(x, ReCompact.dbm.Docs.Fields):
+                    pipe = {**pipe, **x.to_mongodb()}
+                elif isinstance(x, dict):
+                    pipe = {**pipe, **x}
+        self.pineline += [
+            {
+                "$sort": pipe
+            }
+        ]
+        return self
+
+    def pager(self, page_index, page_size):
+        self.page_index = page_index
+        self.page_size = page_size
+        return self
+
+    async def to_list_async(self):
+        coll = await __get_collection__(
+            self.db,
+            self.name,
+            self.keys,
+            self.indexes
+        )
+        ret = []
+        if self.page_size is not None and self.page_index is not None:
+            self.pineline += [{
+                "$skip": self.page_index * self.page_size
+            }, {
+                "$limit": self.page_size
+            }]
+
+        async for doc in coll.aggregate(self.pineline):
+            ret = ret + [__fix_bson_object_id__(doc)]
+
+        return ret
+
+
 class DbContext:
     def __init__(self, db_name):
         cnn = get_connection()
@@ -448,6 +609,29 @@ class DbContext:
 
     def find(self, docs, filter, skip=0, limit=100):
         return sync(self.find_async(docs, filter, skip, limit))
+
+    def aggregate(self, docs) -> Aggregate:
+        return Aggregate(
+            self.db,
+            docs.__dict__["__collection_name__"],
+            docs.__dict__["__collection_keys__"],
+            docs.__dict__["__collection_index__"]
+        )
+
+    def get_grid_fs(self) -> AsyncIOMotorGridFSBucket:
+        fs = AsyncIOMotorGridFSBucket(self.db)
+        return fs
+
+    def get_file_by_name(self, file_name):
+        return self.get_grid_fs().find_one({
+            "filename": file_name
+        })
+
+    async def get_file_by_id(self, file_id)->motor.motor_asyncio.AsyncIOMotorGridOut:
+        if isinstance(file_id, str):
+            file_id = bson.ObjectId(file_id)
+        ret = await self.get_grid_fs().open_download_stream(file_id)
+        return ret
 
 
 def get_db_context(db_name) -> DbContext:

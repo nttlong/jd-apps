@@ -18,5 +18,6 @@ class sys_applications:
 
     SecretKey = ReCompact.dbm.field(data_type=str)
     ReturnUrlAfterSignIn = ReCompact.dbm.field(data_type=str,is_require=True)
+    Decription = ReCompact.dbm.field(data_type=str)
 
 
