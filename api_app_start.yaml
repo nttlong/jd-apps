@@ -1,0 +1,12 @@
+# File này dùng để cấu hình web api
+#Phần khia báo host
+# Cho phép binding web api với local IP và host ra internet
+# là đường dẫn tương đối đến file cấu hình host tính từ vị trí lưu thư mục này
+host: api_app_config/local/host.yaml
+# Khai báo kết nối Database
+# là đường dẫn tương đối đến file cấu hình Database tính từ vị trí lưu thư mục này
+db: api_app_config/local/db.yaml
+# Khai báo cấu hình app
+# là đường dẫn tương đối đến file cấu hình app tính từ vị trí lưu thư mục này
+app: api_app_config/local/app.yaml
+log: logs
