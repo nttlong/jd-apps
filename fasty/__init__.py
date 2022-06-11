@@ -1,6 +1,8 @@
 """
 The pakage support for FastAPI
 """
+import mimetypes
+mimetypes.types_map[".js"]="application/javascript"
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 import traceback
@@ -58,12 +60,16 @@ def api_get(url_path:str,response_class=None):
             fn=app.get(url_path,response_class=response_class)
             return  fn
 
-def api_post(url_path:str,response_class=None):
+def api_post(url_path:str,response_class=None,response_model=None):
     global app
     if config.app.api is not None and config.app.api != "":
         if response_class is None:
-            fn = app.post(config.app.api+url_path)
-            return fn
+            if response_model is None:
+                fn = app.post(config.app.api+url_path)
+                return fn
+            else:
+                fn = app.post(config.app.api + url_path,response_model=response_model)
+                return fn
         else:
             fn = app.post(config.app.api + url_path,response_class=response_class)
             return fn

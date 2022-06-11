@@ -61,6 +61,19 @@ class config_host:
         """
         Binding config
         """
+class config_app_jwt:
+    def __init__(self,config_yaml_path,data):
+        self.secret_key =data.get("secret_key",None)
+        if self.secret_key is None:
+            raise Exception(f'jwt/secret_key was not found in "{config_yaml_path}"')
+        self.algorithm=data.get("algorithm",None)
+        if self.algorithm is None:
+            raise Exception(f'jwt/algorithm was not found in "{config_yaml_path}"')
+        self.access_token_expire_minutes = data.get("access_token_expire_minutes",None)
+        if self.access_token_expire_minutes is None:
+            raise Exception(f'jwt/access_token_expire_minutes was not found in "{config_yaml_path}"')
+
+
 class config_app:
     def __init__(self,path_to_config_dir,path_to_yaml_file,data:dict):
         self.path_to_yaml_file =path_to_yaml_file
@@ -118,6 +131,10 @@ class config_app:
         self.api_url = data.get('api_url', None)
         if self.api_url is None:
             raise Exception(f"'api_url' was not found in '{self.path_to_yaml_file}'")
+        jwt_data = data.get("jwt",None)
+        if jwt_data is None:
+            raise Exception(f"'jwt' was not found in f'{self.path_to_yaml_file}'")
+        self.jwt = config_app_jwt(self.path_to_yaml_file,jwt_data)
 
 import traceback
 

@@ -1,4 +1,4 @@
 binding:
-  ip: 127.0.0.1
-  port: 8002
+  ip: localhost
+  port: 8001
 

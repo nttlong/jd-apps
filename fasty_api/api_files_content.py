@@ -18,10 +18,10 @@ import os
 import mimetypes
 import fasty.mongo_fs_http_streaming
 
-@fasty.api_get("/files/{app_name}/directory/{directory:path}")
+@fasty.api_get("/{app_name}/file/{directory:path}")
 async def get_content_of_files(app_name: str, directory: str, request: Request):
     """
-    APi này sẽ liệt kê danh sách các file
+    Xem hoặc tải nội dung file
     :param app_name:
     :return:
     """

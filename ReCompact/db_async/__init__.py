@@ -122,6 +122,10 @@ class Error(Exception):
         self.fields = []
         self.key_values = {}
         self.inner_exception = None
+    def __repr__(self):
+        return f"code:{self.code}\n" \
+               f"fields:{','.join(self.fields)}\n" \
+               f"message:{self.message}"
 
 
 def __parse_error__(ex):
@@ -134,6 +138,7 @@ def __parse_error__(ex):
         ret.fields = fields
         ret.key_values = keyValue
         ret.fields = fields
+        ret.code = ErrorType.DUPLICATE_DATA
         return ret
     elif isinstance(ex, Exception):
         ret.code = ErrorType.SYSTEM
@@ -610,6 +615,10 @@ class DbContext:
     def find(self, docs, filter, skip=0, limit=100):
         return sync(self.find_async(docs, filter, skip, limit))
 
+    async def insert_one_async(self,docs,*args,**kwargs):
+        ret=await insert_one_async(self.db,docs,*args,**kwargs)
+    def insert_one(self,docs,*args,**kwargs):
+        ret=insert_one(self.db,docs,*args,**kwargs)
     def aggregate(self, docs) -> Aggregate:
         return Aggregate(
             self.db,
