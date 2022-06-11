@@ -32,13 +32,14 @@
             sender = await api._onBeforeCall();
         }
         try {
-            var ret = api.__post__(apiPath, data);
+            var ret = await api.__post__(apiPath, data);
             if (!noMask && api._onAfterCall) {
                 await api._onAfterCall(sender)
             }
             return ret;
         }
         catch (e) {
+            
             if (!noMask && api._onAfterCall) {
                 await api._onAfterCall(sender)
             }
@@ -80,6 +81,11 @@
                 },
                 body: JSON.stringify(data)
             });
+
+            if (fetcher.status == 500) {
+                var err = await fetcher.json()
+                throw(err)
+            }
             return await fetcher.json();
         }
         else {
