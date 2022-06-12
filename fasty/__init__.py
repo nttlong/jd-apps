@@ -28,6 +28,7 @@ def load_config(app_path,app_name):
 
     config = start.Config(app_path,app_name)
     ReCompact.db_async.set_connection_string(config.db.connection_string())
+    ReCompact.db_async.set_default_database(config.db.authSource)
 def install_fastapi_app(module_name:str):
     global app
     global config

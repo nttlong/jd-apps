@@ -425,4 +425,27 @@ async function findEleAsync(ele, timeOut) {
         return $(ele)
     }
 }
-export { isReadyAsync, findEleAsync, msgOK, msgError, newScope, postId, BaseView, View, redirect, urlWatching, getModule, getPaths }
+/**
+ * Parse request qury sang Object
+ * Vi du: http://mysite.com?a=1&b=2 retunr {a:1,b:2}
+ * *
+ * */
+function parseUrlParams() {
+    if (window.location.href.indexOf('?') == -1) {
+        return {}
+    }
+    var items = window.location.href.split('?')[1].split('&');
+    var ret = {}
+    items.forEach(function (x) {
+        var fx = x.split('=');
+        if (fx.length > 1) {
+            ret[fx[0].toLocaleLowerCase()] = fx[1]
+        }
+        else {
+            ret[fx[0].toLocaleLowerCase()] = undefined
+        }
+    });
+    return ret;
+
+}
+export { parseUrlParams, isReadyAsync, findEleAsync, msgOK, msgError, newScope, postId, BaseView, View, redirect, urlWatching, getModule, getPaths }

@@ -19,6 +19,7 @@ class User:
     CreatedOn=(datetime.datetime)
     CreatedOnUTC = (datetime.datetime)
     ModifiedOn =(datetime.datetime)
+    IsSysAdmin=(bool)
 
 Users = User()
 """

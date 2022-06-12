@@ -7,6 +7,9 @@ import pathlib
 import fasty
 import os
 fasty.load_config(os.environ["PYTHONPATH"],"uvicorn.error")
+import fasty.JWT
+fasty.JWT.set_default_db(fasty.config.db.authSource)
+fasty.JWT.set_api_host_dir(fasty.config.app.api)
 import api_app
 from a2wsgi import ASGIMiddleware
 fasty.config.logger.info("Web api run on iis start")

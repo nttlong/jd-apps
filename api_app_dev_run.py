@@ -6,6 +6,9 @@ from werkzeug import debug
 import fasty
 import pathlib
 fasty.load_config(str(pathlib.Path(__file__).parent),"uvicorn.error")
+import fasty.JWT
+fasty.JWT.set_default_db(fasty.config.db.authSource)
+
 import uvicorn
 
 if __name__ == "__main__":

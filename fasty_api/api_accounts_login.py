@@ -17,13 +17,12 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
-
+from fastapi_jwt_auth import AuthJWT
 class Token(BaseModel):
     access_token: str
-    token_type: str
 
 @fasty.api_post("/accounts/token",response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), Authorize: AuthJWT = Depends()):
     username = form_data.username
     app_name=""
     if '/' in form_data.username:
@@ -34,8 +33,16 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         items = form_data.username.split('@')
         app_name = items[-1]
         username = form_data.username[0:-app_name.__len__()-1]
+    db_name= await fasty.JWT.get_db_name_async(app_name)
 
-    user =await fasty.JWT.authenticate_user_async(app_name, username, form_data.password)
+    if db_name is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Someting wrong, maybe incorrect domain",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    user =await fasty.JWT.authenticate_user_async(db_name, username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -51,4 +58,11 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         expires_delta=access_token_expires
 
     )
+    # Create the tokens and passing to set_access_cookies or set_refresh_cookies
+    access_token = Authorize.create_access_token(subject=username)
+    # refresh_token = Authorize.create_refresh_token(subject=username)
+
+    # Set the JWT cookies in the response
+    Authorize.set_access_cookies(access_token)
+    # Authorize.set_refresh_cookies(refresh_token)
     return {"access_token": access_token, "token_type": "bearer"}

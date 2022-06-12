@@ -17,7 +17,7 @@ var appsView = await View(import.meta, class AppsView extends BaseScope {
 
     //}
     async doEdit(appName) {
-        redirect("edit/" + appName)
+        redirect("register?app=" + appName)
     }
     async doNew() {
         redirect("register")
@@ -26,8 +26,8 @@ var appsView = await View(import.meta, class AppsView extends BaseScope {
     //    redirect("files")
     //}
     async getListOfApps() {
-        this.list = await api.post("apps/admin/list", {
-            Token: window.token
+        this.list = await api.post("admin/apps", {
+           
         });
         this.$applyAsync();
 

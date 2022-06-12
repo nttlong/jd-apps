@@ -12,8 +12,8 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
     currentAppName = undefined
     async init() {
 
-        this.listOfApp = await api.post(`apps/admin/list`, {
-            Token: window.token
+        this.listOfApp = await api.post(`admin/apps`, {
+            
         })
         this.currentApp = this.listOfApp[0];
         this.currentAppName = this.currentApp.Name;
@@ -22,15 +22,15 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
         debugger;
     }
     async doLoadAllFileByApp(appName) {
-        this.listOfFiles = await api.post(`files/${appName}/list`, {
-            Token: window.token
+        this.listOfFiles = await api.post(`${appName}/files`, {
+            
         });
         this.$applyAsync();
     }
     async doLoadAllFiles() {
         var me = this;
         debugger;
-        this.listOfFiles = await api.post(`files/${this.currentAppName}/list`, {
+        this.listOfFiles = await api.post(`${this.currentAppName}/files`, {
             Token: window.token,
             PageIndex: 0,
             PageSize: 20,

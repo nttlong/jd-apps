@@ -23,6 +23,7 @@ import fasty
 import pathlib
 app = fasty.install_fastapi_app(__name__)
 
+
 import fasty_api
 """
 Napapi

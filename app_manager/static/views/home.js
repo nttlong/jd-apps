@@ -30,7 +30,8 @@ var homeView = await View(import.meta, class homeview extends BaseScope {
         redirect("files")
     }
     async getListOfApps() {
-        this.list = await api.post("apps/admin/list", {
+        debugger;
+        this.list = await api.post("admin/apps", {
             Token: window.token
         });
         this.$applyAsync();

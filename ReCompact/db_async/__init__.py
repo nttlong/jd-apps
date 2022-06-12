@@ -76,6 +76,9 @@ if not __is_has_fix_json__:
     json.JSONEncoder.default = __fix__json__
     __is_has_fix_json__ = True
     __lock__.release()
+def set_default_database(db_name):
+    global default_db_name
+    default_db_name=db_name
 
 def set_connection_string(str_connection):
     """
@@ -112,7 +115,9 @@ def load_config(path_to_yalm_database_config):
 class ErrorType(enum.Enum):
     NONE = "None"
     DUPLICATE_DATA = "DuplicateData"
-    SYSTEM = "system"
+    DATA_NOT_FOUND ="DataWasNotFound"
+    DATA_REQUIRE ="MissingData"
+    SYSTEM = "System"
 
 
 class Error(Exception):
@@ -393,6 +398,34 @@ async def delete_one_async(db, docs, filter):
 
 def delete_one(db, docs, filter):
     return sync(delete_one_async(db, docs, filter))
+async def update_one_async(db, docs,filter, *args, **kwargs):
+    try:
+        async_db = __set_connection__(db)
+        coll = await __get_collection__(
+            async_db,
+            docs.__dict__["__collection_name__"],
+            docs.__dict__["__collection_keys__"],
+            docs.__dict__["__collection_index__"]
+        )
+        assert isinstance(coll, motor.motor_asyncio.AsyncIOMotorCollection)
+        data = {}
+        if isinstance(args, tuple) and len(args) > 0:
+            for x in args:
+                if isinstance(x, dict):
+                    data = {**data, **x}
+                elif isinstance(x, ReCompact.dbm.Docs.Fields):
+                    data = {**data, **x.to_mongodb()}
+        _filter =filter
+        if isinstance(filter,ReCompact.dbm.Docs.Fields):
+            _filter= filter.to_mongodb()
+        ret = await coll.update_one(_filter, data)
+        data["_id"] = ret.inserted_id
+        return data
+    except pymongo.errors.DuplicateKeyError as e:
+        r_e = __parse_error__(e)
+        raise r_e
+    except Exception as e:
+        raise e
 
 
 async def insert_one_async(db, docs, *args, **kwargs):
@@ -617,6 +650,9 @@ class DbContext:
 
     async def insert_one_async(self,docs,*args,**kwargs):
         ret=await insert_one_async(self.db,docs,*args,**kwargs)
+    async def update_one_async(self,docs,filter,*args,**kwargs):
+        ret=await update_one_async(self.db,filter,docs,*args,**kwargs)
+        return  ret
     def insert_one(self,docs,*args,**kwargs):
         ret=insert_one(self.db,docs,*args,**kwargs)
     def aggregate(self, docs) -> Aggregate:

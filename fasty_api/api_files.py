@@ -4,21 +4,26 @@ API liệt kê danh sách các file
 import ReCompact.dbm
 import fasty
 from fastapi import FastAPI, Request,Response
+from pydantic import BaseModel
 import api_models.documents as docs
+from typing import List
+from fastapi import Depends, FastAPI, HTTPException, status
 from ReCompact import db_async
 import json
 from db_connection import connection, default_db_name
 from . import api_files_schema
-
-
-@fasty.api_post("/{app_name}/files/")
-async def get_list_of_files(app_name: str, filter: api_files_schema.Filter, request: Request):
+import fasty.JWT
+@fasty.api_post("/{app_name}/files")
+async def get_list_of_files(app_name: str, filter: api_files_schema.Filter, request: Request,token: str = Depends(fasty.JWT.oauth2_scheme)):
     """
     APi này sẽ liệt kê danh sách các file
     :param app_name:
     :return:
     """
-    db = db_async.get_db_context(app_name)
+    db_name = await fasty.JWT.get_db_name_async(app_name)
+    if db_name is None:
+        return Response(status_code=403)
+    db = db_async.get_db_context(db_name)
     agg = db.aggregate(docs.Files)
     agg.project(
         # docs.Files._id,
@@ -44,11 +49,13 @@ async def get_list_of_files(app_name: str, filter: api_files_schema.Filter, requ
     )
 
     ret_list = await agg.to_list_async()
-    url = f"{request.url.scheme}://{request.url.hostname}"
-    if request.url.port not in [80, 443]:
-        url += f":{request.url.port}"
+    url = fasty.config.app.api_url
+
     for x in ret_list:
-        x["UrlOfServerPath"] = url+f"/files/{app_name}/directory/{x['UploadId']}/{x['FileName']}"
+        x["UrlOfServerPath"] = url+f"/{app_name}/file/{x['UploadId']}/{x['FileName']}"
+        x["AppName"]=app_name
+        x["RelUrlOfServerPath"] = f"/{app_name}/file/{x['UploadId']}/{x['FileName']}"
+
 
     return ret_list
 

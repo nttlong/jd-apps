@@ -1,13 +1,16 @@
 import ReCompact.dbm
 import datetime
 @ReCompact.dbm.table(
-    "sys_applications"
+    "sys_applications",
+    keys=["Name","NameLower","Email"],
+    index=["Domain","LoginUrl","ReturnUrlAfterSignIn"]
 
 )
 class sys_applications:
     import bson
     _id = ReCompact.dbm.field(data_type=str)
     Name = ReCompact.dbm.field(data_type=str, is_require=True)
+    NameLower = ReCompact.dbm.field(data_type=str, is_require=True)
     """
     Ten cua app
     """
@@ -18,6 +21,10 @@ class sys_applications:
 
     SecretKey = ReCompact.dbm.field(data_type=str)
     ReturnUrlAfterSignIn = ReCompact.dbm.field(data_type=str,is_require=True)
-    Decription = ReCompact.dbm.field(data_type=str)
+    Description = ReCompact.dbm.field(data_type=str)
+    Email= ReCompact.dbm.field(data_type=str)
+    """
+    Email dùng để liên lạc với application khi cần. Ví dụ dùng trong trường ho75ptruy tìm lại mật khẩu của user root trên app
+    """
 
 

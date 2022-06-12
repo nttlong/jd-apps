@@ -17,7 +17,8 @@ async def page_index(request: Request):
     )
 @fasty.page_get("/{directory:path}")
 async def page_single(directory:str, request: Request):
-    check_dir_path = os.path.join(fasty.config.app.static, directory.replace('/', os.sep))
+    directory=directory.split('?')[0]
+    check_dir_path = os.path.join(fasty.config.app.static,"views", directory.replace('/', os.sep))
     if not os.path.exists(check_dir_path):
         return Response(status_code=401)
     app_data =dict(
