@@ -41,12 +41,7 @@ var appEditView = await View(import.meta, class EditAppView extends BaseScope {
             logoFile = logoFiles[0];
         }
         var ret = await api.post(`admin/apps/update/${this.app_name}`, {
-            Name: me.app.Name,
-            Token: window.token,
-            LoginUrl: me.app.LoginUrl,
-            ReturnUrlAfterSignIn: me.app.ReturnUrlAfterSignIn,
-            Description: me.app.Description,
-            Domain: me.app.Domain
+            Data: me.app
         });
         if (ret.error) {
             msgError(ret.error.message)

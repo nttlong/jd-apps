@@ -4,8 +4,12 @@
     "\\css",
     "\\images",
     "\\js",
-    "\\js\\ClientApi"
+    "\\js\\ClientApi",
+    "\\views",
+    "\\views\\apps",
+    "\\views\\files",
+    "\\views\\register"
   ],
-  "SelectedNode": "\\js\\ClientApi\\api.js",
+  "SelectedNode": "\\views\\files\\index.js",
   "PreviewInSolutionExplorer": false
 }

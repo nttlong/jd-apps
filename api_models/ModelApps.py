@@ -16,6 +16,7 @@ class sys_applications:
     """
     RegisteredBy = ReCompact.dbm.field(data_type=str,is_require=True)
     RegisteredOn = ReCompact.dbm.field(data_type=datetime.datetime, is_require=True)
+    ModifiedOn = ReCompact.dbm.field(data_type=datetime.datetime, is_require=True)
     Domain = ReCompact.dbm.field(data_type=str, is_require=True)
     LoginUrl = ReCompact.dbm.field(data_type=str, is_require=True)
 

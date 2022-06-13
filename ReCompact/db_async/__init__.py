@@ -495,8 +495,7 @@ async def update_one_async(db, docs, filter, *args, **kwargs):
                         elif isinstance(x, ReCompact.dbm.Docs.Fields):
                             data = {**data, **y.to_mongodb()}
 
-        ret = await coll.update_one(data)
-        data["_id"] = ret.inserted_id
+        ret = await coll.update_one( _filter,{"$set": data})
         return data
     except pymongo.errors.DuplicateKeyError as e:
         r_e = __parse_error__(e)
@@ -566,7 +565,21 @@ class Aggregate:
         alias = {}
         for k, v in kwargs.items():
             if isinstance(v, dict):
-                alias = {**alias, **{"$" + k: v}}
+                alias = {**alias, **{ k: __parser_dict__(v)}}
+            elif isinstance(v,tuple):
+                t_alais = {}
+                for x in v:
+                    if isinstance(x,dict):
+                        x= __parser_dict__(x)
+                        t_alais = {**t_alais, **{x}}
+                    elif isinstance(x,ReCompact.dbm.Docs.Fields):
+                        if x.__tree__ is None:
+                            t_alais = {**t_alais, **{"$"+x.__name__:1}}
+                        else:
+                            t_alais = {**t_alais, **{x.to_mongodb()}}
+                    else:
+                        t_alais = {**t_alais, **{x:1}}
+                alias = {**alias, **{k: t_alais}}
             elif isinstance(v, ReCompact.dbm.Docs.Fields):
                 fx = v.to_mongodb()
                 if isinstance(fx, str):
@@ -651,7 +664,7 @@ class DbContext:
     async def insert_one_async(self,docs,*args,**kwargs):
         ret=await insert_one_async(self.db,docs,*args,**kwargs)
     async def update_one_async(self,docs,filter,*args,**kwargs):
-        ret=await update_one_async(self.db,filter,docs,*args,**kwargs)
+        ret=await update_one_async(self.db,docs,filter,*args,**kwargs)
         return  ret
     def insert_one(self,docs,*args,**kwargs):
         ret=insert_one(self.db,docs,*args,**kwargs)
@@ -690,3 +703,18 @@ def get_db_context(db_name) -> DbContext:
         finally:
             __lock_2__.release()
     return __all_instances_db_context__[db_name]
+
+def __parser_dict__(data):
+    if isinstance(data,dict):
+        ret= {}
+        for k,v in data.items():
+            if isinstance(v,ReCompact.dbm.Docs.Fields):
+                if v.__tree__ is None:
+                    ret ={**ret,**{k:"$"+v.__name__}}
+                else:
+                    ret = {**ret, **{k: v.to_mongodb()}}
+            else:
+                ret = {**ret, **{k: __parser_dict__(v)}}
+        return ret
+    else:
+        return data

@@ -62,6 +62,8 @@ async def register_new_app(app_name: str, Data:AppInfo=Body(embed=True),token: s
             Apps.ReturnUrlAfterSignIn==Data.ReturnUrlAfterSignIn,
 
         )
+        ret.Data = Data
+        ret.Data.AppId=ret_app["_id"]
     except Db_Error as e:
         ret.Error=()
         ret.Error.Code=e.code
@@ -76,5 +78,6 @@ async def register_new_app(app_name: str, Data:AppInfo=Body(embed=True),token: s
         Data.Email,
         IsSysAdmin=True
     )
+
 
     return ret
