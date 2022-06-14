@@ -82,11 +82,15 @@
                 body: JSON.stringify(data)
             });
 
-            if (fetcher.status == 500) {
-                var err = await fetcher.json()
-                throw(err)
+            if (fetcher.status >= 200 && fetcher.status < 300) {
+                return await fetcher.json();
+
             }
-            return await fetcher.json();
+            else {
+                var err = await fetcher.json()
+                throw (err)
+            }
+            
         }
         else {
             var formData = new FormData()
@@ -103,6 +107,49 @@
             return await fetcher.json();
         }
 
+    }
+    static async formPost(apiPath, data, noMask) {
+        var url = this.serverApIHostUrl + "/" + apiPath;
+        var formData = new FormData()
+        var keys = Object.keys(data)
+        for (var i = 0; i < keys.length; i++) {
+            var key = keys[i]
+            var val = data[key]
+            formData.append(key, val);
+            
+        }
+        var sender = undefined;
+        if (!noMask && api._onBeforeCall) {
+            sender = await api._onBeforeCall();
+        }
+        try {
+            var fetcher = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+            if (!noMask && api._onAfterCall) {
+                await api._onAfterCall(sender)
+            }
+            if (fetcher.status >= 200 && fetcher.status < 300) {
+                return await fetcher.json();
+
+            }
+            else {
+                var err = await fetcher.json()
+                throw (err)
+            }
+            
+        }
+        catch (e) {
+
+            if (!noMask && api._onAfterCall) {
+                await api._onAfterCall(sender)
+            }
+            if (api._onError) {
+                await api._onError(e)
+            }
+            throw (e)
+        }
     }
 }
 export default api

@@ -5,27 +5,18 @@ import { redirect, urlWatching, getPaths, msgError } from "../../js/ui/core.js"
 var loginView = await View(import.meta, class LoginView extends BaseScope {
     
     async doLogin() {
-        debugger;
-        var me = this;
-        me.data["language"] = me.data["language"]||"vn"
-        var ret = await api.post(`accounts/admin/login`, me.data || {});
-        if (ret.error) {
-            msgError(ret.error.message);
+        try {
+            var me = this;
+            me.data["language"] = me.data["language"] || "vn"
+            var ret = await api.formPost(`accounts/token`, {
+                username: `${me.data.username}`,
+                password: me.data.password
+            });
+            window.location.href='./'
         }
-        else {
-            if (window.location.href.indexOf("?ret=")> -1) {
-                var url = window.location.href.split("?ret=")[1];
-                url = decodeURIComponent(url);
-                window.location.href = url;
-            }
-            else {
-                var url = ret.data.redirect;
-                window.location.href = url;
-            }
+        catch (e) {
+            alert("login fail")
         }
-        console.log(ret);
-        this.$apply();
-        return ret;
     }
     
 });

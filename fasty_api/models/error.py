@@ -10,8 +10,9 @@ class Error(BaseModel):
     """
     Code:Union[str,None] = Field( description="Mã lỗi:<ol>\n"
                                    "<li>DuplicateData: Trùng thông tin</li>\n"
-                                   "<li>DataWasNotFound: Không tìm thấy dữ liệu</li>"
-                                   "<li>System: Lỗ hệ thống</li>\n"
+                                   "<li>DataWasNotFound: Không tìm thấy dữ liệu</li>\n"
+                                              "<li>MissingField: Thiếu thông tin"
+                                   "<li>System: Lỗi hệ thống</li>\n"
                                    "</ol>")
     Message: Union[str,None]
     Fields:Union[List[str],None]=Field(description="Danh sách các thông tin gây ra lỗi")

@@ -1,15 +1,13 @@
 {
   "ExpandedNodes": [
     "",
-    "\\css",
-    "\\images",
     "\\js",
-    "\\js\\ClientApi",
+    "\\js\\ui",
     "\\views",
-    "\\views\\apps",
     "\\views\\files",
-    "\\views\\register"
+    "\\views\\login",
+    "\\views\\pdf-region-selector"
   ],
-  "SelectedNode": "\\views\\files\\index.js",
+  "SelectedNode": "\\views\\pdf-region-selector\\index.js",
   "PreviewInSolutionExplorer": false
 }

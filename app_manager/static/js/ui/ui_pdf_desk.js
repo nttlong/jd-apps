@@ -54,12 +54,17 @@ class ui_pdf_desk extends ui_container {
             width: R.width + "px"
         });
     }
-    
+    /**
+     * Lấy dữ liệu là các khung đang chọn
+     * */
     getData() {
         return this.editor.getData();
     }
     getThumbAsFile() {
         return this.editor.getThumbAsFile()
+    }
+    getTotalPages() {
+        return this.editor.getTotalPages();
     }
     changeFile() {
         this.editor.changeFile();
@@ -82,6 +87,10 @@ class ui_pdf_desk extends ui_container {
         this.editor.loadFromUrl(urlOfFile, fileType, cb);
 
     }
+    getPageSelectorThums() {
+        return this._pageSelectorThums;
+    }
+    
     buildStyle() {
         this._pageSelectorThums.getEle().setAttribute("class", "page-selector");
         this.style = new ui_style.builder("pdf-picker-editor");
@@ -151,7 +160,7 @@ class ui_pdf_desk extends ui_container {
                 var target = evt.target;
                 var command = target.getAttribute("command");
                 if (command) {
-                    this._onCommad(command);
+                    this._onCommad(command).then();
                 }
             }
         })
@@ -284,20 +293,33 @@ class ui_pdf_desk extends ui_container {
         this._onBeforeTesseractRecognize = cb;
 
     }
-    doLoadThumns(width, height) {
+    /**
+     * Tải hết các ảnh thumb của từng page
+     * vào paage select mặc đ5nh
+     * @param {any} width
+     * @param {any} height
+     */
+    async doLoadThumns(width, height) {
         if (this.editor.isPdf) {
             width = width || 80;
             height = height || 80;
-            this.editor.loadThumbs(width, height, (url, pageIndex) => {
+            var thumnSelector = this._pageSelectorThums.getEle();
+            thumnSelector.innerHTML = "";
+
+            
+            for (var i = 0; i < this.editor.getTotalPages(); i++) {
+                var retImg = await this.editor.loadThumbs(i,width, height);
                 var img = ui_html.createEle("img");
-                img.setAttribute("src", url);
-                img.setAttribute("data-page-index", pageIndex.toString());
+                img.setAttribute("src", retImg.url);
+                img.setAttribute("data-page-index", retImg.pageIndex.toString());
                 ui_html.setStyle(img, {
                     maxWidth: "112px",
                     margin: "4px"
                 });
-                this._pageSelectorThums.getEle().appendChild(img);
-            });
+                thumnSelector.appendChild(img);
+            }
+
+            
         }
         else {
             this._pageSelectorThums.getEle().innerHTML = "";
@@ -313,6 +335,10 @@ class ui_pdf_desk extends ui_container {
     async doBrowseFileAtClient() {
         return await this.editor.doBrowserFile();
     }
+    /**
+     * *Bat hoac tat thumb page selector
+     * @param {any} value
+     */
     setShowThumbPage(value) {
         this._showThumPage = value;
         if (this._showThumPage) {
@@ -328,32 +354,13 @@ class ui_pdf_desk extends ui_container {
         this.editor._fixSizeOfEditor();
 
     }
-    _onCommad(command) {
+    async _onCommad(command) {
         debugger;
         if (command == "open-file") {
             this._pageSelector.getInput().setAttribute("value", "1");
             var pageIndex = Number(this._pageSelector.getInput().getAttribute("value"));
-            this.editor.browseFile(sender => {
-                this._pageSelector.setAfteText("/" + sender.numPages);
-                sender.doLoadPage(pageIndex, () => {
-                    this._pageSelector.getInput().removeAttribute("readonly");
-                    this._pageSelector.getInput().setAttribute("max", sender.numPages.toString())
-                    this._pageSelectorThums.getEle().innerHTML = "";
-                    if (this._showThumPage) {
-                        sender.loadThumbs(80, 80, (url, pageIndex) => {
-                            var img = ui_html.createEle("img");
-                            img.setAttribute("src", url);
-                            img.setAttribute("data-page-index", pageIndex.toString());
-                            ui_html.setStyle(img, {
-                                maxWidth: "112px",
-                                margin: "4px"
-                            });
-                            this._pageSelectorThums.getEle().appendChild(img);
-                        });
-                    }
-                });
-
-            });
+            await this.editor.browseFile();
+            return;
         }
         if (command == "tesseract_recognize") {
 
@@ -449,6 +456,18 @@ class ui_pdf_desk extends ui_container {
      */
     onCtrlSelect(asynCallback) {
         this.editor.onCtrlSelect(asynCallback);
+    }
+    onBeforeDeleteRegion(asynCallback) {
+        this.editor.events.onBeforeDeleteRegion(asynCallback);
+    }
+    onBeforeBrowserFile(asynCallback) {
+        this.editor.events.onBeforeBrowserFile(asynCallback);
+    }
+    onLoadFileComplete(asynCallback) {
+        this.editor.events.onLoadFileComplete(asynCallback);
+    }
+    async loadThumbs(pageIndex,w, h) {
+        return await this.editor.loadThumbs(pageIndex,w, h);
     }
 }
 export { ui_pdf_desk}

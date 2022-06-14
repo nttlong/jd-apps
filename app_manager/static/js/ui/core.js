@@ -11,6 +11,8 @@ else if(!document.head.getElementsByTagName("base")[0].href)
         see; https://www.w3schools.com/tags/tag_base.asp#:~:text=The%20tag%20specifies%20the,inside%20the%20element.
     `)
 }
+import { ui_desk } from "./ui_desk.js";
+import { ui_html } from "./ui_html.js";
 import { ui_window } from "./ui_window.js";
 var callbackList = [];
 function fecthHtml(url) {
@@ -448,4 +450,53 @@ function parseUrlParams() {
     return ret;
 
 }
-export { parseUrlParams, isReadyAsync, findEleAsync, msgOK, msgError, newScope, postId, BaseView, View, redirect, urlWatching, getModule, getPaths }
+function newGuid() {
+    var urlId = URL.createObjectURL(new Blob(['']));
+    var id = urlId.split('/')[urlId.split('/').length - 1];
+    return id;
+}
+function dialogConfirm(msg, settings) {
+    
+    var id = newGuid();
+    settings = settings || {}
+    settings.caption = settings.caption || {}
+    settings.caption.yes = settings.caption.yes || "Yes"
+    settings.caption.no = settings.caption.no || "No"
+    var template = `<div dialog-id='${id}' style='position:fixed;left:0;top:0;bottom:0;right:0;z-index:100000' class='fasty-core-dialog'>
+                        <dialog open>
+                           
+                          <div style='display: flex;flex-direction: column;height:100%;'>
+                                <div style='height:100%'>
+                                    ${msg}        
+                                </div>
+                                <div style='width:100%;display: flex;flex-direction: row'>
+                                    <div style='width:100%'></div>
+                                    <div>
+                                        <input type='button' value='${settings.caption.yes}' id='ok'/>
+                                    </div>
+                                    <div>
+                                        &nbsp;
+                                    </div>    
+                                    <div>
+                                        <input type='button' value='${settings.caption.no}' id='cancel'/>
+                                    </div>
+                                </div>
+                          </div>
+                        </dialog>
+                    </div>`
+    $(template).attr('dialog-id', id);
+    $(template).appendTo('body');
+    return new Promise(function (resolve, reject) {
+        $(`[dialog-id=${id}]`).find("#ok").click(function () {
+            resolve(true);
+            $(`[dialog-id=${id}]`).remove();
+        });
+        $(`[dialog-id=${id}]`).find("#cancel").click(function () {
+            resolve(false);
+            $(`[dialog-id=${id}]`).remove();
+        });
+    });
+    
+
+}
+export { dialogConfirm, newGuid, parseUrlParams, isReadyAsync, findEleAsync, msgOK, msgError, newScope, postId, BaseView, View, redirect, urlWatching, getModule, getPaths }

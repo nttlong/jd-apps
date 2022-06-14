@@ -2,6 +2,7 @@
 The pakage support for FastAPI
 """
 import mimetypes
+from fastapi.middleware.cors import CORSMiddleware
 mimetypes.types_map[".js"]="application/javascript"
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
@@ -33,6 +34,15 @@ def install_fastapi_app(module_name:str):
     global app
     global config
     app = FastAPI()
+    origins = ["*"]
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     app.middleware('http')(catch_exceptions_middleware)
     setattr(sys.modules[module_name],"app",app)
     app.mount("/static", StaticFiles(directory=config.app.static), name="static")

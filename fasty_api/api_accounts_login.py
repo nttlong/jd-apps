@@ -59,7 +59,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
     )
     # Create the tokens and passing to set_access_cookies or set_refresh_cookies
-    access_token = Authorize.create_access_token(subject=username)
+    # access_token = Authorize.create_access_token(subject=username)
     # refresh_token = Authorize.create_refresh_token(subject=username)
 
     # Set the JWT cookies in the response

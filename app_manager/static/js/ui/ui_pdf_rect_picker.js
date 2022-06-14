@@ -4,12 +4,42 @@ import { ui_desk } from "./ui_desk.js"
 import { ui_events } from "./ui_events.js"
 import { ui_rect_picker } from "./ui_rect_picker.js";
 import { ui_linear } from "./ui_linear.js";
+import { ui_resource } from "./ui_resource.js";
+
+const KEY_DELETE_CODE = 46
+const EVENT_ON_BEFORE_DELETE_REGION = "event_on_before_delete_region"
+const EVENT_ON_BEFORE_BROWSER_FILE = "event_on_before_broser_file"
+const EVENT_ON_LOAD_FILE_COMPLETE = "event_on_load_file_complete"
+class EditorEvents {
+    handlers={}
+    constructor() {
+
+    }
+    /**
+     * Trước khi xóa
+     * @param {any} asyncCallback
+     */
+    onBeforeDeleteRegion(asyncCallback) {
+        this.handlers[EVENT_ON_BEFORE_DELETE_REGION] = asyncCallback
+    }
+    /**
+     * Trước khi người dùng mở file
+     * @param {any} asyncCallback
+     */
+    onBeforeBrowserFile(asyncCallback) {
+        
+        this.handlers[EVENT_ON_BEFORE_BROWSER_FILE] = asyncCallback
+    }
+    onLoadFileComplete(asyncCallback) {
+        this.handlers[EVENT_ON_LOAD_FILE_COMPLETE] = asyncCallback
+    }
+}
 class ui_pdf_rect_picker {
 
     _accept = "image/*,application/pdf";
     SCALE_BUFFER_SIZE = 2;
     bufferCanvas = {};
-
+    events = new EditorEvents()
     async changeFile() {
         var me = this;
         var f = await ui_html.browserFile(this._accept);
@@ -187,181 +217,185 @@ class ui_pdf_rect_picker {
     _onContextMenu;
     constructor(ele) {
         var me = this;
-        me.trashContainer = ui_html.createEle("div");
-        me.interact = new ui_desk.desk_interact(me);
-        me._layers = new ui_desk.desk_layers(me, ele);
-        me._layers.drawLayer.disable();
-        me._layers.dragLayer.disable();
-        console.log(me._layers.dragLayer);
-        me._layers.resizeLayer.disable();
-        me._layers.zoomLayer.disable();
-        me._layers.drawLayer.onStart(() => {
-            this.interact.type = ui_desk.desk_interact_emum.draw;
-        });
-        me._layers.drawLayer.onEnd((R, div) => {
+        async function start() {
+            me.trashContainer = ui_html.createEle("div");
+            me.interact = new ui_desk.desk_interact(me);
+            me._layers = new ui_desk.desk_layers(me, ele);
+            me._layers.drawLayer.disable();
+            me._layers.dragLayer.disable();
+
+            me._layers.resizeLayer.disable();
+            me._layers.zoomLayer.disable();
+            me._layers.drawLayer.onStart(() => {
+                me.interact.type = ui_desk.desk_interact_emum.draw;
+            });
+            me._layers.drawLayer.onEnd((R, div) => {
 
 
-            var picker = new ui_rect_picker(
-                R.x,
-                R.y,
-                R.width,
-                R.height
-            );
+                var picker = new ui_rect_picker(
+                    R.x,
+                    R.y,
+                    R.width,
+                    R.height
+                );
 
-            this._layers.layerBkgEle.appendChild(picker.canvas);
+                me._layers.layerBkgEle.appendChild(picker.canvas);
 
-            this.addPicker(picker);
-            this._oldCurrentPicker = this.currentPicker;
-            this.currentPicker = picker;
-
-            this.select(picker);
-
-        });
-        me._layers.dragLayer.onEnd((R, picker) => {
-            this._layers.layerBkgEle.appendChild(picker);
-            this.currentPicker.x = R.x * (100 / this.zoom);
-            this.currentPicker.y = R.y * (100 / this.zoom);
-            this.currentPicker.drawWithHandle();
-            
-            this._raiseOnSelectePicker().then();
-        });
-
-        this.windKeyEvent = new ui_events.handler(window);
-
-        
-        this._layers.resizeLayer.onStart(() => {
-            this.hideContextMenuOfSelecetRegion();
-            this._layers.drawLayer.disable();
-            this._layers.zoomLayer.disable();
-        });
-        this._layers.resizeLayer.onReszie((r, ele) => {
-            this.currentPicker.x = r.x * 100 / this.zoom;
-            this.currentPicker.y = r.y * 100 / this.zoom;
-            this.currentPicker.w = r.width * 100 / this.zoom;
-            this.currentPicker.h = r.height * 100 / this.zoom;
-            this.currentPicker.drawWithHandle();
-            this._layers.drawLayer.disable();
-            this._layers.zoomLayer.disable();
-
-        });
-        this._layers.resizeLayer.onEnd((r, ele) => {
-            this.currentPicker.x = r.x * 100 / this.zoom;
-            this.currentPicker.y = r.y * 100 / this.zoom;
-            this.currentPicker.w = r.width * 100 / this.zoom;
-            this.currentPicker.h = r.height * 100 / this.zoom;
-            this._layers.layerBkgEle.appendChild(ele);
-            this.currentPicker.drawWithHandle();
-            //this._layers.drawLayer.enable();
-            //this._layers.zoomLayer.enable();
-            console.log("this._layers.resizeLayer.onEnd");
-            this._raiseOnSelectePicker();
-        });
-        this._layers.zoomLayer.setConstraint(evt => {
-            return evt.ctrlKey;
-        });
-        this._layers.zoomLayer.onEnd((R, ele) => {
-            if (this._asyncOnCtrlSelect) {
-                this._asyncOnCtrlSelect(R, ele, this).then();
-            }
-            
-
-        });
-        this.detectOnResizePickerEvent = new ui_events.handler(this._layers.layerBkgEle);
-        this.detectOnResizePickerEvent.set({
-            filter: evt => {
-                return evt.which == 0 && this.currentPicker != undefined;
-            },
-            onmousemove: evt => {
-                var pos = ui_html.getClientCoordinate(evt, this._layers.layerBkgEle);
-                var resizeHandle = this.currentPicker.detectResizeHandle(pos);
-                this.currentResizeHandle = resizeHandle;
-                if (resizeHandle) {
-                    ui_html.setStyle(this._layers.layerBkgEle, {
-                        cursor: resizeHandle.cursor
-                    });
-
-                }
-                else {
-                    ui_html.setStyle(this._layers.layerBkgEle, {
-                        cursor: "default"
-                    });
-                    this._layers.resizeLayer.disable();
-                }
-            }
-        });
-        new ui_events.handler(this._layers.layerBkgEle).set({
-            filter: (evt => { return evt.which == 1 && this.currentResizeHandle != undefined }),
-            onmousedown: evt => {
-                this._layers.resizeLayer.startResize(evt, this.currentPicker.canvas, this.currentResizeHandle.cursor);
-                this._layers.dragLayer.disable();
-                this._layers.zoomLayer.disable();
-
-            }
-        });
+                me.addPicker(picker);
+                me._oldCurrentPicker = me.currentPicker;
+                me.currentPicker = picker;
 
 
-        this.selectorEvent = new ui_events.handler(me._layers.layerBkgEle);
-        this.selectorEvent.set({
-            filter: (evt) => {
+                me.select(picker);
+                me._layers.ele.click();
+                picker.canvas.click();
 
-                return evt.which == 1 && evt.keyCode == undefined && this.currentResizeHandle == undefined;
-            },
 
-            onmousemove: evt => {
-                if (this.interact.type != ui_desk.desk_interact_emum.none) {
-                    //this._layers.drawLayer.disable();
-                }
-            },
-            onmouseup: evt => {
+            });
+            me._layers.dragLayer.onEnd((R, picker) => {
+                me._layers.layerBkgEle.appendChild(picker);
+                me.currentPicker.x = R.x * (100 / me.zoom);
+                me.currentPicker.y = R.y * (100 / me.zoom);
+                me.currentPicker.drawWithHandle();
+
+                me._raiseOnSelectePicker().then();
+            });
+            me.events = new EditorEvents();
+            me.windKeyEvent = new ui_events.handler(window);
+
+
+            me._layers.resizeLayer.onStart(() => {
+                me.hideContextMenuOfSelecetRegion();
                 me._layers.drawLayer.disable();
-                me._layers.dragLayer.disable();
-            },
-            onmousedown: evt => {
-                me.applyHookKey();
-                if (!evt.ctrlKey) {
-                    var canvas = evt.target;
-                    var picker = this.findPickerByCanvas(canvas);
-                    if (canvas.tagName == "CANVAS" && picker) {
+                me._layers.zoomLayer.disable();
+            });
+            me._layers.resizeLayer.onReszie((r, ele) => {
+                me.currentPicker.x = r.x * 100 / me.zoom;
+                me.currentPicker.y = r.y * 100 / me.zoom;
+                me.currentPicker.w = r.width * 100 / me.zoom;
+                me.currentPicker.h = r.height * 100 / me.zoom;
+                me.currentPicker.drawWithHandle();
+                me._layers.drawLayer.disable();
+                me._layers.zoomLayer.disable();
 
-                        this.currentPicker = picker;
-                        this.drawAllPickerWithoutHandle();
-                        this.currentPicker.drawWithHandle();
-                        me.select(this.currentPicker);
-                        me._layers.drawLayer.disable();
-                        me.hideContextMenuOfSelecetRegion();
-                        me._layers.dragLayer.startDrag(evt, this.currentPicker.canvas);
+            });
+            me._layers.resizeLayer.onEnd((r, ele) => {
+                me.currentPicker.x = r.x * 100 / me.zoom;
+                me.currentPicker.y = r.y * 100 / me.zoom;
+                me.currentPicker.w = r.width * 100 / me.zoom;
+                me.currentPicker.h = r.height * 100 / me.zoom;
+                me._layers.layerBkgEle.appendChild(ele);
+                me.currentPicker.drawWithHandle();
+                //this._layers.drawLayer.enable();
+                //this._layers.zoomLayer.enable();
+                console.log("this._layers.resizeLayer.onEnd");
+                me._raiseOnSelectePicker();
+            });
+            me._layers.zoomLayer.setConstraint(evt => {
+                return evt.ctrlKey;
+            });
+            me._layers.zoomLayer.onEnd((R, ele) => {
+                if (me._asyncOnCtrlSelect) {
+                    me._asyncOnCtrlSelect(R, ele, me).then();
+                }
+
+
+            });
+            me.detectOnResizePickerEvent = new ui_events.handler(me._layers.layerBkgEle);
+            me.detectOnResizePickerEvent.set({
+                filter: evt => {
+                    return evt.which == 0 && me.currentPicker != undefined;
+                },
+                onmousemove: evt => {
+                    var pos = ui_html.getClientCoordinate(evt, me._layers.layerBkgEle);
+                    var resizeHandle = me.currentPicker.detectResizeHandle(pos);
+                    me.currentResizeHandle = resizeHandle;
+                    if (resizeHandle) {
+                        ui_html.setStyle(me._layers.layerBkgEle, {
+                            cursor: resizeHandle.cursor
+                        });
+
                     }
                     else {
+                        ui_html.setStyle(me._layers.layerBkgEle, {
+                            cursor: "default"
+                        });
+                        me._layers.resizeLayer.disable();
+                    }
+                }
+            });
+            new ui_events.handler(me._layers.layerBkgEle).set({
+                filter: (evt => { return evt.which == 1 && me.currentResizeHandle != undefined }),
+                onmousedown: evt => {
+                    me._layers.resizeLayer.startResize(evt, me.currentPicker.canvas, me.currentResizeHandle.cursor);
+                    me._layers.dragLayer.disable();
+                    me._layers.zoomLayer.disable();
 
-                        me._layers.drawLayer.startDraw(evt);
+                }
+            });
+            me.selectorEvent = new ui_events.handler(me._layers.layerBkgEle);
+            me.selectorEvent.set({
+                filter: (evt) => {
+
+                    return evt.which == 1 && evt.keyCode == undefined && me.currentResizeHandle == undefined;
+                },
+
+                onmousemove: evt => {
+                    if (me.interact.type != ui_desk.desk_interact_emum.none) {
+                        //this._layers.drawLayer.disable();
+                    }
+                },
+                onmouseup: evt => {
+                    me._layers.drawLayer.disable();
+                    me._layers.dragLayer.disable();
+                },
+                onmousedown: evt => {
+                    me.applyHookKey();
+                    if (!evt.ctrlKey) {
+                        var canvas = evt.target;
+                        var picker = me.findPickerByCanvas(canvas);
+                        if (canvas.tagName == "CANVAS" && picker) {
+
+                            me.currentPicker = picker;
+                            me.drawAllPickerWithoutHandle();
+                            me.currentPicker.drawWithHandle();
+                            me.select(me.currentPicker);
+                            me._layers.drawLayer.disable();
+                            me.hideContextMenuOfSelecetRegion();
+                            me._layers.dragLayer.startDrag(evt, me.currentPicker.canvas);
+                        }
+                        else {
+
+                            me._layers.drawLayer.startDraw(evt);
+                            me._layers.dragLayer.disable();
+                        }
+
+                    }
+                    else {
+                        me._layers.drawLayer.disable();
                         me._layers.dragLayer.disable();
+                        me._layers.zoomLayer.startDraw(evt);
+                    }
+                }
+            });
+            new ui_events.handler(window, {
+                onclick: evt => {
+
+                    if (me._layers.layerBkgEle.contains(evt.target)
+                        || evt.target == me._layers.layerBkgEle
+                        || evt.target == me._layers.ele
+                    ) {
+
+                        me.applyHookKey();
+                    }
+                    else {
+                        me.windKeyEvent.unset({ onkeydown })
                     }
 
                 }
-                else {
-                    me._layers.drawLayer.disable();
-                    me._layers.dragLayer.disable();
-                    this._layers.zoomLayer.startDraw(evt);
-                }
-            }
-        });
-        new ui_events.handler(window, {
-            onclick: evt => {
-
-                if (me._layers.layerBkgEle.contains(evt.target)
-                    || evt.target == me._layers.layerBkgEle
-                    || evt.target == me._layers.ele
-                ) {
-
-                    this.applyHookKey();
-                }
-                else {
-                    this.windKeyEvent.unset({ onkeydown })
-                }
-
-            }
-        });
-
+            });
+        }
+        start().then();
     }
     /**
      * Khi người dùng nhấn ctrl và select
@@ -382,12 +416,38 @@ class ui_pdf_rect_picker {
     applyHookKey() {
         this.windKeyEvent.set({
             onkeydown: evt => {
-                if (evt.keyCode == 46) {
-                    
-                    if (this.currentPicker) {
-                        this.delete(this.currentPicker);
+                var me = this;
+                async function run() {
+                    /*
+                        Khi người dùng nhấn phím delete thực hiện xóa vùng đang chọn
+                        */
+                    if (me.events.handlers[EVENT_ON_BEFORE_DELETE_REGION]) {
+                        if (await me.events.handlers[EVENT_ON_BEFORE_DELETE_REGION]()) {
+                            /*
+                             * Nếu vì lý do gì đó mà user chặn xóa
+                             * Bỏ qua
+                             * **/
+                            return;
+                        }
+                        else {
+                            if (me.currentPicker) {
+                                me.delete(me.currentPicker);
+                            }
+                        }
                     }
+                    else {
+                        if (me.currentPicker) {
+                            me.delete(me.currentPicker);
+                        }
+                    }
+                    
                 }
+                if (evt.keyCode == KEY_DELETE_CODE) {
+
+                    run().then()
+
+                }
+               
             }
         });
     }
@@ -410,7 +470,7 @@ class ui_pdf_rect_picker {
             if (p.pickers.length > 0 && p.pageIndex !== undefined && p.pageIndex > 0) {
                 var items = [];
                 p.pickers.forEach(r => {
-                    var rs = new q.desk.regionSelection();
+                    var rs = new ui_desk.region_selection()
                     rs.x = r.x;
                     rs.y = r.y;
                     rs.width = r.w;
@@ -418,7 +478,7 @@ class ui_pdf_rect_picker {
                     rs.meta = r.meta;
                     items.push(rs);
                 });
-                var pr = new q.desk.pageRegionSelection();
+                var pr = new ui_desk.pageRegion_selection();
                 pr.pageIndex = p.pageIndex;
                 pr.regions = items;
                 ret.push(pr);
@@ -486,19 +546,22 @@ class ui_pdf_rect_picker {
             me.loadAllPickersToDesk();
         }
     }
-    async openFileFromClient() {
-        debugger;
-        var me = this;
-        me.reset();
-        await me.browseFile();
-        me.clearAllDisplayPickers();
-        if (me.isPdf) { // if is pdf file just load the first page
-            await me.doLoadPage(1);
-        }
-        else {
-            await me.doLoadImage();
-        }
-    }
+    //async openFileFromClient() {
+    //    debugger;
+    //    var me = this;
+    //    me.reset();
+    //    await me.browseFile();
+    //    me.clearAllDisplayPickers();
+    //    if (me.isPdf) { // if is pdf file just load the first page
+    //        await me.doLoadPage(1);
+    //    }
+    //    else {
+    //        await me.doLoadImage();
+    //    }
+    //    if (this.events.handlers[EVENT_ON_LOAD_FILE_COMPLETE]) {
+    //        await this.events.handlers[EVENT_ON_LOAD_FILE_COMPLETE]();
+    //    }
+    //}
     async doLoadImage() {
         
         if (!this._orginalImageCanvas) {
@@ -549,7 +612,7 @@ class ui_pdf_rect_picker {
                 if (me._layers.layerBkgEle.contains(evt.target)
                     || evt.target == me._layers.layerBkgEle
                     || evt.target == me._layers.ele
-                    || (this.currentPicker && this.currentPicker.canvas == evt.target)
+                    || (me.currentPicker && me.currentPicker.canvas == evt.target)
                 ) {
                     evt.stopImmediatePropagation();
                     evt.preventDefault();
@@ -563,10 +626,10 @@ class ui_pdf_rect_picker {
                     || evt.target == me._layers.ele
                 ) {
 
-                    this.applyHookKey();
+                    me.applyHookKey();
                 }
                 else {
-                    this.windKeyEvent.unset({ onkeydown })
+                    me.windKeyEvent.unset({ onkeydown })
                 }
 
             }
@@ -577,19 +640,19 @@ class ui_pdf_rect_picker {
             evt.preventDefault();
             return true;
         }
-        new ui_events.handler(this._layers.layerBkgEle, {
+        new ui_events.handler(me._layers.layerBkgEle, {
             filter: evt => { return evt.which == 3; },
             onmousedown: evt => {
                 var canvas = evt.target;
-                var picker = this.findPickerByCanvas(canvas);
+                var picker = me.findPickerByCanvas(canvas);
                 if (picker) {
 
-                    this.currentPicker = picker;
-                    this.drawAllPickerWithoutHandle();
-                    this.currentPicker.drawWithHandle();
+                    me.currentPicker = picker;
+                    me.drawAllPickerWithoutHandle();
+                    me.currentPicker.drawWithHandle();
                     
                     var pos = new ui_linear.vector(evt.clientX, evt.clientY);
-                    this.showContextMenuOfSelecetRegion(pos);
+                    me.showContextMenuOfSelecetRegion(pos);
 
                 }
                 evt.stopImmediatePropagation();
@@ -602,34 +665,47 @@ class ui_pdf_rect_picker {
             position: "absolute"
         });
 
-        this.contextMenuPickerEle = ele;
-        this.contextMenuOfSelectRegionRect = ele.getBoundingClientRect();
+        me.contextMenuPickerEle = ele;
+        me.contextMenuOfSelectRegionRect = ele.getBoundingClientRect();
         new ui_events.handler(ele, {
             filter: evt => {
-                return this.currentPicker != undefined;
+                return me.currentPicker != undefined;
             },
 
             onmouseleave: evt => {
-                ui_html.setStyle(this.contextMenuPickerEle, {
+                ui_html.setStyle(me.contextMenuPickerEle, {
                     display: "none"
                 });
             },
             onmousemove: evt => {
                 document.body.appendChild(ele);
-                ui_html.setStyle(this.contextMenuPickerEle, {
+                ui_html.setStyle(me.contextMenuPickerEle, {
                     display: "block"
                 });
             }
         });
     }
     hideContextMenuOfSelecetRegion() {
-        ui_html.setStyle(this.contextMenuPickerEle, {
+        var me = this;
+        ui_html.setStyle(me.contextMenuPickerEle, {
             
             display: "none"
            
         });
     }
     showContextMenuOfSelecetRegion(pos) {
+        
+        var menuRect = ui_html.getRectOfEle(this.contextMenuPickerEle);
+        var bodyRect = ui_html.getRectOfEle(window.document.body);
+        console.log(menuRect);
+        var x2 = menuRect.width + pos.x;
+        var y2 = menuRect.height + pos.y;
+        if (x2 > bodyRect.x + bodyRect.width) {
+            pos.x = bodyRect.x + bodyRect.width - menuRect.width
+        }
+        if (y2 > bodyRect.y + bodyRect.height) {
+            pos.y = bodyRect.y + bodyRect.height - menuRect.height
+        }
         ui_html.setStyle(this.contextMenuPickerEle, {
             left: pos.x + 'px',
             top: pos.y + 'px',
@@ -681,37 +757,42 @@ class ui_pdf_rect_picker {
     }
     delete(picker) {
         console.log(picker);
-        //this.addToHistory(this.listOfPickers);
-        //var newList = [];
-        //var currentIndex = i;
-        //for (var i = 0; i < this.listOfPickers.length; i++) {
-        //    if (this.listOfPickers[i] != picker) {
-        //        newList.push(this.listOfPickers[i]);
+        var indexOfCurrentPicker = this.listOfPickers.indexOf(picker);
+        
+        this.addToHistory(this.listOfPickers);
+        var newList = [];
+        var currentIndex = indexOfCurrentPicker;
+        for (var i = 0; i < this.listOfPickers.length; i++) {
+            if (this.listOfPickers[i] != picker) {
+                newList.push(this.listOfPickers[i]);
 
-        //    }
-        //    else {
-        //        currentIndex = i;
-        //    }
-        //}
+            }
+            else {
+                currentIndex = i;
+            }
+        }
+        this.listOfPickers = newList;
         //this.trashContainer.appendChild(picker.canvas);
         //this.listOfPickers = newList;
-        //if (currentIndex < this.listOfPickers.length) {
-        //    this.currentPicker = this.listOfPickers[currentIndex];
-        //    this.currentPicker.drawWithHandle();
-        //}
-        //else if (currentIndex - 1 < this.listOfPickers.length &&
-        //    currentIndex - 1 >= 0) {
-        //    currentIndex = currentIndex - 1;
-        //    this.currentPicker = this.listOfPickers[currentIndex];
-        //    this.currentPicker.drawWithHandle();
-        //}
-        //var currentPageOfPicker = this.getCurrentPageOfPicker();
-        //if (!currentPageOfPicker) {
-        //    currentPageOfPicker = new pageOfPicker();
-        //    currentPageOfPicker.pageIndex = this.currentPage;
+        if (currentIndex < this.listOfPickers.length) {
+            this.currentPicker = this.listOfPickers[currentIndex];
+            this.currentPicker.drawWithHandle();
+        }
+        else if (currentIndex - 1 < this.listOfPickers.length &&
+            currentIndex - 1 >= 0) {
+            currentIndex = currentIndex - 1;
+            this.currentPicker = this.listOfPickers[currentIndex];
+            this.currentPicker.drawWithHandle();
+        }
+        var currentPageOfPicker = this.getCurrentPageOfPicker();
+        if (!currentPageOfPicker) {
+            currentPageOfPicker = new pageOfPicker();
+            currentPageOfPicker.pageIndex = this.currentPage;
 
-        //}
-        //currentPageOfPicker.pickers = this.listOfPickers;
+        }
+        currentPageOfPicker.pickers = this.listOfPickers;
+        picker.canvas.remove();
+        
         if (this._layers.drawLayer._ele.childNodes.length == 1) {
             ui_html.setStyle(this._layers.drawLayer._ele.childNodes[0], {
                 display: "none"
@@ -910,30 +991,28 @@ class ui_pdf_rect_picker {
     }
     async browseFile() {
         
+        if (this.events.handlers[EVENT_ON_BEFORE_BROWSER_FILE]) {
+            if (await this.events.handlers[EVENT_ON_BEFORE_BROWSER_FILE]()) {
+                return;
+            }
+        }
+        
         var me = this;
         var file = await this.doBrowserFile();
-        debugger;
+        
         var retInfo = await this.loadFromFile(file);
+        if (this.events.handlers[EVENT_ON_LOAD_FILE_COMPLETE]) {
+            await this.events.handlers[EVENT_ON_LOAD_FILE_COMPLETE](retInfo);
+        }
     }
-    _doLoadAllPage(pageIndex) {
+    async _doLoadAllPage(pageIndex) {
         pageIndex = pageIndex || 1;
-        return new Promise(function (resolve, reject) {
-            if (pageIndex <= this.numPages) {
-                this.getPageAsImage(pageIndex, (img) => {
-
-
-                    this.listOfImageData.push(img);
-                    this._doLoadAllPage(cb, onLoadPageComplete, pageIndex + 1);
-                    resolve({
-                        image: img,
-                        pageIndex: pageIndex
-                    });
-                });
-            }
-            else {
-                resolve();
-            }
-        });
+        for (var i = 0; i < this.numPages; i++) {
+            var retImg = await this.getPageAsImage(pageIndex);
+            this.listOfImageData.push(retImg);
+            
+        }
+        
 
     }
     async doLoadAllPages() {
@@ -1085,17 +1164,26 @@ class ui_pdf_rect_picker {
         }
         this.currentPicker = undefined;
     }
-    async loadThumbs(w, h) {
+    async loadThumbs(pageIndex,w, h) {
+        debugger;
         var me = this;
-        var result = await me._doLoadAllPage();
+        
+        var retImg = await this.getPageAsImage(pageIndex + 1);
+        var scale = w / retImg.width;
+        if (retImg.height > retImg.width) {
+            scale = h / retImg.height;
+        }
+        var sImage = ui_graph2d.scaleImageData(retImg, scale);
         var canvas = ui_html.createEle("canvas");
-        canvas.width = imageData.width;
-        canvas.height = imageData.height;
+       
         var ctx = canvas.getContext('2d');
-        //ctx.scale(scale, scale)
-        ctx.putImageData(imageData, 0, 0);
+       
+        canvas.width = retImg.width * scale;
+        canvas.height = retImg.height * scale;
+        
+        ctx.putImageData(sImage, 0, 0);
         var blogUrl = ui_resource.urlFromImageBase64Text(canvas.toDataURL("image/png"));
-        return new {
+        return {
             url: blogUrl,
             pageIndex: pageIndex
         };
@@ -1132,6 +1220,15 @@ class ui_pdf_rect_picker {
         }
 
         return ret;
+    }
+    /**
+     * Lất tổng số trang
+     * */
+    getTotalPages() {
+        if (this.pdf && this.pdf._pdfInfo) {
+            return this.pdf._pdfInfo.numPages || 0
+        }
+        return 0;
     }
 };
 export { ui_pdf_rect_picker }

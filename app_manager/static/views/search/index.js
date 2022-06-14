@@ -11,7 +11,7 @@ var searchView = await View(import.meta, class SearchView extends BaseScope {
     currentAppName = undefined
     async init() {
 
-        this.listOfApp = await api.post(`apps/admin/list`, {
+        this.listOfApp = await api.post(`admin/apps`, {
             Token: window.token
         })
         this.currentApp = this.listOfApp[0];
@@ -21,7 +21,7 @@ var searchView = await View(import.meta, class SearchView extends BaseScope {
     }
     async doFullTextSearch() {
        
-        this.data = await api.post(`files/${this.currentAppName}/content/search`, {
+        this.data = await api.post(`${this.currentAppName}/search`, {
             content: this.searchContent
         });
         this.$applyAsync();

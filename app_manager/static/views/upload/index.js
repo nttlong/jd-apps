@@ -18,36 +18,38 @@ var uploadFileView = await View(import.meta, class UploadFileView extends BaseSc
         }
         var fileUpload = file.files[0];
         try {
-            var reg = await api.post(`files/${this.appName}/upload/register`, {
-                FileName: fileUpload.name,
-                FileSize: fileUpload.size,
-                ChunkSizeInKB: 1024 * 4,
-                IsPublic: false
+            var reg = await api.post(`${this.appName}/files/register`, {
+                Data: {
+                    FileName: fileUpload.name,
+                    FileSize: fileUpload.size,
+                    ChunkSizeInKB: 1024 * 4,
+                    IsPublic: false
+                }
             });
-            if (reg.error) {
-                msgError(reg.error.message)
+            if (reg.Error) {
+                msgError(reg.Error.Message)
                 return
             }
             else {
-                this.info = reg.data;
+                this.info = reg.Data;
                 this.$applyAsync();
-                var regData = reg.data;
+                var regData = reg.Data;
                 debugger;
                 for (var i = 0; i < regData.NumOfChunks; i++) {
                     var start = i * regData.ChunkSizeInBytes;
                     var end = Math.min((i + 1) * regData.ChunkSizeInBytes, fileUpload.size);
                     var filePartBlog = fileUpload.slice(start, end)
                     var filePart = new File([filePartBlog], fileUpload.name);
-                    var chunk = await api.post(`files/${this.appName}/upload/chunk`, {
+                    var chunk = await api.formPost(`${this.appName}/files/upload`, {
                         UploadId: regData.UploadId,
                         Index: i,
                         FilePart: filePart
                     });
-                    if (chunk.error) {
-                        msgError(chunk.error.message)
+                    if (chunk.Error) {
+                        msgError(chunk.Error.message)
                         return
                     }
-                    this.info = chunk.data;
+                    this.info = chunk.Data;
                     this.$applyAsync();
                 }
             }

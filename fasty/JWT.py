@@ -9,7 +9,7 @@ from fastapi.param_functions import Form
 from fastapi.security.base import SecurityBase
 from fastapi.security.utils import get_authorization_scheme_param
 from starlette.requests import Request
-from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
+from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN,HTTP_301_MOVED_PERMANENTLY
 import bson
 from fastapi_jwt_auth import AuthJWT
 from . import JWT_Docs
@@ -24,6 +24,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
+
 class Settings(BaseModel):
     authjwt_secret_key: str = "secret"
     # Configure application to store and get JWT from cookies
@@ -31,9 +32,11 @@ class Settings(BaseModel):
     # Disable CSRF Protection for this example. default is True
     authjwt_cookie_csrf_protect: bool = False
 
+
 @AuthJWT.load_config
 def get_config():
     return Settings()
+
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
@@ -41,20 +44,21 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 USER_COLLECTION_NAME = "sys_jwt_users"
 CONNECTION_STRING = None
 __default_db__ = None
+
+
 def set_default_db(value):
     global __default_db__
-    __default_db__ =value
+    __default_db__ = value
+
 
 class TokenData(BaseModel):
     username: Union[str, None] = None
     application: Union[str, None] = None
 
 
-
-
 def get_token_url():
-    from  . import config
-    __api_host_dir__ =config.app.api
+    from . import config
+    __api_host_dir__ = config.app.api
     if __api_host_dir__ is None:
         raise Exception("Please call fasty.JWT.set_api_host_dir at start application")
     ret = "/accounts/token"
@@ -62,17 +66,19 @@ def get_token_url():
         ret = __api_host_dir__ + "/accounts/token"
     return ret
 
-__oauth2_scheme__ = None
 
-class OAuth2PasswordBearerAndCookie(OAuth2PasswordBearer):
+__oauth2_scheme__ = None
+__oauth2_scheme_anonymous__ = None
+
+class OAuth2Redirect(OAuth2PasswordBearer):
     def __init__(
-        self,
-        scheme_name: Optional[str] = None,
-        scopes: Optional[Dict[str, str]] = None,
-        description: Optional[str] = None,
-        auto_error: bool = True,
+            self,
+            scheme_name: Optional[str] = None,
+            scopes: Optional[Dict[str, str]] = None,
+            description: Optional[str] = None,
+            auto_error: bool = True,
     ):
-        tokenUrl=get_token_url()
+        tokenUrl = get_token_url()
         if not scopes:
             scopes = {}
         flows = OAuthFlowsModel(password={"tokenUrl": tokenUrl, "scopes": scopes})
@@ -85,8 +91,46 @@ class OAuth2PasswordBearerAndCookie(OAuth2PasswordBearer):
         )
 
     async def __call__(self, request: Request) -> Optional[str]:
-        if request.cookies.get('access_token_cookie',None) is not None:
-            return  request.cookies['access_token_cookie']
+        if request.cookies.get('access_token_cookie', None) is not None:
+            return request.cookies['access_token_cookie']
+        else:
+            authorization: str = request.headers.get("Authorization")
+            scheme, param = get_authorization_scheme_param(authorization)
+            if not authorization or scheme.lower() != "bearer":
+                if self.auto_error:
+                    raise HTTPException(
+                        status_code=HTTP_301_MOVED_PERMANENTLY,
+                        detail="Not authenticated dasd",
+                        headers={"Location": "login"},
+                    )
+                else:
+                    return None
+            return param
+
+
+class OAuth2PasswordBearerAndCookie(OAuth2PasswordBearer):
+    def __init__(
+            self,
+            scheme_name: Optional[str] = None,
+            scopes: Optional[Dict[str, str]] = None,
+            description: Optional[str] = None,
+            auto_error: bool = True,
+    ):
+        tokenUrl = get_token_url()
+        if not scopes:
+            scopes = {}
+        flows = OAuthFlowsModel(password={"tokenUrl": tokenUrl, "scopes": scopes})
+        super().__init__(
+            tokenUrl=tokenUrl,
+            scheme_name=scheme_name,
+            description=description,
+            auto_error=auto_error,
+            scopes=scopes
+        )
+
+    async def __call__(self, request: Request) -> Optional[str]:
+        if request.cookies.get('access_token_cookie', None) is not None:
+            return request.cookies['access_token_cookie']
         else:
             authorization: str = request.headers.get("Authorization")
             scheme, param = get_authorization_scheme_param(authorization)
@@ -101,12 +145,50 @@ class OAuth2PasswordBearerAndCookie(OAuth2PasswordBearer):
                     return None
             return param
 
+
+class OAuth2PasswordBearerAndCookieWithAnonymous(OAuth2PasswordBearer):
+    def __init__(
+            self,
+            scheme_name: Optional[str] = None,
+            scopes: Optional[Dict[str, str]] = None,
+            description: Optional[str] = None,
+            auto_error: bool = True,
+    ):
+        tokenUrl = get_token_url()
+        if not scopes:
+            scopes = {}
+        flows = OAuthFlowsModel(password={"tokenUrl": tokenUrl, "scopes": scopes})
+        super().__init__(
+            tokenUrl=tokenUrl,
+            scheme_name=scheme_name,
+            description=description,
+            auto_error=auto_error,
+            scopes=scopes
+        )
+
+    async def __call__(self, request: Request) -> Optional[str]:
+        if request.cookies.get('access_token_cookie', None) is not None:
+            return request.cookies['access_token_cookie']
+        else:
+            authorization: str = request.headers.get("Authorization")
+            scheme, param = get_authorization_scheme_param(authorization)
+            if param=="":
+                param=None
+            return param
+
+
 def get_oauth2_scheme():
     global __oauth2_scheme__
     if __oauth2_scheme__ is None:
-        __oauth2_scheme__=OAuth2PasswordBearerAndCookie()
+        __oauth2_scheme__ = OAuth2PasswordBearerAndCookie()
     return __oauth2_scheme__
 
+
+def get_oauth2_scheme_anonymous():
+    global __oauth2_scheme_anonymous__
+    if __oauth2_scheme_anonymous__ is None:
+        __oauth2_scheme_anonymous__ = OAuth2PasswordBearerAndCookieWithAnonymous()
+    return __oauth2_scheme_anonymous__
 
 
 def set_connection_string(cnn: str):
@@ -158,7 +240,7 @@ def get_user_by_user_id(db_name: str, username: str):
     return sync(get_user_by_user_id_async(db_name, username))
 
 
-async def create_user_async(db_name: str, Username: str, Password: str, Email: str,IsSysAdmin:bool=False):
+async def create_user_async(db_name: str, Username: str, Password: str, Email: str, IsSysAdmin: bool = False):
     check()
 
     dbcntx = ReCompact.db_async.get_db_context(db_name)
@@ -175,7 +257,7 @@ async def create_user_async(db_name: str, Username: str, Password: str, Email: s
             JWT_Docs.Users.IsLocked == False,
             JWT_Docs.Users.CreatedOnUTC == datetime.now(),
             JWT_Docs.Users.CreatedOn == datetime.utcnow(),
-            JWT_Docs.Users.IsSysAdmin==IsSysAdmin
+            JWT_Docs.Users.IsSysAdmin == IsSysAdmin
 
         )
     except ReCompact.db_async.Error as e:
@@ -227,30 +309,32 @@ def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-
-async def get_current_user_async(app_name: str, token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
+credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+async def get_current_user_async(app_name: str, token: str = Depends(oauth2_scheme)):
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get(JWT_Docs.Users.Username.__name__)
+        username: str = payload.get(JWT_Docs.Users.Username.__name__,payload.get('sub'))
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
     except JWTError:
+        fx=1
         raise credentials_exception
-    user = await get_user_by_username_async(app_name, token_data.username)
+    db_name= await get_db_name_async(app_name)
+    user = await get_user_by_username_async(db_name, token_data.username)
     user["Id"] = user["_id"]
     user["username"] = user[JWT_Docs.Users.UsernameLowerCase.__name__]
     if user is None:
-        raise credentials_exception
+        return user
     return dict(
         UserId=user["Id"],
-        Username=user["UserName"],
-        Email=user["Email"]
+        Username=user[JWT_Docs.Users.Username.__name__],
+        Email=user[JWT_Docs.Users.Email.__name__]
     )
 
 
@@ -270,12 +354,12 @@ async def get_current_active_user_async(current_user=Depends(get_current_user_as
 
 async def authenticate_user_async(app_name, username: str, password: str):
     global __default_db__
-    if app_name== __default_db__:
+    if app_name == __default_db__:
         admin_db_context = ReCompact.db_async.get_db_context(app_name)
-        root_admin_user = await admin_db_context.find_one_async(JWT_Docs.Users,JWT_Docs.Users.Username=="root")
+        root_admin_user = await admin_db_context.find_one_async(JWT_Docs.Users, JWT_Docs.Users.Username == "root")
         if root_admin_user is None:
             root_admin_user = await create_user_async(
-                db_name= app_name,
+                db_name=app_name,
                 Username="root",
                 Password="root",
                 Email="root@local.com"
@@ -308,3 +392,17 @@ async def get_db_name_async(app_name):
             return ret
         else:
             return app_name
+
+async def get_app_info_async(app_name):
+    global __default_db__
+    if __default_db__ is None:
+        raise Exception("Please call fasty.JWT.set_default_db when start application")
+    import fasty
+    if app_name == "admin":
+        return __default_db__
+    else:
+        import api_models.documents
+        import ReCompact.db_async
+        dbctx = ReCompact.db_async.get_db_context(__default_db__)
+        ret = await dbctx.find_one_async(api_models.documents.Apps, api_models.documents.Apps.Name == app_name.lower())
+        return ret

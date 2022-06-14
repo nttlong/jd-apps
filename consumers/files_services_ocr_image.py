@@ -3,7 +3,7 @@ Lưu ý:
  Với các file đã đươc OCR có thể bị lỗi
 
 """
-
+import config
 import logging
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
@@ -70,13 +70,18 @@ def handler(
     # file_path = input = r"\\192.168.18.36\Share\00002.pdf"
 
     try:
-        cmd = ["ocrmypdf", "--deskew", temp_pdf_file, out_put_file_path]
-        logger.info(f"OCR file {temp_pdf_file} to {out_put_file_path}")
-        logging.info(cmd)
-        proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        proc.communicate() #Đợi
-        logger.info(f"OCR file {file_path} to {out_put_file_path} is success")
+        ret= ocrmypdf.api.ocr(
+            input_file=temp_pdf_file,
+            output_file= out_put_file_path
+        )
+        print(ret)
+        # cmd = ["ocrmypdf", "--deskew", temp_pdf_file, out_put_file_path]
+        # logger.info(f"OCR file {temp_pdf_file} to {out_put_file_path}")
+        # logging.info(cmd)
+        # proc = subprocess.Popen(
+        #     cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        # proc.communicate() #Đợi
+        # logger.info(f"OCR file {file_path} to {out_put_file_path} is success")
     except Exception as e:
         logger.debug(e)
     finally:
@@ -91,12 +96,12 @@ def handler(
                 )
                 process_history = upload_info.get("ProcessHistories", [])
                 process_history += [
-                    api_models.Model_Files.DocUploadRegister.ProcessHistory(
+                    dict(
                         _id=bson.ObjectId(),
-                        ProcessOn=datetime.datetime.now(),
                         ProcessAction=topic,
-                        UploadId=upload_id
-                    ).DICT
+                        UploadId=upload_id,
+                        ProcessOn=datetime.datetime.now()
+                    )
                 ]
 
                 fs = ReCompact.db_context.create_mongodb_fs_from_file(

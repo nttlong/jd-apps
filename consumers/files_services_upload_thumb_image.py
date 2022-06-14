@@ -58,6 +58,7 @@ def handler(
                 os.makedirs(thumb_dir)
             image.thumbnail((nh, nw))
             image.save(thumb_file_path)
+            image.close()
     db = mongo_db.get_db(app_name)
     try:
         upload_data_item = ReCompact.dbm.DbObjects.find_one_to_dict(
@@ -87,6 +88,7 @@ def handler(
                 data_item_type= api_models.Model_Files.DocUploadRegister,
                 filter= ReCompact.dbm.FILTER._id == upload_id,
                 updator= ReCompact.dbm.SET(
+                    ReCompact.dbm.FIELDS.HasThumb==True,
                     ReCompact.dbm.FIELDS.ThumbFileId == fs._id,
                     ReCompact.dbm.FIELDS.ProcessHistories ==process_history,
                     ReCompact.dbm.FIELDS.LastModifiedOn == datetime.datetime.now()

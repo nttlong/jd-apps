@@ -169,6 +169,8 @@ def mongodb_file_add_chunks(
         chunk_index: int,
         data: bytes
 ):
+    if isinstance(fs_id,str):
+        fs_id=bson.ObjectId(fs_id)
     assert isinstance(fs_id, bson.ObjectId)
     fs_chunks = db.get_collection("fs.chunks")
     fs_chunks.insert_one({

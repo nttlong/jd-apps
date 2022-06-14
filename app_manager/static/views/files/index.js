@@ -3,7 +3,7 @@ import { BaseScope, View } from "./../../js/ui/BaseScope.js";
 //import { ui_rect_picker } from "../../js/ui/ui_rect_picker.js";
 //import { ui_pdf_desk } from "../../js/ui/ui_pdf_desk.js";
 import api from "../../js/ClientApi/api.js"
-import { redirect, urlWatching, getPaths, msgError } from "../../js/ui/core.js"
+import { dialogConfirm, redirect, urlWatching, getPaths, msgError } from "../../js/ui/core.js"
 
 var filesView = await View(import.meta, class FilesView extends BaseScope {
     listOfApp = [1]
@@ -29,9 +29,9 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
     }
     async doLoadAllFiles() {
         var me = this;
-        debugger;
+        
         this.listOfFiles = await api.post(`${this.currentAppName}/files`, {
-            Token: window.token,
+           
             PageIndex: 0,
             PageSize: 20,
             FieldSearch: "FileName",
@@ -62,13 +62,17 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
         uploadZipForm.asWindow();
     }
     async doDelete(item) {
-        var reg = await api.post(`files/${this.currentAppName}/delete`, {
-            UploadId: item._id
-        });
+        if (await dialogConfirm(this.$res("Do you want to delete this item?"))) {
+            var reg = await api.post(`${this.currentAppName}/files/delete`, {
+                UploadId: item.UploadId
+            });
+            var ele = await this.$findEle(`[file-id='${item.UploadId}']`);
+            ele.remove();
+        }
     }
     doLoadMore(sender) {
 
-        api.post(`files/${sender.scope.currentAppName}/list`, {
+        api.post(`${sender.scope.currentAppName}/files`, {
             Token: window.token,
             PageIndex: sender.pageIndex,
             PageSize: sender.pageSize,

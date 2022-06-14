@@ -76,9 +76,12 @@ if not __is_has_fix_json__:
     json.JSONEncoder.default = __fix__json__
     __is_has_fix_json__ = True
     __lock__.release()
+
+
 def set_default_database(db_name):
     global default_db_name
-    default_db_name=db_name
+    default_db_name = db_name
+
 
 def set_connection_string(str_connection):
     """
@@ -88,6 +91,8 @@ def set_connection_string(str_connection):
     """
     global __connection__
     __connection__ = motor.motor_asyncio.AsyncIOMotorClient(str_connection)
+
+
 def load_config(path_to_yalm_database_config):
     global default_db_name
     global db_config
@@ -115,8 +120,8 @@ def load_config(path_to_yalm_database_config):
 class ErrorType(enum.Enum):
     NONE = "None"
     DUPLICATE_DATA = "DuplicateData"
-    DATA_NOT_FOUND ="DataWasNotFound"
-    DATA_REQUIRE ="MissingData"
+    DATA_NOT_FOUND = "DataWasNotFound"
+    DATA_REQUIRE = "MissingData"
     SYSTEM = "System"
 
 
@@ -127,6 +132,7 @@ class Error(Exception):
         self.fields = []
         self.key_values = {}
         self.inner_exception = None
+
     def __repr__(self):
         return f"code:{self.code}\n" \
                f"fields:{','.join(self.fields)}\n" \
@@ -398,7 +404,9 @@ async def delete_one_async(db, docs, filter):
 
 def delete_one(db, docs, filter):
     return sync(delete_one_async(db, docs, filter))
-async def update_one_async(db, docs,filter, *args, **kwargs):
+
+
+async def update_one_async(db, docs, filter, *args, **kwargs):
     try:
         async_db = __set_connection__(db)
         coll = await __get_collection__(
@@ -415,9 +423,9 @@ async def update_one_async(db, docs,filter, *args, **kwargs):
                     data = {**data, **x}
                 elif isinstance(x, ReCompact.dbm.Docs.Fields):
                     data = {**data, **x.to_mongodb()}
-        _filter =filter
-        if isinstance(filter,ReCompact.dbm.Docs.Fields):
-            _filter= filter.to_mongodb()
+        _filter = filter
+        if isinstance(filter, ReCompact.dbm.Docs.Fields):
+            _filter = filter.to_mongodb()
         ret = await coll.update_one(_filter, data)
         data["_id"] = ret.inserted_id
         return data
@@ -431,6 +439,8 @@ async def update_one_async(db, docs,filter, *args, **kwargs):
 async def insert_one_async(db, docs, *args, **kwargs):
     try:
         async_db = __set_connection__(db)
+        if docs.__dict__.get("__collection_name__", None) is None:
+            raise Exception(f"{docs.__module__}.{docs.__name__} is not Mongodb Doc")
         coll = await __get_collection__(
             async_db,
             docs.__dict__["__collection_name__"],
@@ -457,8 +467,26 @@ async def insert_one_async(db, docs, *args, **kwargs):
 
 
 def insert_one(db, docs, *args, **kwargs):
-    ret = sync(insert_one_async(db, docs, *args, **kwargs))
-    return ret
+    try:
+        sync_db = db.delegate
+        coll = ReCompact.dbm.DbObjects.__get_col__(sync_db, docs.__dict__["__collection_name__"])
+
+        data = {}
+        if isinstance(args, tuple) and len(args) > 0:
+            for x in args:
+                if isinstance(x, dict):
+                    data = {**data, **x}
+                elif isinstance(x, ReCompact.dbm.Docs.Fields):
+                    data = {**data, **x.to_mongodb()}
+
+        ret = coll.insert_one(data)
+        data["_id"] = ret.inserted_id
+        return data
+    except pymongo.errors.DuplicateKeyError as e:
+        r_e = __parse_error__(e)
+        raise r_e
+    except Exception as e:
+        raise e
 
 
 async def update_one_async(db, docs, filter, *args, **kwargs):
@@ -495,7 +523,7 @@ async def update_one_async(db, docs, filter, *args, **kwargs):
                         elif isinstance(x, ReCompact.dbm.Docs.Fields):
                             data = {**data, **y.to_mongodb()}
 
-        ret = await coll.update_one( _filter,{"$set": data})
+        ret = await coll.update_one(_filter, {"$set": data})
         return data
     except pymongo.errors.DuplicateKeyError as e:
         r_e = __parse_error__(e)
@@ -518,6 +546,7 @@ def sync(*args, **kwargs):
     loop = asyncio.get_event_loop()
     coroutine = args[0]
     ret = loop.run_until_complete(coroutine)
+    loop.close()
     return ret
 
 
@@ -565,20 +594,20 @@ class Aggregate:
         alias = {}
         for k, v in kwargs.items():
             if isinstance(v, dict):
-                alias = {**alias, **{ k: __parser_dict__(v)}}
-            elif isinstance(v,tuple):
+                alias = {**alias, **{k: __parser_dict__(v)}}
+            elif isinstance(v, tuple):
                 t_alais = {}
                 for x in v:
-                    if isinstance(x,dict):
-                        x= __parser_dict__(x)
+                    if isinstance(x, dict):
+                        x = __parser_dict__(x)
                         t_alais = {**t_alais, **{x}}
-                    elif isinstance(x,ReCompact.dbm.Docs.Fields):
+                    elif isinstance(x, ReCompact.dbm.Docs.Fields):
                         if x.__tree__ is None:
-                            t_alais = {**t_alais, **{"$"+x.__name__:1}}
+                            t_alais = {**t_alais, **{"$" + x.__name__: 1}}
                         else:
                             t_alais = {**t_alais, **{x.to_mongodb()}}
                     else:
-                        t_alais = {**t_alais, **{x:1}}
+                        t_alais = {**t_alais, **{x: 1}}
                 alias = {**alias, **{k: t_alais}}
             elif isinstance(v, ReCompact.dbm.Docs.Fields):
                 fx = v.to_mongodb()
@@ -621,6 +650,17 @@ class Aggregate:
         self.page_size = page_size
         return self
 
+    def match(self,filter):
+        _filter =filter
+        if isinstance(filter,ReCompact.dbm.Docs.Fields):
+            _filter = filter.to_mongodb()
+        elif not isinstance(filter,dict):
+            raise Exception("aggregate match require filter with dict or ReCompact.dbm.Docs.Fields")
+        self.pineline+=[
+            {"$match":_filter}
+        ]
+        return self
+
     async def to_list_async(self):
         coll = await __get_collection__(
             self.db,
@@ -661,13 +701,22 @@ class DbContext:
     def find(self, docs, filter, skip=0, limit=100):
         return sync(self.find_async(docs, filter, skip, limit))
 
-    async def insert_one_async(self,docs,*args,**kwargs):
-        ret=await insert_one_async(self.db,docs,*args,**kwargs)
-    async def update_one_async(self,docs,filter,*args,**kwargs):
-        ret=await update_one_async(self.db,docs,filter,*args,**kwargs)
-        return  ret
-    def insert_one(self,docs,*args,**kwargs):
-        ret=insert_one(self.db,docs,*args,**kwargs)
+    async def insert_one_async(self, docs, *args, **kwargs):
+        ret = await insert_one_async(self.db, docs, *args, **kwargs)
+        return ret
+
+    async def update_one_async(self, docs, filter, *args, **kwargs):
+        ret = await update_one_async(self.db, docs, filter, *args, **kwargs)
+        return ret
+
+    async def delete_one_async(self, docs, filter):
+        ret = await delete_one_async(self.db, docs, filter)
+        return ret
+
+    def insert_one(self, docs, *args, **kwargs):
+        ret = insert_one(self.db, docs, *args, **kwargs)
+        return ret
+
     def aggregate(self, docs) -> Aggregate:
         return Aggregate(
             self.db,
@@ -685,7 +734,7 @@ class DbContext:
             "filename": file_name
         })
 
-    async def get_file_by_id(self, file_id)->motor.motor_asyncio.AsyncIOMotorGridOut:
+    async def get_file_by_id(self, file_id) -> motor.motor_asyncio.AsyncIOMotorGridOut:
         if isinstance(file_id, str):
             file_id = bson.ObjectId(file_id)
         ret = await self.get_grid_fs().open_download_stream(file_id)
@@ -704,13 +753,14 @@ def get_db_context(db_name) -> DbContext:
             __lock_2__.release()
     return __all_instances_db_context__[db_name]
 
+
 def __parser_dict__(data):
-    if isinstance(data,dict):
-        ret= {}
-        for k,v in data.items():
-            if isinstance(v,ReCompact.dbm.Docs.Fields):
+    if isinstance(data, dict):
+        ret = {}
+        for k, v in data.items():
+            if isinstance(v, ReCompact.dbm.Docs.Fields):
                 if v.__tree__ is None:
-                    ret ={**ret,**{k:"$"+v.__name__}}
+                    ret = {**ret, **{k: "$" + v.__name__}}
                 else:
                     ret = {**ret, **{k: v.to_mongodb()}}
             else:

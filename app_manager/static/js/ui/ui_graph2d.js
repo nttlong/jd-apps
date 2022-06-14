@@ -41,6 +41,11 @@ async function resizeImageData(imageData, width, height) {
     ctx.drawImage(ibm, 0, 0);
     return ctx.getImageData(0, 0, resizeWidth, resizeHeight)
 }
+/**
+ * Tạo mới 1 file từ canvas
+ * @param {any} canvas
+ * @param {any} filename
+ */
 function createFileFromCanvas(canvas, filename) {
     return new Promise(function (resolve, reject) {
         try {

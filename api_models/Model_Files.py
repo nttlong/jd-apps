@@ -4,7 +4,7 @@ import bson
 
 @ReCompact.dbm.table(
     "DocUploadRegister",
-    keys=["ServerFileName", "FullFileName"],
+    keys=["ServerFileName", "FullFileName","FullFileNameLower"],
     index=[
         "RegisteredOn",
         "RegisteredOnDays",
@@ -22,7 +22,9 @@ import bson
         "ProcessHistories.ProcessOn",
         "ProcessHistories.ProcessAction",
         "ProcessHistories.UploadId",
-        "OCRFileId"
+        "OCRFileId",
+        "FileNameLower",
+        "FullFileNameLower"
 
     ]
 
@@ -67,6 +69,10 @@ class DocUploadRegister:
     FileName = ReCompact.dbm.field(data_type=str, is_require=True)
     """
     Tên file gốc, là tên file lúc người dùng hoặc 1 ứng dụng nào đó Upload
+    """
+    FileNameLower = ReCompact.dbm.field(data_type=str, is_require=True)
+    """
+    Tên file gốc dạng lowe case để bảo đảm tốc độ truy cập
     """
     RegisterOn = ReCompact.dbm.field(data_type=datetime.datetime, is_require=True)
     """
@@ -155,6 +161,11 @@ class DocUploadRegister:
     
     
     """
+    FullFileNameLower = ReCompact.dbm.field(data_type=str, is_require=True)
+    """
+    Đường dẫn dạng lower , tắng tốc khi truy cập
+    """
+
     ThumbWidth = ReCompact.dbm.field(data_type=int, is_require=False)
     """
     Độ rộng của ảnh Thumb tính bằng Pixel \n
@@ -172,6 +183,9 @@ class DocUploadRegister:
     Xem link: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
     """
     SizeUploaded =ReCompact.dbm.field(data_type=int,is_require=False)
+    """
+    Dung lượng đã upload tính bằng bytes
+    """
     NumOfChunksCompleted = ReCompact.dbm.field(data_type=int, is_require=False)
     """
     Số chunk đã hoàn tất.

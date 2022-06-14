@@ -355,6 +355,9 @@ class ui_rect_picker extends ui_html.Rect {
     }
     detectResizeHandle(pos) {
         var me = this;
+        if ((!me.canvas) || me.canvas == null || me.canvas.parentElement == null) {
+            return;
+        }
         var sx = me.canvas.parentElement.scrollLeft;
         var sy = me.canvas.parentElement.scrollTop;
         var R = me.canvas.getBoundingClientRect();

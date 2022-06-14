@@ -340,8 +340,8 @@ var ui_html = {
         var pos = ui_html.getLeftTopOfEle(ele);
         R.x = pos.x;
         R.y = pos.y;
-        R.width = size.x;
-        R.height = size.y;
+        R.width = (size.x == 0) ? (R.right - pos.x) : size.x;
+        R.height = (size.y == 0) ? (R.bottom - pos.y) : size.y;
         return R;
 
     },

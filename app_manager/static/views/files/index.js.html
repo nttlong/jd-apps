@@ -82,8 +82,8 @@
     <div class="dock full" style="margin:15px">
         <div rcmpct-lazy-scroll source="listOfFiles" item-var="p" class="row" on-request-data="doLoadMore" page-size="20">
             <rcmpct-template>
-                <rcmpct-grid cols="(,700,100%)(700,,50% 50%)"  class="shadow-box" >
-                    <rcmpct-grid cols="180px minmax(0,1fr)">
+                <rcmpct-grid cols="(,700,100%)(700,,50% 50%)"  class="shadow-box" file-id="{{p.UploadId}}">
+                    <rcmpct-grid cols="180px minmax(0,1fr)" >
                         <div>
                             <img style="min-width:120px;max-width:120px;margin:10px" ng-src="{{p.ThumbUrl}}" ng-if="p.HasThumb" />
                         </div>
@@ -112,12 +112,17 @@
                             <label>
                                 {{p.SizeInHumanReadable}}
                             </label>
-
+                            <span ng-if="p.DurationHumanReadable">
+                                {{$res("Duration time")}}
+                            </span>
+                            <span ng-if="p.DurationHumanReadable">
+                                {{p.DurationHumanReadable}}
+                            </span>
                             <label>
                                 {{$res("Created on")}}
                             </label>
                             <label>
-                                {{p.RegisterOn|date:'dd-MM-yyyy hh:mm:ss'}}
+                                {{p.CreatedOn|date:'dd-MM-yyyy hh:mm:ss'}}
                             </label>
                             <label ng-if="p.UrlDfOCRSource && p.UrlDfOCRSource!=null">
                                 {{$res("OCR content")}}
@@ -125,6 +130,7 @@
                             <a ng-if="p.UrlDfOCRSource && p.UrlDfOCRSource!=null" ng-href="{{p.UrlDfOCRSource}}" target="_blank">
                                 {{$res("View")}}
                             </a>
+
                             <div style="grid-column: 1/-1">
                                 <div class="layout-rows">
                                     <div class="dock full"></div>
@@ -132,7 +138,7 @@
                                         <button class="btn btn-primary btn-sm" ng-click="doDelete(p).then()">{{$res('Delete')}}</button>
                                     </div>
                                 </div>
-                                
+
                             </div>
                         </rcmpct-grid>
                     </rcmpct-grid>

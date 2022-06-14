@@ -79,16 +79,8 @@ def handler(consumer: ReCompact_Kafka.consumer.Consumer_obj, msg, logger: loggin
     Cất vào database mongodb
     """
     import ReCompact.db_context
-    db = ReCompact.db_context.get_db_connection(
-        host=config.mongo_db_config["host"],
-        password=config.mongo_db_config["password"],
-        username=config.mongo_db_config["username"],
-        authSource=config.mongo_db_config["authSource"],
-        replicaSet=config.mongo_db_config["replicaSet"],
-        authMechanism=config.mongo_db_config["authMechanism"],
-        port=config.mongo_db_config["port"]
-
-    ).get_database(app_name)
+    import mongo_db
+    db = mongo_db.get_db(app_name)
     fs = ReCompact.db_context.create_mongodb_fs_from_file(
         db=db,
         full_path_to_file=thumb_file_path,

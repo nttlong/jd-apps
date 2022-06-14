@@ -2,7 +2,9 @@
 API liệt kê danh sách các file
 """
 import datetime
-
+import re
+from time import strftime
+from time import gmtime
 import ReCompact.dbm
 import fasty
 from fastapi import FastAPI, Request,Response
@@ -14,6 +16,7 @@ from ReCompact import db_async
 import json
 from db_connection import connection, default_db_name
 from . import api_files_schema
+import humanize.time
 import fasty.JWT
 from pathlib import Path
 @fasty.api_post("/{app_name}/files")
@@ -51,7 +54,13 @@ async def get_list_of_files(app_name: str, filter: api_files_schema.Filter, requ
             FPS = docs.Files.VideoFPS
         )
 
-    ).sort(
+    )
+    if filter.ValueSearch and filter.ValueSearch !="":
+        agg.match(
+            docs.Files.FileName==re.compile(filter.ValueSearch)
+        )
+
+    agg.sort(
         ReCompact.dbm.FIELDS.ModifiedOn.desc(),
         ReCompact.dbm.FIELDS.CreatedOn.desc(),
         ReCompact.dbm.FIELDS.FileSize.desc()
@@ -59,6 +68,7 @@ async def get_list_of_files(app_name: str, filter: api_files_schema.Filter, requ
     ).pager(
         filter.PageIndex, filter.PageSize
     )
+
 
     ret_list = await agg.to_list_async()
     url = fasty.config.app.api_url
@@ -68,16 +78,16 @@ async def get_list_of_files(app_name: str, filter: api_files_schema.Filter, requ
             file_name_only =Path(x[docs.Files.FileName.__name__]).stem
             await  db.update_one_async(
                 docs.Files,
-                docs.Files.ServerFileName==x[docs.Files.ServerFileName.__name__],
+                docs.Files._id==x["UploadId"],
                 docs.Files.FileNameOnly==file_name_only
                 )
-            x[docs.Files.FileName.__name__] =file_name_only
+            x[docs.Files.FileNameOnly.__name__] =file_name_only
         if x.get(docs.Files.RegisterOnDays.__name__,None) is None:
             date_val = x.get(docs.Files.RegisterOn.__name__,None)
             if date_val is not None and isinstance(date_val,datetime.datetime):
                 await  db.update_one_async(
                     docs.Files,
-                    docs.Files.ServerFileName==x[docs.Files.ServerFileName.__name__],
+                    docs.Files._id==x["UploadId"],
                     docs.Files.RegisterOnDays == date_val.day,
                     docs.Files.RegisterOnMonths ==date_val.month,
                     docs.Files.RegisterOnYears == date_val.year,
@@ -86,10 +96,13 @@ async def get_list_of_files(app_name: str, filter: api_files_schema.Filter, requ
                     docs.Files.RegisterOnSeconds==date_val.second
                 )
 
-        x["UrlOfServerPath"] = url+f"/{app_name}/file/{x['UploadId']}/{x['FileName']}"
+        x["UrlOfServerPath"] = url+f"/{app_name}/file/{x[docs.Files.FullFileName.__name__]}"
         x["AppName"]=app_name
-        x["RelUrlOfServerPath"] = f"/{app_name}/file/{x['UploadId']}/{x['FileName']}"
+        x["RelUrlOfServerPath"] = f"/{app_name}/file/{x[docs.Files.FullFileName.__name__]}"
         x["ThumbUrl"]= url+f"/{app_name}/thumb/{x['UploadId']}/{x[docs.Files.FileName.__name__]}.png"
+        if x.get("Media") and x["Media"].get("Duration"):
+            x["DurationHumanReadable"]=strftime("%H:%M:%S", gmtime(x["Media"]["Duration"]))
+
 
 
     return ret_list

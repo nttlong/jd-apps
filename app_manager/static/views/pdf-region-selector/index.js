@@ -1,10 +1,11 @@
-import { BaseScope, View } from "./../../js/ui/BaseScope.js";
+﻿import { BaseScope, View } from "./../../js/ui/BaseScope.js";
 //import { ui_window } from "../js/ui/ui_window.js";
 //import { ui_rect_picker } from "../js/ui/ui_rect_picker.js";
 import { ui_pdf_desk } from "./../../js/ui/ui_pdf_desk.js";
 import api from "./../../js/ClientApi/api.js"
-import { redirect, urlWatching, getModule } from "./../../js/ui/core.js"
+import { redirect, urlWatching, getModule, dialogConfirm, newGuid } from "./../../js/ui/core.js"
 /*import appEditView from "./app_edit/index.js"*/
+console.log(dialogConfirm)
 var pdfEditor = await View(import.meta, class PdfEditor extends BaseScope {
     list = []
     async init() {
@@ -14,11 +15,28 @@ var pdfEditor = await View(import.meta, class PdfEditor extends BaseScope {
         this.editor = new ui_pdf_desk(ele[0]);
         this.editor.setContextMenuOfSelectRegion(regionMenu[0])
         this.editor.onSelectPicker(async (region) => {
-            debugger;
+            
 
         });
         this.editor.onCtrlSelect(async (rect, ele, layer) => {
             debugger;
+        });
+        this.editor.onBeforeDeleteRegion(async () => {
+            var isOK = await dialogConfirm("Bạn có muốn xóa vùng đang chọn hay không?");
+            return !isOK;
+        });
+        this.editor.onBeforeBrowserFile(async () => {
+            if (this.editor.getData().length > 0) {
+                var isOK = await dialogConfirm("Thông tin đang biên tập có thể bị mất. Bạn có muốn lưu lại hay không?");
+                return isOK;
+            }
+            
+        });
+        this.editor.onLoadFileComplete(async (info) => {
+            debugger;
+            await this.editor.doLoadThumns(120, 100)
+            console.log(info);
+            alert("Da tai xong");
         });
         //console.log(this.editor.editor);
         

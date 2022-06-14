@@ -71,7 +71,7 @@ mongo_db_config = dict(
     password="123456",
     authSource="lv-docs",
     authMechanism="SCRAM-SHA-1",
-    replicaSet="rs0"
+    # replicaSet="rs0"
 
 )
 # import re_process.mongo_db

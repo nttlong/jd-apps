@@ -24,6 +24,7 @@ def handler(consumer, msg, logger):
     assert isinstance(consumer, ReCompact_Kafka.consumer.Consumer_obj)
     data = consumer.get_json(msg)
     print(consumer.get_topic_id(msg))
+    import json
     print(json.dumps(data))
     import ReCompact_Kafka.consumer
     producer = ReCompact_Kafka.producer.Bootstrap(
@@ -53,14 +54,16 @@ def handler(consumer, msg, logger):
         producer.send_msg_sync(f"{msg.topic()}.thumb.image", data)
         logger.debug(data)
     if (isinstance(file_ext, str)
-        and file_ext[0] == '.'
+        and (file_ext[0] == '.'
         and file_ext[1:] in consumers.config.office_extension) \
-        or file_ext[1:] in consumers.config.office_extension:
+        or file_ext[1:] in consumers.config.office_extension)\
+            or file_ext in consumers.config.office_extension:
         logger.debug(f"kafka raise event {msg.topic()}.elastic")
         producer.send_msg_sync(f"{msg.topic()}.elastic", data)
         logger.debug(f"kafka raise event {msg.topic()}.thumb.office")
         producer.send_msg_sync(f"{msg.topic()}.thumb.office", data)
-        logger.debug(data)
+        import json
+        logger.info(json.dumps(data))
     if 'video/' in mime_type:
         logger.debug(f"kafka raise event {msg.topic()}.thumb.video")
 

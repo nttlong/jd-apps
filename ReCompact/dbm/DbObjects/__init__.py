@@ -10,9 +10,11 @@ def __get_col__(db, data_item_type):
     :param data_item_type:
     :return:
     """
-    assert isinstance(data_item_type,type),f"data_item_type must be a type"
+    # assert isinstance(data_item_type,type),f"data_item_type must be a type"
     import pymongo
-    coll_name = data_item_type.__meta__.table_name
+    coll_name = data_item_type
+    if isinstance(data_item_type,type):
+        coll_name = data_item_type.__meta__.table_name
     coll = db.get_collection(coll_name)
     try:
         if isinstance(data_item_type.__meta__.keys, list):

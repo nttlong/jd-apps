@@ -11,6 +11,11 @@ class Filter(BaseModel):
     Bỏ qua
     """
     PageSize: int =50
+    FieldSearch: Union[str,None]
+    """
+    Filed cần tìm
+    """
+    ValueSearch: Union[str,None]
     class Config:
         schema_extra = {
             "filter": {

@@ -31,11 +31,13 @@ def video_create_thumb(in_put,scale_witdh,scale_height,second=5)->io.BytesIO:
     # img = Image.fromarray(res, 'RGB')
     # img.save('my.png')
     img = Image.fromarray(frame, 'RGB')
-    img.resize(size =(new_witdth, new_height))
+    new_img = img.resize(size =(new_witdth, new_height))
     img_byte_arr = io.BytesIO()
-    img.save(img_byte_arr, format='PNG')
+    new_img.save(img_byte_arr, format='PNG')
     img_byte_arr = img_byte_arr.getvalue()
     ret = io.BytesIO(img_byte_arr)
+    new_img.close()
     img.close()
+    clip.close()
 
     return ret

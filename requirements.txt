@@ -34,10 +34,12 @@ Flask-Session~=0.4.0
 flask-simple-captcha~=1.1.1
 elastic-transport~=8.1.2
 elasticsearch~=8.2.2
-fastapi~=0.78.0
+# fastapi~=0.78.0
 gunicorn~=20.1.0
 uvicorn[standard]
 a2wsgi~=1.4.1
 python-jose~=3.3.0
 passlib~=1.7.4
 python-multipart~=0.0.5
+pdfminer.six~=20220524
+pdfplumber~=0.7.1
