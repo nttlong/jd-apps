@@ -1,8 +1,3 @@
-"""
-Trường hợp DEv chạy để debug trên môi trường phát triển
-"""
-from werkzeug import debug
-
 import fasty
 import pathlib
 fasty.load_config(str(pathlib.Path(__file__).parent),"uvicorn.error")

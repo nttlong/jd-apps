@@ -5,7 +5,7 @@ from .. import logs
 from .. import yaml_reader
 from .. import logs
 import yaml
-from flask_restful import Resource
+
 import traceback
 import sys
 

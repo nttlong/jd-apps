@@ -17,7 +17,9 @@ from fastapi.responses import StreamingResponse
 import os
 import mimetypes
 import fasty.mongo_fs_http_streaming
-
+fasty.app.get("test/ping-server")
+async  def test():
+    return dict(Ok="OK")
 @fasty.api_get("/{app_name}/thumb/{directory:path}")
 async def get_thumb_of_files(app_name: str, directory: str, request: Request):
     """
@@ -37,4 +39,4 @@ async def get_thumb_of_files(app_name: str, directory: str, request: Request):
         fsg.close()
         return res
     else:
-        return Response(status_code=401)
+        return Response(status_code=401,content=f"'{directory}' in '{app_name} was not found")

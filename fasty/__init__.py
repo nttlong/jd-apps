@@ -2,7 +2,7 @@
 The pakage support for FastAPI
 """
 import mimetypes
-from fastapi.middleware.cors import CORSMiddleware
+# from fastapi.middleware.cors import CORSMiddleware
 mimetypes.types_map[".js"]="application/javascript"
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
@@ -23,7 +23,7 @@ from fastapi import FastAPI
 import ReCompact.db_async
 import sys
 app = None
-config:start.Config
+config:start.Config=None
 def load_config(app_path,app_name):
     global config
 
@@ -31,6 +31,7 @@ def load_config(app_path,app_name):
     ReCompact.db_async.set_connection_string(config.db.connection_string())
     ReCompact.db_async.set_default_database(config.db.authSource)
 def install_fastapi_app(module_name:str):
+    from fastapi.middleware.cors import CORSMiddleware
     global app
     global config
     app = FastAPI()
@@ -45,6 +46,8 @@ def install_fastapi_app(module_name:str):
     )
     app.middleware('http')(catch_exceptions_middleware)
     setattr(sys.modules[module_name],"app",app)
+    config.app.static=config.app.static.replace('/',os.sep)
+
     app.mount("/static", StaticFiles(directory=config.app.static), name="static")
     return app
 
@@ -58,16 +61,28 @@ def api_get(url_path:str,response_class=None):
     global app
     if config.app.api is not None and config.app.api!="":
         if response_class is None:
+            config.logger.info("------------------handler ------------")
+            config.logger.info(config.app.api + url_path)
+            config.logger.info("------------------handler ------------")
             fn = app.get(config.app.api + url_path)
             return fn
         else:
+            config.logger.info("------------------handler ------------")
+            config.logger.info(config.app.api+url_path)
+            config.logger.info("------------------handler ------------")
             fn = app.get(config.app.api+url_path,response_class=response_class)
             return fn
     else:
         if response_class is None:
+            config.logger.info("------------------handler ------------")
+            config.logger.info(url_path)
+            config.logger.info("------------------handler ------------")
             fn = app.get(url_path)
             return fn
         else:
+            config.logger.info("------------------handler ------------")
+            config.logger.info(url_path)
+            config.logger.info("------------------handler ------------")
             fn=app.get(url_path,response_class=response_class)
             return  fn
 

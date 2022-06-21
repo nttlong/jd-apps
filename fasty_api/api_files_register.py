@@ -80,14 +80,17 @@ async def register_new_upload(app_name: str, Data: RegisterUploadInfo = Body(emb
     num_of_chunks, remain = divmod(Data.FileSize, chunk_size)
     if remain > 0:
         num_of_chunks += 1
+    filename_only = Path(Data.FileName).stem
     ret_upload = await  db_context.insert_one_async(
         docs.Files,
         docs.Files._id == upload_id,
         docs.Files.FileName == Data.FileName,
         docs.Files.FileNameLower == Data.FileName.lower(),
-        docs.Files.FileNameOnly == Path(Data.FileName).stem,
+        docs.Files.FileNameOnly == filename_only,
         docs.Files.FileExt == file_extension[1:],
         docs.Files.FullFileName == f"{upload_id}/{Data.FileName.lower()}",
+        docs.Files.FullFileNameWithoutExtenstion==f"{upload_id}/{filename_only}",
+        docs.Files.FullFileNameWithoutExtenstionLower== f"{upload_id}/{filename_only}".lower(),
         docs.Files.ChunkSizeInKB == Data.ChunkSizeInKB,
         docs.Files.ChunkSizeInBytes == Data.ChunkSizeInKB * 1024,
         docs.Files.SizeInBytes == Data.FileSize,

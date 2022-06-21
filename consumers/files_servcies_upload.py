@@ -38,7 +38,15 @@ def handler(consumer, msg, logger):
     file_name = upload_info["FileName"]
     mime_type = upload_info["MimeType"]
     file_ext = upload_info["FileExt"]
-
+    if file_ext in consumers.config.office_extension:
+        logger.debug(f"kafka raise event {msg.topic()}.elastic")
+        producer.send_msg_sync(f"{msg.topic()}.elastic", data)
+        logger.debug(f"kafka raise event {msg.topic()}.thumb.office")
+        producer.send_msg_sync(f"{msg.topic()}.thumb.office", data)
+        logger.debug(f"kafka raise event {msg.topic()}.pdf.office")
+        producer.send_msg_sync(f"{msg.topic()}.pdf.office", data)
+        consumer.commit(msg)
+        return
     if '/pdf' in mime_type:
         producer.send_msg_sync(f"{msg.topic()}.ocr.pdf", data)
         logger.debug(f"kafka raise event {msg.topic()}.ocr.pdf")

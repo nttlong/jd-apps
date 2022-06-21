@@ -24,7 +24,10 @@ import bson
         "ProcessHistories.UploadId",
         "OCRFileId",
         "FileNameLower",
-        "FullFileNameLower"
+        "FullFileNameLower",
+        "PdfFileId",
+        "FullFileNameWithoutExtenstion",
+        "FullFileNameWithoutExtenstionLower"
 
     ]
 
@@ -62,8 +65,9 @@ class DocUploadRegister:
     _id = ReCompact.dbm.field(data_type=str)
     FileNameOnly = ReCompact.dbm.field(data_type=str, is_require=True)
     """
-    Tên file không có phần Extent \n
-    Để bảo đảm tốc độ hệ thống ghi nhận luôn thông tin này khi upload mà không cần tính lại
+    Tên file không có phần Extent đã được lowercase\n
+    Để bảo đảm tốc độ hệ thống ghi nhận luôn thông tin này khi upload mà không cần tính lại\n
+    
     
     """
     FileName = ReCompact.dbm.field(data_type=str, is_require=True)
@@ -89,13 +93,6 @@ class DocUploadRegister:
     RegisterOnMonths = ReCompact.dbm.field(data_type=int, is_require=False)
     """
         Tháng của agày tạo\n
-        Ví dụ RegisterOn là 22/8/1732 thì RegisterOnMonths là 8 \n
-        Để bảo đảm tốc độ khi cần truy vấn thông tin hệ thống sẽ tính luôn ngày của ngày tạo
-
-        """
-    RegisterOnMonths = ReCompact.dbm.field(data_type=int, is_require=False)
-    """
-        Tháng của ngày tạo\n
         Ví dụ RegisterOn là 22/8/1732 thì RegisterOnMonths là 8 \n
         Để bảo đảm tốc độ khi cần truy vấn thông tin hệ thống sẽ tính luôn ngày của ngày tạo
 
@@ -166,6 +163,35 @@ class DocUploadRegister:
     Đường dẫn dạng lower , tắng tốc khi truy cập
     """
 
+    FullFileNameWithoutExtenstion = ReCompact.dbm.field(data_type=str, is_require=True)
+    """
+    Là FullFileName nhưng lược bỏ phần mở rộng\n
+    Tại sao lại có điều này?
+    Mỗi một file được upload lên server sẽ có thể phát sinh các file sau:
+    1-File OCR: nếu file upload lên dạng pdf ảnh hoặc dạng image chưa có lớp text nhạn dạng hệ thống sẽ 
+                triệu hồi 1 trong 2 dịch vụ nằm trong consumers/file_service_upload_ocr_pdf nếu là file pdf
+                hoặc consumer/files_service_upload_orc_image.py nếu là file image.
+    2- File thumb: ảnh thu gọn đại diện của file.
+    3- Pdf: là file pdf phát sinh từ file office
+    
+    Tất cả các url truy cập đến nội dung OCR, Thumb, Pdf,... đều dùng FullFileName làm chuẩn
+    Sau đó chỉ việc thay đổi phần mở rộng và phần tiền tố
+    Ví dụ file gốc là test.docx
+    FullFileName server là 123-323-189fd/test.docx
+    Khi đó url vào file gốc là <Host-api>/<app-name>/file/123-323-189fd/test.docx
+    Khi đó url vào file thumb là <Host-api>/<app-name>/thumb/123-323-189fd/test.png
+    Khi đó url vào file orc là <Host-api>/<app-name>/file-ocr/123-323-189fd/test.pdf
+    Khi đó url vào file pdf là <Host-api>/<app-name>/file-pdf/123-323-189fd/test.pdf
+    Vì vậy các API tiếp nhận request sẽ lấy phần 123-323-189fd/test để truy tìm file fs 
+    trong Mongodb để write xuống thiết bị yêu cầu đúng nôi dung mà nó đang chứa đưng
+    Để truy tìm file FS trong MongoDb một cách nhanh chóng hệ thống sẽ dự vào FullFileNameWithoutExtenstion
+    dạng lower case đểm tìm
+    
+    """
+    FullFileNameWithoutExtenstionLower =ReCompact.dbm.field(data_type=str, is_require=True)
+    """
+    Là FullFileNameWithoutExtenstion  dạng lower case
+    """
     ThumbWidth = ReCompact.dbm.field(data_type=int, is_require=False)
     """
     Độ rộng của ảnh Thumb tính bằng Pixel \n
@@ -214,7 +240,6 @@ class DocUploadRegister:
     """
 
     OCRFileId = ReCompact.dbm.field(data_type=bson.ObjectId)
-    LastModifiedOn = ReCompact.dbm.field(data_type=datetime.datetime)
     VideoDuration = ReCompact.dbm.field(data_type=int)
     """
     Thời lượng tính bằng giây
@@ -236,5 +261,10 @@ class DocUploadRegister:
     ProcessHistories = ReCompact.dbm.field(data_type= list)
     """
     Lịch sử các quá trình xử lý
+    """
+    PdfFileId=ReCompact.dbm.field(data_type=bson.ObjectId)
+    """
+    Field này là file id trỏ đến file pdf, là file pdf sinh ra bằng cách dùng
+    libreoffice convert ra pdf 
     """
 

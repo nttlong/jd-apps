@@ -42,6 +42,7 @@ async def get_list_of_files(app_name: str, filter: api_files_schema.Filter, requ
         docs.Files.MimeType,
         docs.Files.IsPublic,
         docs.Files.HasThumb,
+        docs.Files.OCRFileId,
         # docs.Files.MainFileId,
         FileSize=docs.Files.SizeInBytes,
         ModifiedOn=docs.Files.LastModifiedOn,
@@ -95,13 +96,34 @@ async def get_list_of_files(app_name: str, filter: api_files_schema.Filter, requ
                     docs.Files.RegisterOnMinutes == date_val.minute,
                     docs.Files.RegisterOnSeconds==date_val.second
                 )
-
+        full_filename_without_extenstion =x.get(docs.Files.FullFileNameWithoutExtenstion.__name__)
+        if x.get(docs.Files.FullFileNameWithoutExtenstion.__name__) is None:
+            full_filename =x.get(docs.Files.FullFileName.__name__)
+            full_dir_path = str(Path(full_filename).parent)
+            filename_only = Path(full_filename).stem
+            full_filename_without_extenstion = f"{full_dir_path}/{filename_only}"
+            await  db.update_one_async(
+                docs.Files,
+                docs.Files._id == x["UploadId"],
+                docs.Files.FullFileNameWithoutExtenstion ==full_filename_without_extenstion,
+                docs.Files.FullFileNameWithoutExtenstionLower == full_filename_without_extenstion.lower(),
+            )
         x["UrlOfServerPath"] = url+f"/{app_name}/file/{x[docs.Files.FullFileName.__name__]}"
         x["AppName"]=app_name
         x["RelUrlOfServerPath"] = f"/{app_name}/file/{x[docs.Files.FullFileName.__name__]}"
         x["ThumbUrl"]= url+f"/{app_name}/thumb/{x['UploadId']}/{x[docs.Files.FileName.__name__]}.png"
         if x.get("Media") and x["Media"].get("Duration"):
             x["DurationHumanReadable"]=strftime("%H:%M:%S", gmtime(x["Media"]["Duration"]))
+        if x.get(docs.Files.OCRFileId.__name__):
+            """
+            /{app_name}/file-ocr/{directory:path}
+            """
+            x[docs.Files.OCRFileId.__name__]=None
+            x["OcrContentUrl"] = url + f"/{app_name}/file-ocr/{full_filename_without_extenstion}.pdf"
+        if x.get(docs.Files.PdfFileId.__name__):
+            x[docs.Files.PdfFileId.__name__] = None
+            x["PdfContentUrl"] = url + f"/{app_name}/file-pdf/{full_filename_without_extenstion}.pdf"
+
 
 
 

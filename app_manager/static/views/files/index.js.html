@@ -130,7 +130,12 @@
                             <a ng-if="p.UrlDfOCRSource && p.UrlDfOCRSource!=null" ng-href="{{p.UrlDfOCRSource}}" target="_blank">
                                 {{$res("View")}}
                             </a>
-
+                            <span ng-if="p.OcrContentUrl">
+                                {{$res('OCR content')}}
+                            </span>
+                            <a  ng-if="p.OcrContentUrl" ng-href="{{p.OcrContentUrl}}" target="_blank">
+                                {{$res('view')}}
+                            </a>
                             <div style="grid-column: 1/-1">
                                 <div class="layout-rows">
                                     <div class="dock full"></div>

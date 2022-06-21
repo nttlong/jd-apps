@@ -33,7 +33,7 @@ def handler(
         return
     import bson
 
-
+    logger.info(data)
     import logging
     import os
     import subprocess
@@ -72,7 +72,8 @@ def handler(
     try:
         ret= ocrmypdf.api.ocr(
             input_file=temp_pdf_file,
-            output_file= out_put_file_path
+            output_file= out_put_file_path,
+            progress_bar=False
         )
         print(ret)
         # cmd = ["ocrmypdf", "--deskew", temp_pdf_file, out_put_file_path]

@@ -3,6 +3,7 @@ import fasty.JWT
 fasty.JWT.set_connection_string(fasty.config.db.connection_string())
 from . import api_files
 from . import api_files_content
+from . import api_files_content_ocr
 from . import api_file_thumb
 from . import api_files_register
 from . import api_files_upload_chunk

@@ -104,6 +104,7 @@ class FileRegister(Resource):
             FileProgressInfo.SizeInHumanReadable:size_in_human_readalbe,
             FileProgressInfo.ServerFileName : f"{upload_id}{file_extension}",
             FileProgressInfo.FullFileName : f"{upload_id}/{data.FileName.lower()}",
+
             FileProgressInfo.Status:0,
             FileProgressInfo.RegisterOn:datetime.datetime.now(),
             FileProgressInfo.RegisterBy:app_name,
