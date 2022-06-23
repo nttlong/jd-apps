@@ -7,6 +7,8 @@ import { ui_style } from "./ui_style.js";
 import { ui_rect_picker } from "./ui_rect_picker.js";
 import { ui_pdf_rect_picker } from "./ui_pdf_rect_picker.js";
 
+const progress_bar_color = '#1264a3'
+const progress_bar_height='4px'
 const icon_server_browser_file = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAaCAYAAADWm14/AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAARBSURBVEhLvZZZKP1PFMCPfYsoe5YsoZBkKZIoUjxYQ9a8eFRSFMqzUrakvNi3B3mQkCVLSSLxQok8eLMm+3b+c86d73W/XPfy6//7fWqYc2bm3DPne+bMABqhu7sbU1NT0dfXF21sbNDa2hq9vb0xKSkJW1tb8e3tTc78M751ID09HQGAW1VVlbavTxcXF4cvLy9y5e/44sDs7KzW8MrKCusiIyNZTklJwejoaLSzs0N3d3ce293dRUdHRx7v7e1l3W9QOdDR0cGGamtrpQYxJCSEdURpaSnGx8dzn3T29vbcJ9ra2lhXXV0tNT9D68D09DQbmJ+flxrE4uJi7Y8TRUVFHG4FGtOV9/f3WdfV1SU1xjGhP2IRmJiYgAgllJeXw8XFBby/v8PIyAjExMRAREQEvL6+wsLCAtze3kJOTg4tgZOTE1haWoK0tDQQ0QArKyuYnJyE+/t7ODg4gODgYJ5nCHZAZDkbT05OhpubGzAzM4PNzU0ICgoCFxcXeHh4AAsLCxA7hKenJxA5Ac/Pz/yD19fXcHh4CE1NTZCZmQnh4eFsmBw2NzfnvkFkBHBjY4O6THNzsyr0CiUlJdoc+L8AOsuff4zk9vZ2KX2Qm5uLUVFRUtLP+fk5TkxMYF9fH66urkrt90BCQgInl8Ly8rLe3ROGHBgfH+d1SqOipfQpauKTyZlqTLe2tvjbKczMzICbm5uU1IgqCI+Pj1L6gHKioKCAokmec6NEpP+np6ec0JaWlrC4uChXqMHQ0FBMTExEkYTo4ODA55v65LnSqPTS3JaWFnJcizghrDeGEqGdnR2p0cBpKn4UXF1dOWuVRlHQ3S2dAhFWqKmpkRqAsbExEJWQd2qM/Px8ODo64mip5tva2uLQ0BB7Q1RWVmJYWJiU1ExNTcmeBrGcL6TfQGt0ExwotHl5eVJEHB4e5kn6EGde9hDPzs6+nWeI+vp69PPzk5JwgMrmZ0Mkz83NSUk/ouL9kQOicqrWcY8UNKBABYduPEPQZzM1NZXSzxEV9qsDWVlZrKRv7+Pjgx4eHiwHBgaiv78/enl58ekYGBjgRcRnQz+Frmxdx1WXkZOTE9TV1cHl5SXXd7pYxI0IwgG4u7sDZ2dnrvkKtGZvb09b/39CbGwsBAQEwOjoqEbBbgjW19d5R4ODg1KDKAyrdllYWCh7Gihynp6eUjLO1dUV2xMblBr5CRTEueYJZWVlUoOcC4oTomJif38/9xVorKGhQUqGERFTbYhQS4Lt7W2eRI0uFYJygWRx738xcHx8zLrs7Gyp+YoyR2mi0MkRPQ4oVFRUaBdQndA1IL6jnKVBvCFQvCF4LCMjAzs7OzlhGxsbUVRY1lMi69oQ7wxe+60DCpS19CynR6iugZ6eHjnjg7W1Nc4LkawoHiv8nqTCo0DPeV0b9NjVnoJ/hSj9/MIi6B4xGoG/AYWfHi6IiP8BQz+SqTY/EVAAAAAASUVORK5CYII=';
 const icon_open_file = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAALcSURBVFhHxZexS3JRFMCPmuUiIrQV2aaLiLpGNEiEi0PgYFMQiEE4iJZgUw2BS0NRDQ6CINJcUIsQ9AcUFE5GQ1ORoqCU0fveOZ0n2nvqs+9ZPzjec+9993ruuefc+55OEIE/RM9lm0qlAjqdbmhZXl7mGYZD5oGtrS04OTmBcrkMLy8v3NqbyclJ8Hq98PDwAOvr63B4eMg9KkEDOkkmk8Ls7CzX1OFwOIRAIIALEfb29rhVHbItQD4/P1lTR6PRgKWlJdo+9GA+n+ceFbAhbcQJhJmZGa6pY3p6mlYvlSj39/fc2x9FDwzL+fk5HBwcwObmJmSzWWq7ubmhchCKQYgufHx8hFKpBE9PT2AwGLhXGZPJBHq9Hux2O1gsFsqKQqEAwWCQn+gD+aEDcRWCzWYjHbuHFWmcaADpg6AtqNVqlHYIrkTi+fkZbm9v4e7ubqCgy+v1Oo8cgu3t7bb1u7u7JJIHfgrOpdoDOzs7MDU1BWdnZxAOhymlfhPy9+rqKvj9fjrVWq0WdSBWqxWMRiMF2SDBrXO73TxSPWP402w2qfKdubk5qFarA7MAeX9/B5fLxTUAs9kM6XQanE4nHVL9EGKxGO9Idxb8FJzz8vJSSCQSpPdDdhCJbaz9Hx8fHzAxMcG13sgMwENEMuL6+hr29/eHTq+1tTXweDxdKd0LioFOpPsdwRjIZDLt/VSzImR+fh4uLi7g6uqK6rlcDl5fX0mXwJjx+Xykd8VA52X09vZGJT4zKunro/HxcYhEIlzTnpWVFeUY6OT4+Jg17cGtUfTAl9cBNjY2qBwFuHpE0QDJC3jHjwpcPSIzAF9Ej46OIJVKcYv2RKNR1r7oyoJisUglto9KOpF5YGFhAeLxONe0B2/f73R5AMG2Ucl3ZB4QvwtY0x6MLSUEMeDYnt9dPSK2gyDe94J41guLi4uyQVrJ6ekp/2U3+PqsOEBLCYVC/Hdy/vjzHOAfpKwT7DEh8XAAAAAASUVORK5CYII=';
 const icon_hamburger = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAGYktHRAD/AP8A/6C9p5MAAAB+SURBVFhH7ZZRCsAgDEPb3f88/oonmw3U4AWqg+VBsX8JsmT6G9hFnjyvIQMyYEgBaK0hDUcGWgvG0N1xHCNlP/QNjDFyq2fXUhPKAHug986cVg+0FuoBGohrya2eXUs9IAPsgfhBMKfVA62FeoAG4pmUWz27lnpABv5uwGwCidPDHCcveRYAAAAASUVORK5CYII=';
@@ -14,9 +16,16 @@ const boxShadow = "rgba(149, 157, 165, 0.2) 0px 8px 24px"
 function getUrlOfServerBrowserFileIcon() {
     return q.resources.urlFromImageBase64Text(icon_server_browser_file);
 }
+class ui_pdf_desk_toolbar {
+    pdf_desk = undefined;
+    constructor(owner) {
+        this.ui_pdf_desk = owner;
+    }
+}
 class ui_pdf_desk extends ui_container {
 
     toolbar;
+    progressBar;
     _hamburger;
     _openFile;
     _pageSelector;
@@ -34,7 +43,55 @@ class ui_pdf_desk extends ui_container {
     _isCustomToolbar;
     _showThumPage = true;
     _orginSize;
+    _ui_pdf_desk_toolbar = undefined;
+    _onToolbarCommand = undefined;
+    _onErrror = undefined;
+    /**
+     * Lấy UI của thanh toolbar
+     * * */
+    getToolbar() {
+        var me = this;
+        if (!me._ui_pdf_desk_toolbar) {
+            me._ui_pdf_desk_toolbar = new ui_pdf_desk_toolbar(me);
+            var ele = me._ui_pdf_desk_toolbar.ui_pdf_desk.toolbar.getEle();
+            new ui_events.handler(ele).set({
+                onclick: (evt) => {
+                    if (me._onToolbarCommand) {
+                        me._onToolbarCommand(me).then(r => {
 
+                        }).catch(err => {
+
+                            if (me._onErrror) {
+                                me._onErrror().then();
+                            }
+                        });
+                    }
+                    evt.preventDefault();
+                    evt.stopImmediatePropagation();
+                }
+            });
+        }
+        
+        return me._ui_pdf_desk_toolbar.ui_pdf_desk.toolbar;
+    }
+    onError(asyncCallback) {
+        this._onErrror = asyncCallback;
+    }
+    onToolbarCommand(asyncCallback) {
+        this._onToolbarCommand = asyncCallback;
+    }
+    addToolbar(htmlEle,command) {
+        var c = new ui_container();
+        
+
+        c.ele.appendChild(htmlEle);
+        
+        c.setContainer(this.getToolbar());
+        if (command) {
+            c.ele.setAttribute("command", command);
+            htmlEle.setAttribute("command", command);
+        }
+    }
     constructor(ele, isCustomToolbar) {
         
         super();
@@ -52,6 +109,22 @@ class ui_pdf_desk extends ui_container {
         this.css({
             height: R.height.toString() + "px",
             width: R.width + "px"
+        });
+        var me = this;
+        this.editor.events.onLoadingFile(async (percent) => {
+            ui_html.setStyle(me.progressBar.getEle(), {
+                display:'block'
+            });
+            me.setProgressBarValue(percent);
+            if (percent >= 100) {
+                setTimeout(() => {
+                    ui_html.setStyle(me.progressBar.getEle(), {
+                        display: 'none'
+                    });
+                }, 500);
+            }
+            console.log(percent);
+
         });
     }
     /**
@@ -92,6 +165,7 @@ class ui_pdf_desk extends ui_container {
     }
     
     buildStyle() {
+        
         this._pageSelectorThums.getEle().setAttribute("class", "page-selector");
         this.style = new ui_style.builder("pdf-picker-editor");
         this.style.define(
@@ -109,6 +183,13 @@ class ui_pdf_desk extends ui_container {
                 marginRight: "8px",
                 boxShadow: boxShadow,
                 overflowY: "auto"
+            }
+        );
+        this.style.define(
+            ".pdf-picker-editor .page-selector",
+            {
+                cursor: "point",
+                "overflow-y":"auto"
             }
         );
         this.style.define(
@@ -165,6 +246,9 @@ class ui_pdf_desk extends ui_container {
             }
         })
     }
+
+    
+
     _initEvents() {
         var me = this;
         if (!this._isCustomToolbar) {
@@ -207,12 +291,36 @@ class ui_pdf_desk extends ui_container {
     _initEditor() {
         this.editor = new ui_pdf_rect_picker(this._desk.getEle());
     }
+    setProgressBarValue(percent) {
+        ui_html.setStyle(this.progressBarContent.getEle(), {
+            'width': percent+'%',
 
+        });
+    }
     _initLayout() {
         this.dock();
         this.layoutColumns();
         this.toolbar = new ui_toolbar.h_toolBar()
         this.toolbar.setContainer(this);
+        this.progressBar = new ui_container();
+        this.progressBarContent = new ui_container();
+        this.progressBarContent.setContainer(this.progressBar);
+        ui_html.setStyle(this.progressBarContent.getEle(), {
+            'max-height': progress_bar_height,
+            'min-height': progress_bar_height,
+            'position': 'relative',
+            'width': '0%',
+            'background-color': progress_bar_color
+            
+        });
+        ui_html.setStyle(this.progressBar.getEle(), {
+            'max-height': progress_bar_height,
+            'min-height': progress_bar_height,
+            'display':'none'
+        });
+
+        
+        this.progressBar.setContainer(this);
         this.toolbar.getEle().setAttribute("class", "tool-bar")
         if (!this._isCustomToolbar) {
             this.toolbar.onCommand(command => {
@@ -264,13 +372,17 @@ class ui_pdf_desk extends ui_container {
         this._main.layoutRows();
         this._pageSelectorThums = new ui_container();
         this._pageSelectorThums.css({
-            width: "160px",
+            width: "130px",
+            'overflow-x':'hidden'
 
         });
+        this._pageSelectorThumsContent = new ui_container();
+        this._pageSelectorThumsContent.setContainer(this._pageSelectorThums);
         this._pageSelectorThums.setContainer(this._main);
         this._desk = new ui_container();
         this._desk.dock();
         this._desk.setContainer(this._main);
+        
 
     }
     replaceByToolbar(ele) {
@@ -301,11 +413,12 @@ class ui_pdf_desk extends ui_container {
      */
     async doLoadThumns(width, height) {
         if (this.editor.isPdf) {
+            debugger;
             width = width || 80;
             height = height || 80;
             var thumnSelector = this._pageSelectorThums.getEle();
             thumnSelector.innerHTML = "";
-
+            var h = thumnSelector.getBoundingClientRect().height;
             
             for (var i = 0; i < this.editor.getTotalPages(); i++) {
                 var retImg = await this.editor.loadThumbs(i,width, height);
@@ -317,8 +430,11 @@ class ui_pdf_desk extends ui_container {
                     margin: "4px"
                 });
                 thumnSelector.appendChild(img);
+                ui_html.setStyle(thumnSelector, {
+                    height: h+'px'
+                });
             }
-
+            
             
         }
         else {

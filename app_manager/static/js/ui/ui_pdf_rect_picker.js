@@ -1,4 +1,8 @@
-﻿import { ui_html } from "./ui_html.js";
+﻿/**
+ * Cong cu chon vung
+ * */
+
+import { ui_html } from "./ui_html.js";
 import { ui_graph2d } from "./ui_graph2d.js";
 import { ui_desk } from "./ui_desk.js"
 import { ui_events } from "./ui_events.js"
@@ -10,6 +14,9 @@ const KEY_DELETE_CODE = 46
 const EVENT_ON_BEFORE_DELETE_REGION = "event_on_before_delete_region"
 const EVENT_ON_BEFORE_BROWSER_FILE = "event_on_before_broser_file"
 const EVENT_ON_LOAD_FILE_COMPLETE = "event_on_load_file_complete"
+const EVENT_ON_LOADING_FILE = "event_on_loading_file"
+const EVENT_RECT_DRAW_BEGIN = "EVENT_RECT_DRAW_BEGIN"
+const EVENT_RECT_DRAW_END = "EVENT_RECT_DRAW_END"
 class EditorEvents {
     handlers={}
     constructor() {
@@ -33,6 +40,19 @@ class EditorEvents {
     onLoadFileComplete(asyncCallback) {
         this.handlers[EVENT_ON_LOAD_FILE_COMPLETE] = asyncCallback
     }
+    /**
+     * Đang load file example onLoadingFile(async (percent)=>{...})
+     * @param {any} asyncCallback
+     */
+    onLoadingFile(asyncCallback) {
+        this.handlers[EVENT_ON_LOADING_FILE] = asyncCallback
+    }
+    onRectDrawBegin(syncCallback) {
+        this.handlers[EVENT_RECT_DRAW_BEGIN] = syncCallback;
+    }
+    onRectDrawEnd(syncCallback) {
+        this.handlers[EVENT_RECT_DRAW_END] = syncCallback;
+    }
 }
 class ui_pdf_rect_picker {
 
@@ -40,6 +60,9 @@ class ui_pdf_rect_picker {
     SCALE_BUFFER_SIZE = 2;
     bufferCanvas = {};
     events = new EditorEvents()
+    /**
+     * Thay doi file, vẫn giữ nguyên các vùng đang sửa
+     * */
     async changeFile() {
         var me = this;
         var f = await ui_html.browserFile(this._accept);
@@ -215,6 +238,15 @@ class ui_pdf_rect_picker {
     listOfImageData = [];
     events;
     _onContextMenu;
+    /***
+     * Bật chế độ vẽ chồng, cho phép vẽ chồng lên một vùng đã được vẽ trước đó.
+     * */
+    enableOverlayDraw() {
+        me._layers.allowOverlay(true);
+    }
+    disableOverlayDraw() {
+        me._layers.allowOverlay(true);
+    }
     constructor(ele) {
         var me = this;
         async function start() {
@@ -227,29 +259,40 @@ class ui_pdf_rect_picker {
             me._layers.resizeLayer.disable();
             me._layers.zoomLayer.disable();
             me._layers.drawLayer.onStart(() => {
-                me.interact.type = ui_desk.desk_interact_emum.draw;
+                if (me.events.handlers[EVENT_RECT_DRAW_BEGIN]) {
+                    var ok = me.events.handlers[EVENT_RECT_DRAW_BEGIN]()
+                    if (ok) {
+                        me.interact.type = ui_desk.desk_interact_emum.draw;
+                    }
+                }
+                else {
+                    me.interact.type = ui_desk.desk_interact_emum.draw;
+                }
             });
             me._layers.drawLayer.onEnd((R, div) => {
-
-
+                
                 var picker = new ui_rect_picker(
                     R.x,
                     R.y,
                     R.width,
                     R.height
                 );
-
+                var ok = true;
+                if (me.events.handlers[EVENT_RECT_DRAW_END]) {
+                    ok = me.events.handlers[EVENT_RECT_DRAW_END](picker);
+                }
+                if (!ok) return;
                 me._layers.layerBkgEle.appendChild(picker.canvas);
 
                 me.addPicker(picker);
                 me._oldCurrentPicker = me.currentPicker;
                 me.currentPicker = picker;
 
-
-                me.select(picker);
-                me._layers.ele.click();
+                console.log(me._layers);
+                
+                me._layers.layerBkgEle.click();
                 picker.canvas.click();
-
+                me.select(picker);
 
             });
             me._layers.dragLayer.onEnd((R, picker) => {
@@ -890,7 +933,11 @@ class ui_pdf_rect_picker {
         me.urlOfFile = URL.createObjectURL(_file);
         me.fileType = _file.type;
         me._File = file;
-        return await me.loadFromUrl(me.urlOfFile, me.fileType);
+        var ret = await me.loadFromUrl(me.urlOfFile, me.fileType);
+        if (me.events.handlers[EVENT_ON_LOADING_FILE]) {
+            await me.events.handlers[EVENT_ON_LOADING_FILE](100);
+        }
+        
     }
     async loadFromUrl(urlOfFile, fileType) {
         try {
@@ -990,7 +1037,9 @@ class ui_pdf_rect_picker {
         });
     }
     async browseFile() {
-        
+        if (this.events.handlers[EVENT_ON_LOADING_FILE]) {
+            await this.events.handlers[EVENT_ON_LOADING_FILE](0);
+        }
         if (this.events.handlers[EVENT_ON_BEFORE_BROWSER_FILE]) {
             if (await this.events.handlers[EVENT_ON_BEFORE_BROWSER_FILE]()) {
                 return;
@@ -999,7 +1048,9 @@ class ui_pdf_rect_picker {
         
         var me = this;
         var file = await this.doBrowserFile();
-        
+        if (this.events.handlers[EVENT_ON_LOADING_FILE]) {
+            await this.events.handlers[EVENT_ON_LOADING_FILE](1);
+        }
         var retInfo = await this.loadFromFile(file);
         if (this.events.handlers[EVENT_ON_LOAD_FILE_COMPLETE]) {
             await this.events.handlers[EVENT_ON_LOAD_FILE_COMPLETE](retInfo);
@@ -1165,7 +1216,7 @@ class ui_pdf_rect_picker {
         this.currentPicker = undefined;
     }
     async loadThumbs(pageIndex,w, h) {
-        debugger;
+        
         var me = this;
         
         var retImg = await this.getPageAsImage(pageIndex + 1);
@@ -1183,6 +1234,12 @@ class ui_pdf_rect_picker {
         
         ctx.putImageData(sImage, 0, 0);
         var blogUrl = ui_resource.urlFromImageBase64Text(canvas.toDataURL("image/png"));
+        
+        if (me.events.handlers[EVENT_ON_LOADING_FILE]) {
+            
+            var percent = 50 + ((pageIndex+1) / this.pdf._pdfInfo.numPages) * 50;
+            await me.events.handlers[EVENT_ON_LOADING_FILE](percent);
+        }
         return {
             url: blogUrl,
             pageIndex: pageIndex

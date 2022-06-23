@@ -14,6 +14,7 @@ var playerView = await View(import.meta, class PlayerView extends BaseScope {
             jQVideo.attr("height", h-20)
         });
         
+        
     }
 });
 export default playerView;

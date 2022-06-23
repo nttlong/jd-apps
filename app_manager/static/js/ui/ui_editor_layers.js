@@ -1,6 +1,7 @@
 ﻿import { ui_linear } from "./ui_linear.js";
 import { ui_events } from "./ui_events.js";
 import { ui_html } from "./ui_html.js";
+import { ui_style } from "./ui_style.js";
 class ui_editor_layers_layer  {
     _ele;
     _owner;
@@ -87,8 +88,7 @@ class ui_editor_layers_layers {
         ui_html.setStyle(this.editLayer, {
             overflow: "auto",
             width: "100%",
-            height: "100%",
-            border: "solid 4x red"
+            height: "100%"
         });
     }
 };
@@ -97,9 +97,17 @@ class ui_editor_layers_rect extends ui_editor_layers_layer {
     end;
     offset;
     _rectDiv;
+    _allowOverlay=true;
+    /**
+     * *Cho phép draw overlay trên vùng đang chọn
+     * @param {any} ofOff
+     */
+    allowOverlay(onOff) {
+        this._allowOverlay = onOff;
+    }
     constructor(ele, deskLayer, constraint) {
         super(ele, deskLayer, constraint);
-
+        var me = this;
         this._rectDiv = ui_html.createEle("div");
         ui_html.setStyle(this._rectDiv, {
             borderStyle: "solid",
@@ -114,9 +122,11 @@ class ui_editor_layers_rect extends ui_editor_layers_layer {
         this._ownerEvent.set({
             filter: evt => { return evt.which == 1 && this._allow; },
             onmousedown: evt => {
-
+                
+                
                 this.startDraw(evt);
             }, onmouseup: evt => {
+                
                 if (this._constraint) {
                     if (!this._constraint(evt)) {
                         this._start = undefined;
@@ -137,7 +147,9 @@ class ui_editor_layers_rect extends ui_editor_layers_layer {
                 if (this._onEnd) {
                     this._onEnd(R, this._rectDiv);
                 }
-                //this._deactive();
+                if (me._allowOverlay) {
+                    this._deactive();
+                }
             }, onmouseout: evt => {
                 var R = this._owner.getBoundingClientRect();
                 var P = ui_html.getClientCoordinate(evt, this._owner);
@@ -237,45 +249,50 @@ class ui_editor_layers_dragger extends ui_editor_layers_layer {
     from;
     constructor(ele, deskLayer) {
         super(ele, deskLayer);
-        
-        this._eleEvent.set({
+        var me = this;
+        me._eleEvent.set({
             filter: evt => { return evt.which == 1 && this._allow; },
             forEach: {
                 filter: evt => { return evt.which == 1 && this._allow; },
                 events: ["onmousemove", "onmouseout"],
                 do: evt => {
-                    if (!this.start) return;
-                    var R = ui_html.getLeftTopOfEle(this._draggEle);
-                    this.end = ui_html.getClientCoordinate(evt, this._owner);
+                    if (!me.start) {
+                        
+
+                    }
+                    var R = ui_html.getLeftTopOfEle(me._draggEle);
+                    me.end = ui_html.getClientCoordinate(evt, me._owner);
                     //new ui_linear.vector(evt.clientX, evt.clientY);
-                    var delta = this.end.subtract(this.start);
+                    var delta = me.end.subtract(me.start);
                     R = R.add(delta);
 
-                    ui_html.setStyle(this._draggEle, {
+                    ui_html.setStyle(me._draggEle, {
                         left: (R.x) + "px",
                         top: (R.y) + "px"
                     });
-                    this.start = this.end;
+                   
+                    me.start = me.end;
 
                 }
             },
             onmouseup: evt => {
 
-                this.start = undefined;
-                if (this._onEnd) {
-                    var R = ui_html.getRectOfEle(this._draggEle);
-                    R = this.convertToDeskCoordinate(R);
-                    ui_html.setStyle(this._draggEle, {
+                me.start = undefined;
+                if (me._onEnd) {
+                    var R = ui_html.getRectOfEle(me._draggEle);
+                    R = me.convertToDeskCoordinate(R);
+                    ui_html.setStyle(me._draggEle, {
                         left: R.x + "px",
                         top: R.y + "px"
                     });
-                    this._onEnd(R, this._draggEle);
+                   
+                    me._onEnd(R, me._draggEle);
                 }
-
-                this._deactive();
+                
+                me._deactive();
             }
         })
-        this._initLayer();
+        me._initLayer();
     }
 
     startDrag(evt, ele) {
@@ -288,7 +305,7 @@ class ui_editor_layers_dragger extends ui_editor_layers_layer {
             top: (R.y - this._desLayer.scrollTop) + "px"
 
         });
-
+        
         this._ele.appendChild(ele);
 
         this.from = new ui_linear.vector(this.start.x, this.start.y);
@@ -317,87 +334,88 @@ class ui_editor_layers_resize extends ui_editor_layers_layer {
     _onResize;
     constructor(ele, deskLayer) {
         super(ele, deskLayer);
-        this._eleEvent.set({
-            filter: evt => { return evt.which == 1 && this._allow; },
+        var me = this;
+        me._eleEvent.set({
+            filter: evt => { return evt.which == 1 && me._allow; },
             onmousemove: evt => {
-                var R = ui_html.getRectOfEle(this._currentEle);
-                this._end = ui_html.getClientCoordinate(evt, this._ele);
-                var delta = this._end.subtract(this._start);
-                if (this.cursor == "e-resize") {
-                    ui_html.setStyle(this._currentEle, {
+                var R = ui_html.getRectOfEle(me._currentEle);
+                me._end = ui_html.getClientCoordinate(evt, me._ele);
+                var delta = me._end.subtract(me._start);
+                if (me.cursor == "e-resize") {
+                    ui_html.setStyle(me._currentEle, {
                         width: Math.ceil(R.width + delta.x) + "px"
                     });
                 }
-                if (this.cursor == "s-resize") {
-                    ui_html.setStyle(this._currentEle, {
+                if (me.cursor == "s-resize") {
+                    ui_html.setStyle(me._currentEle, {
                         height: Math.ceil(R.height + delta.y) + "px"
                     });
                 }
-                if (this.cursor == "w-resize") {
-                    ui_html.setStyle(this._currentEle, {
+                if (me.cursor == "w-resize") {
+                    ui_html.setStyle(me._currentEle, {
                         left: Math.ceil(R.x + delta.x) + "px",
                         width: Math.ceil(R.width - delta.x) + "px"
                     });
                 }
-                if (this.cursor == "n-resize") {
-                    ui_html.setStyle(this._currentEle, {
+                if (me.cursor == "n-resize") {
+                    ui_html.setStyle(me._currentEle, {
                         top: Math.ceil(R.y + delta.y) + "px",
                         height: Math.ceil(R.height - delta.y) + "px"
                     });
                 }
 
-                if (this.cursor == "ne-resize") {
-                    ui_html.setStyle(this._currentEle, {
+                if (me.cursor == "ne-resize") {
+                    ui_html.setStyle(me._currentEle, {
                         top: Math.ceil(R.y + delta.y) + "px",
                         height: Math.ceil(R.height - delta.y) + "px",
                         width: Math.ceil(R.width + delta.x) + "px"
                     });
                 }
-                if (this.cursor == "se-resize") {
-                    ui_html.setStyle(this._currentEle, {
+                if (me.cursor == "se-resize") {
+                    ui_html.setStyle(me._currentEle, {
                         height: Math.ceil(R.height + delta.y) + "px",
                         width: Math.ceil(R.width + delta.x) + "px"
                     });
                 }
-                if (this.cursor == "nw-resize") {
-                    ui_html.setStyle(this._currentEle, {
+                if (me.cursor == "nw-resize") {
+                    ui_html.setStyle(me._currentEle, {
                         top: Math.ceil(R.y + delta.y) + "px",
                         height: Math.ceil(R.height - delta.y) + "px",
                         left: Math.ceil(R.x + delta.x) + "px",
                         width: Math.ceil(R.width - delta.x) + "px"
                     });
                 }
-                if (this.cursor == "sw-resize") {
-                    ui_html.setStyle(this._currentEle, {
+                if (me.cursor == "sw-resize") {
+                    ui_html.setStyle(me._currentEle, {
                         height: Math.ceil(R.height + delta.y) + "px",
                         left: Math.ceil(R.x + delta.x) + "px",
                         width: Math.ceil(R.width - delta.x) + "px"
                     });
                 }
-                if (this._onResize) {
-                    R = ui_html.getRectOfEle(this._currentEle)
-                    this._onResize(R, this._currentEle);
+                if (me._onResize) {
+                    R = ui_html.getRectOfEle(me._currentEle)
+                    me._onResize(R, me._currentEle);
                 }
-                this._start = this._end;
+                me._start = me._end;
                 ui_html.setStyle(document.body, {
-                    cursor: this.cursor
+                    cursor: me.cursor
                 });
-                R = ui_html.getRectOfEle(this._currentEle);
+                R = ui_html.getRectOfEle(me._currentEle);
 
             },
             onmouseup: evt => {
-                this._start = undefined;
-                var R = ui_html.getRectOfEle(this._currentEle);
-                R = this.convertToDeskCoordinate(R);
-                console.log(R.width);
-                if (this._onEnd) {
-                    this._onEnd(R, this._currentEle);
+                me._start = undefined;
+                var R = ui_html.getRectOfEle(me._currentEle);
+                R = me.convertToDeskCoordinate(R);
+                
+                if (me._onEnd) {
+                    me._onEnd(R, me._currentEle);
                 }
-                this._deactive();
+                me._deactive();
             }
 
         })
-        this._initLayer();
+        me._initLayer();
     }
 
     onStart(cb) {

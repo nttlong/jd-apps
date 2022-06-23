@@ -10,9 +10,12 @@ from fastapi.responses import HTMLResponse
 import traceback
 import pathlib
 import ReCompact.db_async
-from fastapi import logger
+
 import os
-from fastapi import FastAPI
+from fastapi import logger
+"""
+Important! Please do not remove
+"""
 from starlette.requests import Request
 from starlette.responses import Response
 path_to_yam_db =os.path.join(str(pathlib.Path(__file__).parent.parent.absolute()),"database.yaml")
@@ -33,11 +36,12 @@ def load_config(app_path,app_name):
     ReCompact.db_async.set_default_database(config.db.authSource)
 def install_fastapi_app(module_name:str):
     from fastapi.middleware.cors import CORSMiddleware
+    from starlette.middleware.sessions import SessionMiddleware
     global app
     global config
     app = FastAPI()
     origins = ["*"]
-
+    app.add_middleware(SessionMiddleware, secret_key=config.app.jwt.secret_key)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,
@@ -48,6 +52,7 @@ def install_fastapi_app(module_name:str):
     app.middleware('http')(catch_exceptions_middleware)
     setattr(sys.modules[module_name],"app",app)
     config.app.static=config.app.static.replace('/',os.sep)
+    import fasty.mime_data
 
     app.mount("/static", StaticFiles(directory=config.app.static), name="static")
     return app

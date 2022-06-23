@@ -1,4 +1,5 @@
-﻿import { ui_graph2d } from "./ui_graph2d.js";
+﻿import { ui_events } from "./ui_events.js";
+import { ui_graph2d } from "./ui_graph2d.js";
 import { ui_html } from "./ui_html.js";
 const HANDLE_SIZE = 10;
 class ui_rect_picker extends ui_html.Rect {
@@ -61,7 +62,7 @@ class ui_rect_picker extends ui_html.Rect {
     swResize;
     sResize;
     seResize;
-
+    cEvent = undefined;
     constructor(x, y, w, h) {
         super(x, y, w, h);
         var me = this;
@@ -165,6 +166,7 @@ class ui_rect_picker extends ui_html.Rect {
         return this.nwResize;
     }
     drawWithHandle() {
+        var me = this;
         var dw = Math.round(this.w * this.scaleSize);
         var dh = Math.round(this.h * this.scaleSize);
         var x = Math.round(this.x * this.scaleSize);
@@ -175,7 +177,60 @@ class ui_rect_picker extends ui_html.Rect {
             left: x.toString() + "px",
             top: y.toString() + "px"
         });
+        if (!me.cEvent) {
+            me.cEvent = new ui_events.handler(me.canvas);
+            me.cEvent.set({
+                filter: evt => { return evt.which==1 },
+                onmousemove: evt => {
+                    console.log(evt);
+                    var resizeHandle = me.detectResizeHandleByRelativePos({
+                        x: evt.offsetX,
+                        y: evt.offsetY
+                    });
+                    if (resizeHandle) {
+                        ui_html.setStyle(me.canvas, {
+                            'cursor': resizeHandle.cursor
+                        });
+                    }
+                    else {
+                        ui_html.setStyle(me.canvas, {
+                            'cursor': 'grabbing'
+                        });
+                    }
 
+                }
+            });
+            me.cEvent.set({
+                filter: evt => { return evt.which == 0 },
+                onmousemove: evt => {
+                    
+                    var resizeHandle = me.detectResizeHandleByRelativePos({
+                        x: evt.offsetX,
+                        y: evt.offsetY
+                    });
+                    if (resizeHandle) {
+                        ui_html.setStyle(me.canvas, {
+                            'cursor': resizeHandle.cursor
+                        });
+                    }
+                    else {
+                        ui_html.setStyle(me.canvas, {
+                            'cursor': 'grabbing'
+                        });
+                    }
+
+                }
+            });
+            me.cEvent.set({
+                onmouseout: evt => {
+                    ui_html.setStyle(me.canvas, {
+                        'cursor': 'default'
+                    });
+
+                }
+            });
+        }
+        
         this.canvas.width = dw;
         this.canvas.height = dh;
         this.ctx.clearRect(0, 0, dw, dh);
@@ -353,6 +408,24 @@ class ui_rect_picker extends ui_html.Rect {
         this.eResize.x = this.scaleSize * this.w - this.handleSize;
         this.wResize.y = this.eResize.y = this.scaleSize * this.h / 2 - this.handleSize / 2;
     }
+    detectResizeHandleByRelativePos(pos) {
+        var me = this;
+        
+        
+        
+        var R = me.canvas.getBoundingClientRect();
+        for (var i = 0; i < me.handles.length; i++) {
+            var hanle = me.handles[i];
+            var x1 = hanle.x ;
+            var y1 =hanle.y ;
+            var x2 = hanle.x + me.handleSize ;
+            var y2 = hanle.y + me.handleSize ;
+            if (x1 < pos.x && pos.x < x2 && y1 < pos.y && pos.y < y2) {
+                return hanle;
+            }
+        }
+
+    }
     detectResizeHandle(pos) {
         var me = this;
         if ((!me.canvas) || me.canvas == null || me.canvas.parentElement == null) {
@@ -371,6 +444,7 @@ class ui_rect_picker extends ui_html.Rect {
                 return hanle;
             }
         }
+        
     }
     scale(rate) {
         this.scaleSize = rate;

@@ -101,7 +101,7 @@ def handler_use_libre_office(consumer: ReCompact_Kafka.consumer.Consumer_obj, ms
         full_path_to_file=pdf_file_path
 
     )
-
+    logger.info(f"Bulk {pdf_file_path} is finish")
 
     ReCompact.dbm.DbObjects.update(
         db,
@@ -114,6 +114,7 @@ def handler_use_libre_office(consumer: ReCompact_Kafka.consumer.Consumer_obj, ms
 
         )
     )
+    logger.info(f"Create pdf file {pdf_file_path} for {file_path} is finish")
     consumer.commit(msg)
 
 

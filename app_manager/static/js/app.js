@@ -10,7 +10,7 @@ import { rcmpactModule } from "./directives/rpct/grid.js";
 //
 //import qNgView from "./directives/ngView.js";
 //setServerApiHostUrl("http://192.168.18.36:5010/api/default");
-
+debugger;
 api.setUrl(window.api_url)
 api.onBeforeCall(async () => {
     var mask = $("<div class='mask'></div>");

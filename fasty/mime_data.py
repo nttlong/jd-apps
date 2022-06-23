@@ -373,4 +373,7 @@ mime_data[".xwd"]="image/x-xwindowdump"
 mime_data[".z"]="application/x-compress"
 mime_data[".zip"]="application/x-zip-compressed"
 
-mimetypes.types_map = {**mime_data,**mimetypes.types_map}
+# mimetypes.types_map = {**mime_data,**mimetypes.types_map}
+for k,v in mime_data.items():
+    mimetypes.add_type(v,k)
+

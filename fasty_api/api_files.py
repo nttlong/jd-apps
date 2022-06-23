@@ -43,7 +43,7 @@ async def get_list_of_files(app_name: str, filter: api_files_schema.Filter, requ
         docs.Files.IsPublic,
         docs.Files.HasThumb,
         docs.Files.OCRFileId,
-        # docs.Files.MainFileId,
+        docs.Files.PdfFileId,
         FileSize=docs.Files.SizeInBytes,
         ModifiedOn=docs.Files.LastModifiedOn,
         UploadId=docs.Files._id,
@@ -129,7 +129,7 @@ async def get_list_of_files(app_name: str, filter: api_files_schema.Filter, requ
             x[docs.Files.OCRFileId.__name__]=None
             x["OcrContentUrl"] = url + f"/{app_name}/file-ocr/{full_filename_without_extenstion}.pdf"
         if x.get(docs.Files.PdfFileId.__name__):
-            x[docs.Files.PdfFileId.__name__] = None
+            x.get(docs.Files.PdfFileId.__name__)
             x["PdfContentUrl"] = url + f"/{app_name}/file-pdf/{full_filename_without_extenstion}.pdf"
 
 

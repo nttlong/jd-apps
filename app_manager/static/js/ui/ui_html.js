@@ -74,7 +74,12 @@ class ui_Shape {
 var ui_html = {
     HANDLE_SIZE: 10,
     getClientCoordinate: function (evt, owner) {
-        return new ui_linear.vector(evt.clientX + owner.scrollLeft, evt.clientY + owner.scrollTop);
+        if (owner) {
+            return new ui_linear.vector(evt.clientX + owner.scrollLeft, evt.clientY + owner.scrollTop);
+        }
+        else {
+            return new ui_linear.vector(evt.clientX , evt.clientY);
+        }
     },
     eventHandle: class {
         name;

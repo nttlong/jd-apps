@@ -31,7 +31,7 @@ def runner(file_path, out_put_file_path):
         input_file=file_path,
         output_file=out_put_file_path,
         progress_bar=False,
-        language="vie+eng",
+        language=["vie","eng"],
         use_threads=False,
         skip_text=True,
         jobs=100,

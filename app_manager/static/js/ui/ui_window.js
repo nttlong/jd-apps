@@ -159,7 +159,7 @@ class ui_window extends ui_container {
 
     }
     _formatTitleSpan() {
-        html.setStyle(this._titleSpan, {
+        ui_html.setStyle(this._titleSpan, {
             marginTop: "auto",
             marginBottom: "auto",
             marginLeft: "8px",

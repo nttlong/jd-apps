@@ -13,6 +13,8 @@ var pdfEditor = await View(import.meta, class PdfEditor extends BaseScope {
         var ele = await this.$findEle("#edior");
         var regionMenu = await this.$findEle("#region-menu");
         this.editor = new ui_pdf_desk(ele[0]);
+        this.editor.addToolbar($('<input type="button" value="Lưu"/>')[0],'save');
+        console.log(this.editor.getToolbar());
         this.editor.setContextMenuOfSelectRegion(regionMenu[0])
         this.editor.onSelectPicker(async (region) => {
             
@@ -32,12 +34,27 @@ var pdfEditor = await View(import.meta, class PdfEditor extends BaseScope {
             }
             
         });
+        var fdpEditorEle = await this.$findEle('.pdf-picker-editor');
+        fdpEditorEle.css({
+            'max-height': $(window).height() - $('header').outerHeight() - 10,
+            'min-width': $("#body").innerWidth()
+        });
         this.editor.onLoadFileComplete(async (info) => {
             debugger;
             await this.editor.doLoadThumns(120, 100)
-            console.log(info);
-            alert("Da tai xong");
+            fdpEditorEle.css({
+                'max-height': $(window).height() - $('header').outerHeight() - 10,
+                'min-width': $("#body").innerWidth()
+            });
         });
+        
+        $(window).resize(() => {
+            fdpEditorEle.css({
+                'max-height': $(window).height() - $('header').outerHeight() - 10,
+                'min-width': $("#body").innerWidth()
+            });
+        });
+
         //console.log(this.editor.editor);
         
     }

@@ -19,6 +19,7 @@ Nạp môi trường
 # from fastapi import FastAPI
 #
 # app = FastAPI()
+import fasty.mime_data
 import fasty
 import pathlib
 app = fasty.install_fastapi_app(__name__)

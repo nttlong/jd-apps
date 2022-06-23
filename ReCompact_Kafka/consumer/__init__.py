@@ -61,8 +61,8 @@ class Consumer_obj(Consumer):
             logger.info(f"start {h.__module__}.{h.__name__}")
             try:
                 o.subscribe([tk])
-            except Exception as e:
-                logger.debug(e)
+            except Exception as ex1:
+                logger.debug(ex1)
             while True:
                 try:
                     msg = o.poll(1.0)
@@ -88,8 +88,8 @@ class Consumer_obj(Consumer):
                         )
                         run_th.start()
                         run_th.join()
-                except Exception as e:
-                    logger.debug(e)
+                except Exception as ex:
+                    logger.debug(ex)
 
         ret = threading.Thread(
             target=__run__,
@@ -116,8 +116,8 @@ class Consumer_obj(Consumer):
         logger.info(f"start {h.__module__}.{h.__name__}")
         try:
             o.subscribe([tk])
-        except Exception as e:
-            logger.debug(e)
+        except Exception as ex:
+            logger.debug(ex)
         while True:
             try:
                 msg = o.poll(1.0)
@@ -151,8 +151,8 @@ class Consumer_obj(Consumer):
                     )
                     run_th.start()
                     run_th.join()
-            except Exception as e:
-                logger.debug(e)
+            except Exception as ex:
+                logger.debug(ex)
         pass
 
     def get_thread(self):

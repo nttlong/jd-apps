@@ -202,13 +202,20 @@ class BaseView {
     async __render__(ele) {
 
         var html = await this.getLayoutHtml();
+        var titleHtml = $(html).attr("title")
+        $(html).removeAttr("title")
+        
         var compile = angular.element(document.querySelector('[ng-controller]')).injector().get("$compile");
         this.$elements = $("<div class='test'>" + html + "</div>").contents();
         compile(this.$elements)(this);
 
         this.$elements.appendTo(ele);
         this.$apply();
-        
+        return {
+            title: titleHtml,
+            compile: compile,
+            scope:this
+        }
         
 
     }
@@ -269,8 +276,30 @@ class BaseView {
     async asWindow() {
         var win = new ui_window();
         var tmpDir = $("<div></div>");
-        await this.__render__(tmpDir[0]);
+        var config= await this.__render__(tmpDir[0]);
         win.setBody(tmpDir[0]);
+        function renderTitle() {
+            return new Promise(function (resolve,reject) {
+                var titleEle = $("<span scope-id='{{$id}}'>" + config.title + "</span>")
+                config.compile(titleEle)(config.scope);
+                config.scope.$applyAsync();
+                
+                function r() {
+                    if (titleEle.attr('scope-id') == config.scope.$id.toString()) {
+                        resolve(titleEle)
+                    }
+                    else {
+                        setTimeout(r, 10);
+                    }
+                }
+                r();
+            });
+        }
+        if (config.title) {
+            var titleEle = await renderTitle();
+            win.setTitleEle(titleEle[0]);
+            
+        }
         await win.show();
         var me = this;
         await win.onBeforeClose(async function () {

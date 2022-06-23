@@ -11,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 import ReCompact_Kafka.consumer
 import config
 import mongo_db
+import shutil
 topic = "files.services.upload.ocr.image"
 import ReCompact.dbm.DbObjects
 import ReCompact.db_context
@@ -38,6 +39,7 @@ def handler(
     import os
     import subprocess
     import sys
+    import shutil
     temp_dir_pdf = os.path.join(config.tmp_dir_ocr,"image_to_pfd")
     if not os.path.isdir(temp_dir_pdf):
         os.makedirs(temp_dir_pdf)
@@ -59,11 +61,15 @@ def handler(
     out_put_dir = os.path.join(config.tmp_dir_ocr, app_name)
     if not os.path.isdir(out_put_dir):
         os.makedirs(out_put_dir)
+
     out_put_file_path = os.path.join(out_put_dir,f"{upload_id}.pdf")
     """
     Kiểm tra nôi dung file đã được ORC chưa?
     """
-    fs_craller_path = os.path.join(config.fs_crawler_path,f"{upload_id}.pdf")
+    fs_crawler_dir= os.path.join(config.fs_crawler_path,app_name)
+    if not os.path.isdir(fs_crawler_dir):
+        os.makedirs(fs_crawler_dir)
+    fs_craller_path = os.path.join(fs_crawler_dir,f"{upload_id}.pdf")
 
     # if not re_process.config.is_debug:
     import ocrmypdf
@@ -73,7 +79,8 @@ def handler(
         ret= ocrmypdf.api.ocr(
             input_file=temp_pdf_file,
             output_file= out_put_file_path,
-            progress_bar=False
+            progress_bar=False,
+            language=['vie','eng'],
         )
         print(ret)
         # cmd = ["ocrmypdf", "--deskew", temp_pdf_file, out_put_file_path]
@@ -123,9 +130,10 @@ def handler(
 
                     )
                 )
+                shutil.copy(out_put_file_path, fs_craller_path)
                 consumer.commit(msg)
         else:
-            import shutil
+
             shutil.copy(file_path, fs_craller_path)
             consumer.commit(msg)
 

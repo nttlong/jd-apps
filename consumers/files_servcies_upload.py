@@ -38,6 +38,14 @@ def handler(consumer, msg, logger):
     file_name = upload_info["FileName"]
     mime_type = upload_info["MimeType"]
     file_ext = upload_info["FileExt"]
+    if '/pdf' in mime_type or file_ext=='pdf':
+        producer.send_msg_sync(f"{msg.topic()}.ocr.pdf", data)
+        logger.debug(f"kafka raise event {msg.topic()}.ocr.pdf")
+        producer.send_msg_sync(f"{msg.topic()}.thumb.pdf", data)
+        logger.debug(f"kafka raise event {msg.topic()}.thumb.pdf")
+        logger.debug(data)
+        consumer.commit(msg)
+        return
     if file_ext in consumers.config.office_extension:
         logger.debug(f"kafka raise event {msg.topic()}.elastic")
         producer.send_msg_sync(f"{msg.topic()}.elastic", data)
@@ -47,14 +55,7 @@ def handler(consumer, msg, logger):
         producer.send_msg_sync(f"{msg.topic()}.pdf.office", data)
         consumer.commit(msg)
         return
-    if '/pdf' in mime_type:
-        producer.send_msg_sync(f"{msg.topic()}.ocr.pdf", data)
-        logger.debug(f"kafka raise event {msg.topic()}.ocr.pdf")
-        producer.send_msg_sync(f"{msg.topic()}.thumb.pdf", data)
-        logger.debug(f"kafka raise event {msg.topic()}.thumb.pdf")
-        logger.debug(data)
-        consumer.commit(msg)
-        return
+
     if 'image/' in mime_type:
         logger.debug(f"{msg.topic()}.ocr.image", data)
         producer.send_msg_sync(f"{msg.topic()}.ocr.image", data)

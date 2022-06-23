@@ -9,9 +9,11 @@ from fastapi.param_functions import Form
 from fastapi.security.base import SecurityBase
 from fastapi.security.utils import get_authorization_scheme_param
 from starlette.requests import Request
-from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN,HTTP_301_MOVED_PERMANENTLY
+from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN, HTTP_301_MOVED_PERMANENTLY
 import bson
 from fastapi_jwt_auth import AuthJWT
+
+import fasty
 from . import JWT_Docs
 from datetime import datetime, timedelta
 from typing import Union
@@ -23,6 +25,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
+import jose
 
 
 class Settings(BaseModel):
@@ -70,6 +73,7 @@ def get_token_url():
 __oauth2_scheme__ = None
 __oauth2_scheme_anonymous__ = None
 
+
 class OAuth2Redirect(OAuth2PasswordBearer):
     def __init__(
             self,
@@ -91,8 +95,25 @@ class OAuth2Redirect(OAuth2PasswordBearer):
         )
 
     async def __call__(self, request: Request) -> Optional[str]:
+
         if request.cookies.get('access_token_cookie', None) is not None:
-            return request.cookies['access_token_cookie']
+            token = request.cookies['access_token_cookie']
+            try:
+                ret_data = jwt.decode(token, fasty.config.app.jwt.secret_key,
+                                      algorithms=[fasty.config.app.jwt.algorithm],
+                                      options={"verify_signature": False},
+                                      )
+
+                setattr(request, "usernane", ret_data.get("sup"))
+                setattr(request, "application_name", ret_data.get("app"))
+
+                return token
+            except jose.exceptions.ExpiredSignatureError as e:
+                raise HTTPException(
+                    status_code=HTTP_401_UNAUTHORIZED,
+                    detail="Not authenticated",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
         else:
             authorization: str = request.headers.get("Authorization")
             scheme, param = get_authorization_scheme_param(authorization)
@@ -130,7 +151,22 @@ class OAuth2PasswordBearerAndCookie(OAuth2PasswordBearer):
 
     async def __call__(self, request: Request) -> Optional[str]:
         if request.cookies.get('access_token_cookie', None) is not None:
-            return request.cookies['access_token_cookie']
+            token = request.cookies['access_token_cookie']
+            try:
+                ret_data = jwt.decode(token, fasty.config.app.jwt.secret_key,
+                                      algorithms=[fasty.config.app.jwt.algorithm],
+                                      options={"verify_signature": False},
+                                      )
+
+                setattr(request, "usernane", ret_data.get("sup"))
+                setattr(request, "application_name", ret_data.get("app"))
+                return token
+            except jose.exceptions.ExpiredSignatureError as e:
+                raise HTTPException(
+                    status_code=HTTP_401_UNAUTHORIZED,
+                    detail="Not authenticated",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
         else:
             authorization: str = request.headers.get("Authorization")
             scheme, param = get_authorization_scheme_param(authorization)
@@ -172,8 +208,8 @@ class OAuth2PasswordBearerAndCookieWithAnonymous(OAuth2PasswordBearer):
         else:
             authorization: str = request.headers.get("Authorization")
             scheme, param = get_authorization_scheme_param(authorization)
-            if param=="":
-                param=None
+            if param == "":
+                param = None
             return param
 
 
@@ -309,23 +345,25 @@ def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-async def get_current_user_async(app_name: str, token: str = Depends(oauth2_scheme)):
 
+credentials_exception = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Could not validate credentials",
+    headers={"WWW-Authenticate": "Bearer"},
+)
+
+
+async def get_current_user_async(app_name: str, token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get(JWT_Docs.Users.Username.__name__,payload.get('sub'))
+        username: str = payload.get(JWT_Docs.Users.Username.__name__, payload.get('sub'))
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
     except JWTError:
-        fx=1
+        fx = 1
         raise credentials_exception
-    db_name= await get_db_name_async(app_name)
+    db_name = await get_db_name_async(app_name)
     user = await get_user_by_username_async(db_name, token_data.username)
     user["Id"] = user["_id"]
     user["username"] = user[JWT_Docs.Users.UsernameLowerCase.__name__]
@@ -392,6 +430,7 @@ async def get_db_name_async(app_name):
             return ret
         else:
             return app_name
+
 
 async def get_app_info_async(app_name):
     global __default_db__

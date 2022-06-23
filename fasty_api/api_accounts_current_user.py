@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Union
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status,Response, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -20,6 +20,7 @@ async def do_get_current_user(token: str = Depends(oauth2_scheme)):
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    db_name=None
     try:
         payload = jwt.decode(token, fasty.config.app.jwt.secret_key, algorithms=[fasty.config.app.jwt.algorithm])
         username: str = payload.get("sub")
@@ -27,9 +28,10 @@ async def do_get_current_user(token: str = Depends(oauth2_scheme)):
         if username is None:
             raise credentials_exception
         token_data = fasty.JWT.TokenData(username=username)
+        db_name = await fasty.JWT.get_db_name_async(app_name)
     except JWTError:
         raise credentials_exception
-    user = await fasty.JWT.get_user_by_username_async(app_name, token_data.username)
+    user = await fasty.JWT.get_user_by_username_async(db_name, token_data.username)
     if user is None:
         raise credentials_exception
     return dict(
@@ -45,6 +47,21 @@ async def post_current_user(token: str = Depends(oauth2_scheme)):
     return await do_get_current_user(token)
 
 
+
+
+
 @fasty.api_get("/accounts/user")
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     return await do_get_current_user(token)
+
+@fasty.api_get("/accounts/signout")
+async def get_current_user(request: Request, response: Response):
+    for k,v in request.cookies.items():
+        response.set_cookie(k, v,max_age=0)
+    return response
+
+@fasty.api_post("/accounts/signout")
+async def post_current_user(request: Request, response: Response):
+    for k, v in request.cookies.items():
+        response.set_cookie(k, '',max_age=0)
+    return response

@@ -1,6 +1,6 @@
 import { BaseScope, View } from "./../../js/ui/BaseScope.js";
 import api from "../../js/ClientApi/api.js"
-import { redirect, urlWatching, getPaths, msgError } from "../../js/ui/core.js"
+import { redirect, urlWatching, getPaths, msgError, msgOK } from "../../js/ui/core.js"
 
 var uploadFileView = await View(import.meta, class UploadFileView extends BaseScope {
     appName = ""
@@ -13,7 +13,7 @@ var uploadFileView = await View(import.meta, class UploadFileView extends BaseSc
         
         var file = this.$elements.find("#file")[0];
         if (file.files.length == 0) {
-            msgError("Please select file");
+            msgError(this.$res("Please select file"));
             return;
         }
         var fileUpload = file.files[0];
@@ -44,7 +44,7 @@ var uploadFileView = await View(import.meta, class UploadFileView extends BaseSc
                         UploadId: regData.UploadId,
                         Index: i,
                         FilePart: filePart
-                    });
+                    }, true);
                     if (chunk.Error) {
                         msgError(chunk.Error.message)
                         return
@@ -52,6 +52,7 @@ var uploadFileView = await View(import.meta, class UploadFileView extends BaseSc
                     this.info = chunk.Data;
                     this.$applyAsync();
                 }
+                msgOK(this.$res("Upload was conmplete"));
             }
             
             
