@@ -1,8 +1,6 @@
 """
 Hiển thị nội dung OCR của file ảnh
 """
-import pathlib
-
 import motor
 
 import ReCompact.dbm
@@ -35,9 +33,9 @@ async def get_ocr_content_of_files(app_name: str, directory: str, request: Reque
     db_name = await fasty.JWT.get_db_name_async(app_name)
     if db_name is None:
         return Response(status_code=401)
-    full_filename_without_ext = f"{str(pathlib.Path(directory).parent)}/{pathlib.Path(directory).stem}"
+
     cntx = db_async.get_db_context(db_name)
-    file_info = await cntx.find_one_async(Files, Files.FullFileNameWithoutExtenstionLower == full_filename_without_ext.lower())
+    file_info = await cntx.find_one_async(Files, Files.FullFileNameLower == directory.lower())
     is_public= file_info.get(docs.Files.IsPublic.__name__,False)
     if not is_public:
         try:
@@ -65,7 +63,7 @@ async def get_ocr_content_of_files(app_name: str, directory: str, request: Reque
                 ret_url=urllib.parse.quote(request.url._url, safe='')
                 return RedirectResponse(url=url_login+f"?ret={ret_url}", status_code=status.HTTP_303_SEE_OTHER)
 
-    fsg = await cntx.get_file_by_id(file_info[Files.OCRFileId.__name__])
+    fsg = await cntx.get_file_by_id(file_info[Files.MainFileId.__name__])
     content_type, _ = mimetypes.guess_type(directory)
     res= await fasty.mongo_fs_http_streaming.streaming(fsg,request,content_type)
     fsg.close()

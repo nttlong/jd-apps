@@ -3,7 +3,8 @@ The pakage support for FastAPI
 """
 import mimetypes
 # from fastapi.middleware.cors import CORSMiddleware
-mimetypes.types_map[".js"]="application/javascript"
+from . import mime_data
+
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 import traceback
@@ -107,13 +108,13 @@ def api_post(url_path:str,response_class=None,response_model=None):
             fn=app.post(url_path,response_class=response_class)
             return  fn
 async def catch_exceptions_middleware(request: Request, call_next):
-    try:
-        return await call_next(request)
-    except Exception as e:
-        import fasty.start
-        fasty.start.__logger__.debug(e)
-        fasty.start.__logger__.debug(traceback.format_exc())
-        # you probably want some kind of logging here
-        return Response("Internal server error", status_code=500)
+   try:
+       return await call_next(request)
+   except Exception as e:
+       import fasty.start
+       fasty.start.__logger__.debug(e)
+       fasty.start.__logger__.debug(traceback.format_exc())
+       # you probably want some kind of logging here
+       return Response("Internal server error", status_code=500)
 
 

@@ -108,6 +108,14 @@ async def get_list_of_files(app_name: str, filter: api_files_schema.Filter, requ
                 docs.Files.FullFileNameWithoutExtenstion ==full_filename_without_extenstion,
                 docs.Files.FullFileNameWithoutExtenstionLower == full_filename_without_extenstion.lower(),
             )
+        if x.get(docs.Files.FullFileNameLower.__name__) is None:
+            full_filename =x.get(docs.Files.FullFileName.__name__)
+
+            await  db.update_one_async(
+                docs.Files,
+                docs.Files._id == x["UploadId"],
+                docs.Files.FullFileNameLower ==full_filename.lower()
+            )
         x["UrlOfServerPath"] = url+f"/{app_name}/file/{x[docs.Files.FullFileName.__name__]}"
         x["AppName"]=app_name
         x["RelUrlOfServerPath"] = f"/{app_name}/file/{x[docs.Files.FullFileName.__name__]}"
