@@ -11,10 +11,11 @@ from pdf2image import convert_from_path
 import os
 import uuid
 import pathlib
-from .thread_comunicator import ThreadCommunicator,hooker
+from .thread_comunicator import ThreadCommunicator, hooker
 import glob, sys, fitz
 
-def to_image(path_to_pdf_file: str, image_output_dir: str,poppler_path, communicator=None):
+
+def to_image(path_to_pdf_file: str, image_output_dir: str, communicator=None):
     """
     Hàm này sẽ convert file pdf ra thành các file image dạng png.
     Lưu ý một điều: một file pdf có nhiều trang, vì lẽ đó khi chuyển đổi sang file ảnh
@@ -28,28 +29,11 @@ def to_image(path_to_pdf_file: str, image_output_dir: str,poppler_path, communic
     :param image_output_dir: đường dẫn đến thư mục phát sinh file ảnh
     :return: đường dẫn đến các thư mục chứa file
     """
-    master_action='pdf_convert_to_image'
-    if communicator and not issubclass(type(communicator),ThreadCommunicator):
+    master_action = 'pdf_convert_to_image'
+    if communicator and not issubclass(type(communicator), ThreadCommunicator):
         raise Exception(f"communicator must be a sub class of ThreadCommunicator")
-    _communicator: ThreadCommunicator =communicator
-    # if _communicator:
-    #     _communicator.post_message(
-    #         action=f'{master_action}/reading_pdf_file',
-    #         status=0,
-    #         data= dict(
-    #             file=path_to_pdf_file
-    #         )
-    #     )
+    _communicator: ThreadCommunicator = communicator
 
-    # pages = convert_from_path(path_to_pdf_file, 350, poppler_path= poppler_path)
-    # if _communicator:
-    #     _communicator.post_message(
-    #         action=f'{master_action}/reading_pdf_file',
-    #         object_status=1,
-    #         data=dict(
-    #             file=path_to_pdf_file
-    #         )
-    #     )
     out_put_images_dir_name = str(uuid.uuid4())
     """
     Tên của thư mục chứa các file ảnh
@@ -75,7 +59,8 @@ def to_image(path_to_pdf_file: str, image_output_dir: str,poppler_path, communic
         )
     mat = fitz.Matrix(300 / 72, 300 / 72)
     doc = fitz.open(path_to_pdf_file)  # open document
-    i=0
+    i = 0
+    ret=[]
     for page in doc:  # iterate through the pages
         pix = page.get_pixmap(matrix=mat)  # render page to an image
 
@@ -99,6 +84,9 @@ def to_image(path_to_pdf_file: str, image_output_dir: str,poppler_path, communic
                     file=full_path_to_image
                 )
             )
+        ret+=[
+            full_path_to_image
+        ]
         i = i + 1
 
     if _communicator:
@@ -109,4 +97,4 @@ def to_image(path_to_pdf_file: str, image_output_dir: str,poppler_path, communic
                 file=path_to_pdf_file
             )
         )
-    return full_path_out_put_images_dir_name
+    return full_path_out_put_images_dir_name,ret
