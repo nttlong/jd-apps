@@ -26,6 +26,7 @@ var appsView = await View(import.meta, class AppsView extends BaseScope {
     //    redirect("files")
     //}
     async getListOfApps() {
+        debugger;
         this.list = await api.post("admin/apps", {
            
         });

@@ -17,7 +17,7 @@ async def login(request: Request):
         }
     )
 @fasty.page_get("/")
-async def page_index(request: Request,token: str = Depends(fasty.JWT.OAuth2Redirect())):
+async def page_index(request: Request):
     app_data =dict(
         full_url_app=fasty.config.app.root_url,
         full_url_root=fasty.config.app.root_url,
@@ -31,7 +31,7 @@ async def page_index(request: Request,token: str = Depends(fasty.JWT.OAuth2Redir
         }
     )
 @fasty.page_get("/{directory:path}")
-async def page_single(directory:str, request: Request,token: str = Depends(fasty.JWT.OAuth2Redirect())):
+async def page_single(directory:str, request: Request):
     directory=directory.split('?')[0]
     check_dir_path = os.path.join(fasty.config.app.static,"views", directory.replace('/', os.sep))
     if not os.path.exists(check_dir_path):

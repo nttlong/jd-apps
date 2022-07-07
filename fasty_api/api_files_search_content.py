@@ -6,6 +6,8 @@ import api_models.documents as Docs
 from ReCompact.db_async import get_db_context
 import api_models.documents as Docs
 import ReCompact.es_search as search_engine
+
+
 def search_content_of_file(app_name: str, content: str):
     """
     Thực hiện tìm kiếm ter6n nội dung của file
@@ -96,15 +98,15 @@ def search_content_of_file(app_name: str, content: str):
 
 
 @fasty.api_post("/{app_name}/search")
-async def file_search(app_name: str, content:str=Body(embed=True),token: str = Depends(fasty.JWT.oauth2_scheme)):
+async def file_search(app_name: str, content: str = Body(embed=True), token: str = Depends(fasty.JWT.oauth2_scheme)):
     db_name = await fasty.JWT.get_db_name_async(app_name)
     if db_name is None:
         return Response(status_code=403)
-    search_result = search_content_of_file(app_name,content)
+    search_result = search_content_of_file(app_name, content)
 
     db_context = get_db_context(db_name)
-    ret_items =[]
-    url= fasty.config.app.api_url
+    ret_items = []
+    url = fasty.config.app.api_url
     for x in search_result["items"]:
         upload_id = x["server_file_id"].split('.')[0]  # tách lấy id upload
         upload_doc_item = await db_context.find_one_async(
@@ -113,13 +115,15 @@ async def file_search(app_name: str, content:str=Body(embed=True),token: str = D
         )  # upload_docs.find_one(upload_docs._id == upload_id)
 
         if upload_doc_item:
-            upload_doc_item['Highlight']=x.get('highlight',[])
-            upload_doc_item["UrlOfServerPath"] = url + f"/{app_name}/file/{upload_doc_item[Docs.Files.FullFileName.__name__]}"
+            upload_doc_item['Highlight'] = x.get('highlight', [])
+            upload_doc_item[
+                "UrlOfServerPath"] = url + f"/{app_name}/file/{upload_doc_item[Docs.Files.FullFileName.__name__]}"
             upload_doc_item["AppName"] = app_name
-            upload_doc_item["RelUrlOfServerPath"] = f"/{app_name}/file/{upload_doc_item[Docs.Files.FullFileName.__name__]}"
-            upload_doc_item["ThumbUrl"] = url + f"/{app_name}/thumb/{upload_doc_item['_id']}/{upload_doc_item[Docs.Files.FileName.__name__]}.png"
-            ret_items+=[upload_doc_item]
-
+            upload_doc_item[
+                "RelUrlOfServerPath"] = f"/{app_name}/file/{upload_doc_item[Docs.Files.FullFileName.__name__]}"
+            upload_doc_item[
+                "ThumbUrl"] = url + f"/{app_name}/thumb/{upload_doc_item['_id']}/{upload_doc_item[Docs.Files.FileName.__name__]}.png"
+            ret_items += [upload_doc_item]
 
     return dict(
         total_items=search_result["total_items"],

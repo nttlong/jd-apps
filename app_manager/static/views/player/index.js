@@ -8,10 +8,12 @@ var playerView = await View(import.meta, class PlayerView extends BaseScope {
         var me = this;
         await this.onResize(async (w, h) => {
            
-           
-            var jQVideo = await me.$findEle("video");
-            jQVideo.attr("width", w-20)
-            jQVideo.attr("height", h-20)
+            var ifrm = await me.$findEle("iframe");
+            alert(ifrm.length);
+            ifrm.attr('src', item.UrlOfServerPath);
+            //var jQVideo = await me.$findEle("video");
+            //jQVideo.attr("width", w-20)
+            //jQVideo.attr("height", h-20)
         });
         
         

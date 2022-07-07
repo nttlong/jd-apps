@@ -19,11 +19,24 @@ from fastapi.responses import RedirectResponse, HTMLResponse
 import urllib
 import fasty.JWT
 import fasty.JWT_Docs
-from ReCompact.db_async import get_db_context
+from ReCompact.db_async import get_db_context,default_db_name
 from fastapi_jwt_auth import AuthJWT
-@fasty.api_get("/{app_name}/signint/{SSOID}")
-async def do_sign_in(app_name:str,SSOID:str,request:Request, Authorize: AuthJWT = Depends()):
-    db_name = await fasty.JWT.get_db_name_async(app_name)
+@fasty.api_get("/sso/signin/{SSOID}")
+async def do_sign_in(SSOID:str,request:Request, Authorize: AuthJWT = Depends()):
+    """
+    Đăng nhập vào dịch vụ bằng SSOID.
+    Khi 1 web site remote muốn truy cập vào dịch vụ bằng trình duyệt,
+    nhưng lại không thể gởi access token qua header hoặc request params.
+    (Ví dụ như xem nôi dung file bằng url của dịch vụ ngay tại site remote)
+    Thì web site remote phải redirect sang url của dịch vụ để có thể truy cập được
+
+    :param app_name:
+    :param SSOID:
+    :param request:
+    :param Authorize:
+    :return:
+    """
+    db_name = await fasty.JWT.get_db_name_async(default_db_name)
     if db_name is None:
         return Response(status_code=403)
     db_context= get_db_context(db_name)

@@ -1,0 +1,22 @@
+# File này định nghĩa cấu hình nơi lưu trữ
+storage:
+  file: # lưu trữ bằng file vật lý thông thường
+    location: '\\192.168.18.36\lv-files\files' # vị trí lưu trữ
+                                               #mỗi app sẽ chiếm giữ 1 thư mục trùng tên với app
+    username: '' # Username có quyền đọc và ghi lên location,
+                 # trường hợp bỏ trống có nghĩa là không cần
+    password: '' # Password của user có quyền đọc và ghi lên location
+  mongodb: # lưu trữ bằng mongodb
+    host: 192.168.18.36
+    port: 27018
+    username: 'admin-doc'
+    password: '123456'
+    authSource: 'lv-docs'
+    replicaSet: '' # nếu có sử dụng ReplicateSet thì khai báo tên ở đây
+    authMechanism: SCRAM-SHA-1
+  AWS_S3: # Sử dụng AWS,
+    AWS_ACCESS_KEY_ID: ''
+    AWS_SECRET_ACCESS_KEY: ''
+
+storage_type: 'file' # Mục này sẽ quyết định xem toàn bộ application sẽ sữ dụng storage nào trong 3 cái đã nêu ở phía trên
+

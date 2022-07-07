@@ -116,7 +116,7 @@ class OAuth2Redirect(OAuth2PasswordBearer):
                 )
         else:
             authorization: str = request.headers.get("Authorization")
-            scheme, param = get_authorization_scheme_param(authorization)
+            scheme, token = get_authorization_scheme_param(authorization)
             if not authorization or scheme.lower() != "bearer":
                 if self.auto_error:
                     raise HTTPException(
@@ -126,7 +126,27 @@ class OAuth2Redirect(OAuth2PasswordBearer):
                     )
                 else:
                     return None
-            return param
+            try:
+                ret_data = jwt.decode(token, fasty.config.app.jwt.secret_key,
+                                      algorithms=[fasty.config.app.jwt.algorithm],
+                                      options={"verify_signature": False},
+                                      )
+
+                setattr(request, "usernane", ret_data.get("sup"))
+                setattr(request, "application_name", ret_data.get("application"))
+            except jose.exceptions.JWTError:
+                raise HTTPException(
+                    status_code=HTTP_401_UNAUTHORIZED,
+                    detail="Not authenticated",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            except jose.exceptions.ExpiredSignatureError as e:
+                raise HTTPException(
+                    status_code=HTTP_401_UNAUTHORIZED,
+                    detail="Not authenticated",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            return token
 
 
 class OAuth2PasswordBearerAndCookie(OAuth2PasswordBearer):
@@ -159,7 +179,7 @@ class OAuth2PasswordBearerAndCookie(OAuth2PasswordBearer):
                                       )
 
                 setattr(request, "usernane", ret_data.get("sup"))
-                setattr(request, "application_name", ret_data.get("app"))
+                setattr(request, "application_name", ret_data.get("application"))
                 return token
             except jose.exceptions.ExpiredSignatureError as e:
                 raise HTTPException(
@@ -169,7 +189,7 @@ class OAuth2PasswordBearerAndCookie(OAuth2PasswordBearer):
                 )
         else:
             authorization: str = request.headers.get("Authorization")
-            scheme, param = get_authorization_scheme_param(authorization)
+            scheme, token = get_authorization_scheme_param(authorization)
             if not authorization or scheme.lower() != "bearer":
                 if self.auto_error:
                     raise HTTPException(
@@ -179,7 +199,27 @@ class OAuth2PasswordBearerAndCookie(OAuth2PasswordBearer):
                     )
                 else:
                     return None
-            return param
+            try:
+                ret_data = jwt.decode(token, fasty.config.app.jwt.secret_key,
+                                      algorithms=[fasty.config.app.jwt.algorithm],
+                                      options={"verify_signature": False},
+                                      )
+
+                setattr(request, "usernane", ret_data.get("sup"))
+                setattr(request, "application_name", ret_data.get("application"))
+            except jose.exceptions.JWTError:
+                raise HTTPException(
+                    status_code=HTTP_401_UNAUTHORIZED,
+                    detail="Not authenticated",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            except jose.exceptions.ExpiredSignatureError as e:
+                raise HTTPException(
+                    status_code=HTTP_401_UNAUTHORIZED,
+                    detail="Not authenticated",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            return token
 
 
 class OAuth2PasswordBearerAndCookieWithAnonymous(OAuth2PasswordBearer):
@@ -193,7 +233,7 @@ class OAuth2PasswordBearerAndCookieWithAnonymous(OAuth2PasswordBearer):
         tokenUrl = get_token_url()
         if not scopes:
             scopes = {}
-        flows = OAuthFlowsModel(password={"tokenUrl": tokenUrl, "scopes": scopes})
+
         super().__init__(
             tokenUrl=tokenUrl,
             scheme_name=scheme_name,
@@ -204,13 +244,13 @@ class OAuth2PasswordBearerAndCookieWithAnonymous(OAuth2PasswordBearer):
 
     async def __call__(self, request: Request) -> Optional[str]:
         if request.cookies.get('access_token_cookie', None) is not None:
-            return request.cookies['access_token_cookie']
+            token = request.cookies['access_token_cookie']
+            return token
         else:
             authorization: str = request.headers.get("Authorization")
-            scheme, param = get_authorization_scheme_param(authorization)
-            if param == "":
-                param = None
-            return param
+            scheme, token = get_authorization_scheme_param(authorization)
+
+            return token
 
 
 def get_oauth2_scheme():

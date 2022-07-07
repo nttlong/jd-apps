@@ -20,6 +20,9 @@ api.onBeforeCall(async () => {
 api.onAfterCall(async (mask) => {
     mask.remove();
 });
+api.onAuthRequire(async () => {
+    window.location.href = "./login?ret=" + decodeURIComponent(window.location.href);
+});
 api.onError(async (err) => {
     console.error(err);
 });

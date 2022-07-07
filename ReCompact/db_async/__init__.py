@@ -533,6 +533,41 @@ async def update_one_async(db, docs, filter, *args, **kwargs):
 
 
 def update_one(db, docs, filter, *args, **kwargs):
+
+    try:
+        sync_db = db.delegate
+        coll = ReCompact.dbm.DbObjects.__get_col__(sync_db, docs.__dict__["__collection_name__"])
+        data = {}
+        _filter = {}
+        if isinstance(filter, dict):
+            _filter = filter
+        elif isinstance(filter, ReCompact.dbm.Docs.Fields):
+            _filter = filter.to_mongodb()
+        else:
+            raise Exception("filter of db_asycn.update_one_async or db_asycn.update_one \n"
+                            "must be ReCompact.dbm.Docs.Fields or dict\n"
+                            "Example:\n"
+                            "update_one_async(db,docs,docs._id=='x',docs.Code=='aa')")
+        if isinstance(args, tuple):
+            for x in args:
+                if isinstance(x, dict):
+                    data = {**data, **x}
+                elif isinstance(x, ReCompact.dbm.Docs.Fields):
+                    data = {**data, **x.to_mongodb()}
+                elif isinstance(x, tuple):
+                    for y in x:
+                        if isinstance(y, dict):
+                            data = {**data, **y}
+                        elif isinstance(x, ReCompact.dbm.Docs.Fields):
+                            data = {**data, **y.to_mongodb()}
+        ret = coll.update_one(_filter, {"$set": data})
+        return data
+    except pymongo.errors.DuplicateKeyError as e:
+        r_e = __parse_error__(e)
+        raise r_e
+    except Exception as e:
+        raise e
+
     return sync(update_one_async(db, docs, filter, *args, **kwargs))
 
 
@@ -708,7 +743,9 @@ class DbContext:
     async def update_one_async(self, docs, filter, *args, **kwargs):
         ret = await update_one_async(self.db, docs, filter, *args, **kwargs)
         return ret
-
+    def update_one(self, docs, *args, **kwargs):
+        ret = update_one(self.db, docs, *args, **kwargs)
+        return ret
     async def delete_one_async(self, docs, filter):
         ret = await delete_one_async(self.db, docs, filter)
         return ret

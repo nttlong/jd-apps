@@ -3,8 +3,18 @@
     static _onBeforeCall = undefined
     static _onAfterCall = undefined
     static _onError = undefined
+    static _onAuthRequire = undefined
+    static storeAccessToken(tk) {
+        window.localStorage['token'] = tk;
+    }
+    static getToken() {
+        return window.localStorage['token']
+    }
     static setUrl(url) {
-        this.serverApIHostUrl=url
+        api.serverApIHostUrl = url
+    }
+    static getUrl() {
+        return api.serverApIHostUrl;
     }
     static onBeforeCall(callback) {
         api._onBeforeCall = callback;
@@ -12,6 +22,10 @@
     }
     static onAfterCall(callback) {
         api._onAfterCall = callback;
+        return api;
+    }
+    static onAuthRequire(callback) {
+        api._onAuthRequire = callback;
         return api;
     }
     static onError(callback) {
@@ -75,9 +89,12 @@
            
             var fetcher = await fetch(url, {
                 method: 'POST',
+                //mode: 'no-cors', // this is to prevent browser from sending 'OPTIONS' method request first
+                //redirect: 'follow',
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + api.getToken()
                 },
                 body: JSON.stringify(data)
             });
@@ -87,6 +104,11 @@
 
             }
             else {
+                if (fetcher.status == 401) {
+                    if (api._onAuthRequire) {
+                        await api._onAuthRequire();
+                    }
+                }
                 var err = await fetcher.json()
                 throw (err)
             }

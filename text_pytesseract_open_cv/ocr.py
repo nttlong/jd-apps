@@ -2,6 +2,8 @@ import pytesseract
 import cv2
 from matplotlib import pyplot as plt
 import matplotlib.patches as patches
+
+
 def ocr(line_items_coordinates,image_path):
 
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
