@@ -1,0 +1,48 @@
+# File này định nghĩa cấu hình nơi lưu trữ
+
+storage_type: 'mongodb'
+# Mục này sẽ quyết định xem toàn bộ application sẽ sữ dụng storage nào trong các định nghĩa
+# dưới đây
+
+
+file: # lưu trữ bằng file vật lý thông thường
+  location: '/home/dcs-admin/lv_files_service/jd-apps/local_storage' # vị trí lưu trữ
+                                             #mỗi app sẽ chiếm giữ 1 thư mục trùng tên với app
+
+linux_samba_share_file:
+  # Windows share file, chỉ cấu hình khi host trên
+  location: '\\192.168.18.36\lv-files\files'
+  username: '' # Username có quyền đọc và ghi lên location,
+               # trường hợp bỏ trống có nghĩa là không cần
+  password: '' # Password của user có quyền đọc và ghi lên location
+
+windows_share_file:
+  # Windows share file, chỉ cấu hình khi host trên
+  location: '\\192.168.18.36\lv-files\files'
+  domain: '' # domain where server storage file was in. if set ''
+  username: '' # Username có quyền đọc và ghi lên location,
+               # trường hợp bỏ trống có nghĩa là không cần
+  password: '' # Password của user có quyền đọc và ghi lên location
+mongodb: # lưu trữ bằng mongodb
+  host: localhost
+  port: 27017
+  username: 'admin-doc'
+  password: '123456'
+  authSource: 'lv-docs'
+  replicaSet: '' # nếu có sử dụng ReplicateSet thì khai báo tên ở đây
+  authMechanism: SCRAM-SHA-1
+  #Thư mục tạm lưu trữ file, đây là thư mục để lưu file tạm. Một file có kích thước
+  #lớn khi upload lên server sẽ không thể upload trong một lần duy nhất.
+  # File cần phải được cắt ra nhiều phần và lưu tạm tại vị trí dưới đây
+  temp_dir: /home/dcs-admin/lv_files_service/jd-apps/local_storage_temp
+AWS_S3: # Sử dụng AWS,
+  AWS_ACCESS_KEY_ID: ''
+  AWS_SECRET_ACCESS_KEY: ''
+  #Thư mục tạm lưu trữ file, đây là thư mục để lưu file tạm. Một file có kích thước
+  #lớn khi upload lên server sẽ không thể upload trong một lần duy nhất.
+  # Hơn nữa, AWS S3 không hỗ trợ append data to file
+  # File cần phải được cắt ra nhiều phần và lưu tạm tại vị trí dưới đây
+  temp_dir: '\\192.168.18.36\lv-files\files'
+
+
+

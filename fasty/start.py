@@ -1,18 +1,69 @@
+import pathlib
+
 import yaml
 import os
 import logging
 from fastapi.templating import Jinja2Templates
+from .storage.base_storage import base_storage
 
 __logger__ = None
 
+import importlib.util
+import sys
+
+
+# spec = importlib.util.spec_from_file_location("module.name", "/path/to/file.py")
+# foo = importlib.util.module_from_spec(spec)
+# sys.modules["module.name"] = foo
+# spec.loader.exec_module(foo)
+# foo.MyClass()
+
+
+class config_storage:
+    """
+    Cấu hình nơi lưu trữ
+    """
+
+    def __init__(self, config_dir: str, yaml_path, data: dict):
+
+        self.storage_type = data.get('storage_type')
+        if self.storage_type is None:
+            raise Exception(f"'{self.storage_type}' was not found. Please, preview file '{yaml_path}' at 'temp_dir'")
+        current_dir = str(pathlib.Path(__file__).parent)
+        path_to_storage_type = os.path.join(current_dir, 'storage', f"{self.storage_type}_storage.py")
+        if not os.path.isfile(path_to_storage_type):
+            raise FileNotFoundError(f"'{path_to_storage_type}' was not found")
+        spec = importlib.util.spec_from_file_location("storage_module", path_to_storage_type)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        spec.loader.exec_module(module)
+        class_name = f"{self.storage_type}_storage"
+        __cls__ = getattr(module, class_name)
+        self.file: base_storage = __cls__(config_dir, yaml_path, data)
+
+        """
+        Cấu hình lưu file bằng ổ cứng vật lý hoặc windows share
+        """
+
+
 class config_search:
+    """
+    Cấu hình Elastic Search
+    """
+
     def __init__(self, config_dir: str, yaml_path, data: dict):
         self.nodes = data.get("nodes")
+        """
+        Số server node 
+        """
         if self.nodes is None:
             raise Exception(f"'nodes' was not found in '{yaml_path}'")
-        if not isinstance(self.nodes,list):
+        if not isinstance(self.nodes, list):
             raise Exception(f"'nodes' in '{yaml_path}' is invalid. nodes mus be a list of elastic server nodes")
         self.index = data.get('index')
+        """
+        Index mặc định
+        """
         if self.index is None:
             raise Exception(f"'index' was not found in '{yaml_path}'\n"
                             f"index is the name of index in that content of file was in")
@@ -257,36 +308,45 @@ class Config:
             self.master_config = self.load_yaml_file(self.path_to_star_yaml)
             self.host_yalm_path = self.master_config.get("host", None)
             if not self.host_yalm_path:
-                raise Exception(f"'host' point to host config file was not found in '{self.host_yalm_path}'")
+                raise Exception(f"'host' point to host config file was not found in '{self.path_to_star_yaml}'")
             if not os.path.isabs(self.host_yalm_path):
                 self.host_yalm_path = os.path.join(self.config_dir, self.host_yalm_path).replace('/', os.sep)
             self.db_yaml_path = self.master_config.get("db", None)
             if not self.db_yaml_path:
-                raise Exception(f"'db' point to database config file was not found in '{self.host_yalm_path}'")
+                raise Exception(f"'db' point to database config file was not found in '{self.path_to_star_yaml}'")
             if not os.path.isabs(self.db_yaml_path):
                 self.db_yaml_path = os.path.join(self.config_dir, self.db_yaml_path).replace('/', os.sep)
             self.app_yaml_path = self.master_config.get("app", None)
             if not self.app_yaml_path:
-                raise Exception(f"'app' point to application config file was not found in '{self.host_yalm_path}'")
+                raise Exception(f"'app' point to application config file was not found in '{self.path_to_star_yaml}'")
             if not os.path.isabs(self.app_yaml_path):
                 self.app_yaml_path = os.path.join(self.config_dir, self.app_yaml_path).replace('/', os.sep)
             self.broker_yaml_path = self.master_config.get("broker", None)
             if self.broker_yaml_path is None:
-                raise Exception(f"'broker' point to broker server config file was not found in '{self.host_yalm_path}'")
+                raise Exception(
+                    f"'broker' point to broker server config file was not found in '{self.path_to_star_yaml}'")
             if not os.path.isabs(self.broker_yaml_path):
                 self.broker_yaml_path = os.path.join(self.config_dir, self.broker_yaml_path).replace('/', os.sep)
             self.search_yaml_Path = self.master_config.get("search", None)
+
             if self.search_yaml_Path is None:
-                raise Exception(f"'search' point to broker server config file was not found in '{self.host_yalm_path}'")
+                raise Exception(
+                    f"'search' point to broker server config file was not found in '{self.path_to_star_yaml}'")
             if not os.path.isabs(self.search_yaml_Path):
                 self.search_yaml_Path = os.path.join(self.config_dir, self.search_yaml_Path).replace('/', os.sep)
+
+            self.storage_yaml_path = self.master_config.get("storage", None)
+            if self.storage_yaml_path is None:
+                raise Exception(f"'storage' was not found in '{self.path_to_star_yaml}'")
 
             self.host_dict = self.load_yaml_file(self.host_yalm_path)
             self.db_dict = self.load_yaml_file(self.db_yaml_path)
             self.app_dict = self.load_yaml_file(self.app_yaml_path)
             self.broker_dict = self.load_yaml_file(self.broker_yaml_path)
             self.search_dict = self.load_yaml_file(self.search_yaml_Path)
+            self.storage_dict = self.load_yaml_file(self.storage_yaml_path)
 
+            self.storage = config_storage(config_dir, self.storage_yaml_path, self.storage_dict)
 
             self.host = config_host()
             """
@@ -308,7 +368,7 @@ class Config:
             self.db = config_mongo_db(self.db_yaml_path, self.db_dict)
             self.app = config_app(self.config_dir, self.app_yaml_path, self.app_dict)
             self.broker = config_broker(self.config_dir, self.broker_yaml_path, self.broker_dict)
-            self.search = config_search(self.config_dir,self.search_yaml_Path,self.search_dict)
+            self.search = config_search(self.config_dir, self.search_yaml_Path, self.search_dict)
             global __logger__
             __logger__ = self.logger
             self.logger.info("-------------------------")

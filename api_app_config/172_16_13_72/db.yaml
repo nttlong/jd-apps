@@ -1,0 +1,7 @@
+host: localhost
+port: 27017
+username: 'admin-doc'
+password: '123456'
+authSource: 'lv-docs'
+replicaSet: ''
+authMechanism: SCRAM-SHA-1

@@ -6,7 +6,7 @@ storage_type: 'file'
 
 
 file: # lưu trữ bằng file vật lý thông thường
-  location: '\\192.168.18.36\lv-files\files' # vị trí lưu trữ
+  location: '/home/dcs-admin/lv_files_service/jd-apps/local_storage' # vị trí lưu trữ
                                              #mỗi app sẽ chiếm giữ 1 thư mục trùng tên với app
 
 linux_samba_share_file:
@@ -24,8 +24,8 @@ windows_share_file:
                # trường hợp bỏ trống có nghĩa là không cần
   password: '' # Password của user có quyền đọc và ghi lên location
 mongodb: # lưu trữ bằng mongodb
-  host: 192.168.18.36
-  port: 27018
+  host: localhost
+  port: 27017
   username: 'admin-doc'
   password: '123456'
   authSource: 'lv-docs'

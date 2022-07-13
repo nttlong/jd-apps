@@ -7,6 +7,7 @@ from . import api_files_content_ocr
 from . import api_file_thumb
 from . import api_files_register
 from . import api_files_upload_chunk
+from . import api_file_edit_upload_thumb
 from . import api_files_delete
 from . import api_apps_get_sso_id
 from . import api_apps_sigin

@@ -36,7 +36,7 @@ async def do_sign_in(SSOID:str,request:Request, Authorize: AuthJWT = Depends()):
     :param Authorize:
     :return:
     """
-    db_name = await fasty.JWT.get_db_name_async(default_db_name)
+    db_name = default_db_name
     if db_name is None:
         return Response(status_code=403)
     db_context= get_db_context(db_name)
