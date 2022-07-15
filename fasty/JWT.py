@@ -85,7 +85,7 @@ class OAuth2Redirect(OAuth2PasswordBearer):
         tokenUrl = get_token_url()
         if not scopes:
             scopes = {}
-        flows = OAuthFlowsModel(password={"tokenUrl": tokenUrl, "scopes": scopes})
+
         super().__init__(
             tokenUrl=tokenUrl,
             scheme_name=scheme_name,
@@ -104,7 +104,7 @@ class OAuth2Redirect(OAuth2PasswordBearer):
                                       options={"verify_signature": False},
                                       )
 
-                setattr(request, "usernane", ret_data.get("sup"))
+                setattr(request, "username", ret_data.get("sup"))
                 setattr(request, "application_name", ret_data.get("app"))
 
                 return token
@@ -132,7 +132,7 @@ class OAuth2Redirect(OAuth2PasswordBearer):
                                       options={"verify_signature": False},
                                       )
 
-                setattr(request, "usernane", ret_data.get("sup"))
+                setattr(request, "username", ret_data.get("sup"))
                 setattr(request, "application_name", ret_data.get("application"))
             except jose.exceptions.JWTError:
                 raise HTTPException(
@@ -178,7 +178,7 @@ class OAuth2PasswordBearerAndCookie(OAuth2PasswordBearer):
                                       options={"verify_signature": False},
                                       )
 
-                setattr(request, "usernane", ret_data.get("sup"))
+                setattr(request, "username", ret_data.get("sup"))
                 setattr(request, "application_name", ret_data.get("application"))
                 return token
             except jose.exceptions.ExpiredSignatureError as e:
@@ -205,7 +205,7 @@ class OAuth2PasswordBearerAndCookie(OAuth2PasswordBearer):
                                       options={"verify_signature": False},
                                       )
 
-                setattr(request, "usernane", ret_data.get("sup"))
+                setattr(request, "username", ret_data.get("sup"))
                 setattr(request, "application_name", ret_data.get("application"))
             except jose.exceptions.JWTError:
                 raise HTTPException(

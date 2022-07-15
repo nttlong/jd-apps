@@ -2,7 +2,7 @@ import datetime
 import os.path
 
 import bson
-
+from fasty.context import Context
 import ReCompact_Kafka.producer
 from fastapi import File, Form, Response, Depends
 from pydantic import BaseModel, Field
@@ -43,11 +43,11 @@ class UploadUpdateThumbResult(BaseModel):
 #     NumOfChunksCompleted: Union[int, None]
 
 
-@fasty.api_post("/{app_name}/file/update/thumb", response_model=UploadUpdateThumbResult)
-async def files_upload(app_name: str, ThumbFile: bytes = File(...),
+@fasty.api_post("/{app_name}/file/modify/thumb", response_model=UploadUpdateThumbResult)
+async def files_update_thumb(app_name: str, ThumbFile: bytes = File(...),
                        UploadId: Union[str, None] = Form(...),
-                       token: str = Depends(fasty.JWT.oauth2_scheme)
-                       ):
+                       token: str = Depends(fasty.JWT.oauth2_scheme),
+                       context: Context =Depends(Context())):
     """
     As usually, every uploaded content has its own a thumbnail. <br/>
     Thee could replace that thumbnail by call this api</br>
@@ -57,4 +57,8 @@ async def files_upload(app_name: str, ThumbFile: bytes = File(...),
     :param token:
     :return:
     """
+    if context.is_forbidden: return context.get_forbidden_response()
+    if context.access_application_name!= context.application_name:
+        return Response(status_code=403)
+    fx= context
     pass

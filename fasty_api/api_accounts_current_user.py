@@ -58,6 +58,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 async def get_current_user(request: Request, response: Response):
     for k,v in request.cookies.items():
         response.set_cookie(k, v,max_age=0)
+    response.delete_cookie(key='access_token')
     return response
 
 @fasty.api_post("/accounts/signout")

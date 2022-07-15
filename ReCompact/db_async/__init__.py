@@ -720,6 +720,7 @@ class Aggregate:
 class DbContext:
     def __init__(self, db_name):
         cnn = get_connection()
+
         self.db = getattr(cnn, db_name)
 
     async def find_one_async(self, docs, filter):

@@ -3,7 +3,8 @@ API liệt kê danh sách các file
 """
 import ReCompact.dbm
 import fasty
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
+from fastapi.responses import RedirectResponse, HTMLResponse
 import api_models.documents as docs
 from ReCompact import db_async
 import json
@@ -18,11 +19,20 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from fastapi_jwt_auth import AuthJWT
+from fasty.context import Context
 class Token(BaseModel):
     access_token: str
-
+@fasty.api_get("/logout")
+async def logout(response : Response):
+  response = RedirectResponse('/accounts/token', status_code= 302)
+  response.delete_cookie(key ='access_token')
+  return response
 @fasty.api_post("/accounts/token",response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), Authorize: AuthJWT = Depends()):
+async def login_for_access_token(
+        form_data: OAuth2PasswordRequestForm = Depends(),
+        Authorize: AuthJWT = Depends(),
+        context=Depends(Context())
+        ):
     username = form_data.username
     app_name=""
     if '/' in form_data.username:
@@ -38,7 +48,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     if db_name is None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Someting wrong, maybe incorrect domain",
+            detail="Something wrong, maybe incorrect domain",
             headers={"WWW-Authenticate": "Bearer"},
         )
 

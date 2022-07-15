@@ -12,6 +12,8 @@ from pydantic import BaseModel
 import api_models.documents as docs
 from typing import List
 from fastapi import Depends, FastAPI, HTTPException, status
+
+import services.accounts
 from ReCompact import db_async
 import json
 from db_connection import connection, default_db_name
@@ -19,13 +21,28 @@ from . import api_files_schema
 import humanize.time
 import fasty.JWT
 from pathlib import Path
+from fasty.context import Context, AccessExpireEnum
+from . import api_files_content
+from services.accounts import AccountService, AccountRepository
+from services.files import FilesService
+from kink import inject
 @fasty.api_post("/{app_name}/files")
-async def get_list_of_files(app_name: str, filter: api_files_schema.Filter, request: Request,token: str = Depends(fasty.JWT.oauth2_scheme)):
+async def get_list_of_files(
+        app_name: str,
+        filter: api_files_schema.Filter,
+        request: Request,token: str = Depends(fasty.JWT.oauth2_scheme),
+        context: Context = Depends(Context())
+        ):
     """
     APi này sẽ liệt kê danh sách các file
     :param app_name:
     :return:
     """
+
+    share_key = await context.create_share_key(
+        'cross',
+        AccessExpireEnum.PRIVATE,
+        api_files_content.get_content_of_files_v2)
     db_name = await fasty.JWT.get_db_name_async(app_name)
     if db_name is None:
         return Response(status_code=403)
@@ -116,7 +133,7 @@ async def get_list_of_files(app_name: str, filter: api_files_schema.Filter, requ
                 docs.Files._id == x["UploadId"],
                 docs.Files.FullFileNameLower ==full_filename.lower()
             )
-        x["UrlOfServerPath"] = url+f"/{app_name}/file/{x[docs.Files.FullFileName.__name__]}"
+        x["UrlOfServerPath"] = url+f"/{app_name}/file/{x[docs.Files.FullFileName.__name__]}?{share_key.key}={share_key.value}"
         x["AppName"]=app_name
         x["RelUrlOfServerPath"] = f"/{app_name}/file/{x[docs.Files.FullFileName.__name__]}"
         x["ThumbUrl"]= url+f"/{app_name}/thumb/{x['UploadId']}/{x[docs.Files.FileName.__name__]}.png"
@@ -131,6 +148,7 @@ async def get_list_of_files(app_name: str, filter: api_files_schema.Filter, requ
         if x.get(docs.Files.PdfFileId.__name__):
             x.get(docs.Files.PdfFileId.__name__)
             x["PdfContentUrl"] = url + f"/{app_name}/file-pdf/{full_filename_without_extenstion}.pdf"
+
 
 
 

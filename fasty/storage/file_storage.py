@@ -52,19 +52,19 @@ class file_storage(base_storage):
     def get_root_directory(self) -> str:
         return self.location
 
-
-
     async def get_stream(self, rel_path_to_file):
         full_path_to_file = os.path.join(self.get_root_directory(), rel_path_to_file)
         if not os.path.isfile(full_path_to_file):
             return None
         return open(full_path_to_file, 'rb')
-    async def read(self,file_stream,size):
+
+    async def read(self, file_stream, size):
         return file_stream.read(size)
+
     async def get_len_of_file_stream(self, file_stream):
         return os.path.getsize(file_stream.raw.name)
 
     async def open_stream(self, file_stream):
         if file_stream.closed:
-            file_stream = open(file_stream.raw.name,'rb')
+            file_stream = open(file_stream.raw.name, 'rb')
         return file_stream

@@ -22,15 +22,24 @@ from fastapi.responses import RedirectResponse, HTMLResponse
 import urllib
 import fasty.JWT
 from fasty.http_streaming import streaming
+from fasty.context import Context
 @fasty.api_get("/{app_name}/file/{directory:path}")
-async def get_content_of_files_v2(app_name: str, directory: str, request: Request,
-                        token: str = Depends(fasty.JWT.get_oauth2_scheme_anonymous())):
+async def get_content_of_files_v2(
+        app_name: str,
+        directory: str,
+        request: Request,
+        token: str = Depends(fasty.JWT.get_oauth2_scheme_anonymous()),
+        context:Context = Depends(Context())
+        ):
     try:
         """
         Xem hoặc tải nội dung file
         :param app_name:
         :return:
         """
+        owner_key_info: dict = None
+        if request.query_params.get('cross'):
+            owner_key_info = await context.get_share_key_info(request.query_params.get('cross'))
 
         CHUNK_SIZE = 1024 * 1024
         db_name = await fasty.JWT.get_db_name_async(app_name)
@@ -83,32 +92,32 @@ async def get_content_of_files_v2(app_name: str, directory: str, request: Reques
                 return Response(status_code=401)
 
         is_public = file_info.get(docs.Files.IsPublic.__name__, False)
-        if not is_public:
-            try:
-                data_user = await fasty.JWT.get_current_user_async(app_name, token)
-                if not data_user:
+        if not is_public and  (not isinstance(owner_key_info, dict) or owner_key_info.get('username') != context.username):
+                try:
+                    data_user = await fasty.JWT.get_current_user_async(app_name, token)
+                    if not data_user:
+                        if app_name == 'admin':
+                            url_login = fasty.config.app.root_url + '/login'
+                            ret_url = urllib.parse.quote(request.url._url, safe='')
+                            return RedirectResponse(url=url_login + f"?ret={ret_url}",
+                                                    status_code=status.HTTP_303_SEE_OTHER)
+                except Exception as e:
                     if app_name == 'admin':
                         url_login = fasty.config.app.root_url + '/login'
                         ret_url = urllib.parse.quote(request.url._url, safe='')
-                        return RedirectResponse(url=url_login + f"?ret={ret_url}",
-                                                status_code=status.HTTP_303_SEE_OTHER)
-            except Exception as e:
-                if app_name == 'admin':
-                    url_login = fasty.config.app.root_url + '/login'
-                    ret_url = urllib.parse.quote(request.url._url, safe='')
-                    return RedirectResponse(url=url_login + f"?ret={ret_url}", status_code=status.HTTP_303_SEE_OTHER)
+                        return RedirectResponse(url=url_login + f"?ret={ret_url}", status_code=status.HTTP_303_SEE_OTHER)
 
-            app = await fasty.JWT.get_app_info_async(app_name)
-            if app is None:
-                return Response(status_code=401)
-            else:
-                if token is None or token == "":
-                    url_login = app[docs.sys_applications.LoginUrl.__name__]
-                    if url_login[0:2] == "~/":
-                        url_login = fasty.config.app.root_url + '/' + url_login[2:]
+                app = await fasty.JWT.get_app_info_async(app_name)
+                if app is None:
+                    return Response(status_code=401)
+                else:
+                    if token is None or token == "":
+                        url_login = app[docs.sys_applications.LoginUrl.__name__]
+                        if url_login[0:2] == "~/":
+                            url_login = fasty.config.app.root_url + '/' + url_login[2:]
 
-                    ret_url = urllib.parse.quote(request.url._url, safe='')
-                    return RedirectResponse(url=url_login + f"?ret={ret_url}", status_code=status.HTTP_303_SEE_OTHER)
+                        ret_url = urllib.parse.quote(request.url._url, safe='')
+                        return RedirectResponse(url=url_login + f"?ret={ret_url}", status_code=status.HTTP_303_SEE_OTHER)
         main_file_id = file_info.get(Files.MainFileId.__name__)
         file_ext = file_info.get(Files.FileExt.__name__)
 

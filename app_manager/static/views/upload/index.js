@@ -5,6 +5,7 @@ import { redirect, urlWatching, getPaths, msgError, msgOK } from "../../js/ui/co
 var uploadFileView = await View(import.meta, class UploadFileView extends BaseScope {
     appName = ""
     info = {}
+    data = {}
     setApp(appName) {
         this.appName = appName;
     }
@@ -22,8 +23,8 @@ var uploadFileView = await View(import.meta, class UploadFileView extends BaseSc
                 Data: {
                     FileName: fileUpload.name,
                     FileSize: fileUpload.size,
-                    ChunkSizeInKB: 1024 * 4,
-                    IsPublic: false
+                    ChunkSizeInKB: 1024 * 3,
+                    IsPublic: this.data.IsPublic||false
                 }
             });
             if (reg.Error) {

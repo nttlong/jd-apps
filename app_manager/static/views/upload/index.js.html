@@ -6,6 +6,12 @@
             <input type="file" id="file" />
         </div>
         <label>
+            {{$res("Is Public")}}:
+        </label>
+        <div>
+            <input type="checkbox" ng-model="data.IsPublic"/>
+        </div>
+        <label>
             {{$res("File size")}}:
         </label>
         <label>
@@ -13,12 +19,15 @@
         </label>
         <label>{{$res("Uploaded size")}}:</label><label>{{info.SizeUploadedInHumanReadable}}</label>
         <div style="grid-column:1/-1">
-            <rcmpct-progressbar style="width:100%;height:24px" ng-value="{{info.Percent}}" color="#000000" />
+            <div style="margin-top:10px;margin-bottom:10px">
+                <rcmpct-progressbar style="width:100%;height:24px" ng-value="{{info.Percent}}" color="#000000" />
+            </div>
+
         </div>
-        
+
         <div style="grid-column:1/-1">
             <input type="button" class="btn btn-primary btn-small" style="float:right" value="{{$res('Upload')}}" ng-click="doUploadFile().then()" />
-            
+
         </div>
     </rcmpct-grid>
     <!--<div style="width:200px">
